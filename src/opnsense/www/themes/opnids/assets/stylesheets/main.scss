@@ -1,9 +1,12 @@
 $colors: (
-  orange: #EA7105,
+  green: #62bb46,
+  orange: #D94700, //#EA7105,
   lightgrey: #F7F7F7,
   lightergrey: #FBFBFB,
   darkgrey: #3C3C3B,
-  bordergrey: #E5E5E5,
+  black: #000,
+  bordergrey: #888, //#E5E5E5,
+  white: #ffffff,
 );
 
 $zindex: (
@@ -17,9 +20,9 @@ $zindex: (
 .widgetdiv {
     .content-box-head {
         background: #E8E8E8 !important;
-        color: map-get($colors, darkgrey) !important;
-        padding-bottom: 1px !important;
-        padding-top:  1px !important;
+        color: #000 !important; //map-get($colors, darkgrey) !important;
+        padding-bottom: 2px !important;
+        padding-top:  0px !important;
         padding-right: 1px !important;
         padding-left: 5px !important;
         min-height: 25px !important;
@@ -149,8 +152,8 @@ body{
 }
 
 .page-content-head{
-  background: map-get($colors, lightergrey);
-  border-bottom: 1px solid rgba(#D9D9D9, .50);
+  background: #eee; //map-get($colors, lightergrey);
+  border-bottom: 1px solid #aaa; //rgba(#D9D9D9, .50);
   padding-bottom: 15px;
   padding-top: 20px;
 
@@ -165,13 +168,13 @@ body{
 }
 
 .page-content-main{
-  background: map-get($colors, lightgrey);
+  background: #ddd; // cacaca; //map-get($colors, lightgrey);
   min-height: calc(100% - 64px);
   padding: 15px 0 (15px + 58px);
 }
 
 .page-side{
-  background: #FFF;
+  background: #eee;
   border-right: 1px solid rgba(0,0,0,.15);
   height: 100% !important;
   height: calc(100% - 52px) !important;
@@ -189,14 +192,14 @@ body{
 
   &--active{
     background: map-get($colors, lightgrey);
-    border-left: 3px solid map-get($colors, orange);
+    border-left: 3px solid map-get($colors, green);
   }
 }
 
 .page-foot{
-  background: map-get($colors, lightergrey);
+  background: #ddd; //map-get($colors, lightergrey);
   bottom: 0;
-  border-top: 1px solid rgba(#D9D9D9, .50);
+  border-top: 1px solid #ccc; //rgba(#D9D9D9, .50);
   font-size: 12px;
   padding: 20px 0;
   position: fixed;
@@ -221,8 +224,9 @@ body{
   }
 }
 
+
 .tab-content{
-  border-top: 0px;
+//  border-top: 0px;
   padding: 0px 0;
 
   > .tab-content{
@@ -233,6 +237,10 @@ body{
   .tab-content:last-child{
   margin-bottom: 0;
   }
+}
+
+.page-content-main [class^="col-"] + [class^="col-"]{
+  padding-top: ($grid-gutter-width/2);
 }
 
 .brand-logo{
@@ -270,7 +278,7 @@ body{
 }
 
 .page-login{
-    background: map-get($colors, lightgrey);
+    background: #ddd;
 
     .container{
         min-height: 100%;
@@ -348,7 +356,7 @@ body{
   border-right: none;
 
   &.collapsed .caret{
-    border-bottom: 4px solid green;
+    border-bottom: 4px solid map-get($colors, green);
     border-top: 0;
   }
 }
@@ -362,13 +370,17 @@ body{
   border-bottom: none;
 }
 
-ul.nav > li.dropdown > ul.dropdown-menu > li > a {
+.dropdown-menu > li > a,
+.dropdown-header {
   padding: 3px 10px;
 }
 
+.nav {
+  margin-bottom: -1px !important;
+}
 .nav-tabs {
   margin-right: 1px;
-  border-bottom: 1px solid darken(map-get($colors, bordergrey), 30%);
+  //border-bottom: 1px solid darken(map-get($colors, bordergrey), 30%);
 }
 
 .nav-tabs > li {
@@ -378,7 +390,7 @@ ul.nav > li.dropdown > ul.dropdown-menu > li > a {
 }
 
 .nav-tabs > li > a {
-  background: #FBFBFB;
+  background: #eee;
   border-radius: 0px;
   border-top-right-radius: 10px;
   margin-right: 0px;
@@ -387,10 +399,10 @@ ul.nav > li.dropdown > ul.dropdown-menu > li > a {
 .nav-tabs > li > a,
 .nav-tabs > li > a:hover,
 .nav-tabs > li > a:focus {
-  border-right: 1px solid darken(#FBFBFB, 5%);
-  border-top: 1px solid darken(#FBFBFB, 5%);
-  border-left: 1px solid darken(#FBFBFB, 5%);
-  border-bottom: 1px solid darken(map-get($colors, bordergrey), 30%);
+  border-right: 1px solid darken(#eee, 15%);
+  border-top: 1px solid darken(#eee, 15%);
+  border-left: 1px solid darken(#eee, 15%);
+  border-bottom: 1px solid map-get($colors, bordergrey);
 }
 
 .nav-tabs > li.active > a {
@@ -400,9 +412,9 @@ ul.nav > li.dropdown > ul.dropdown-menu > li > a {
 .nav-tabs > li.active > a,
 .nav-tabs > li.active > a:hover,
 .nav-tabs > li.active > a:focus {
-  border-right: 1px solid darken(map-get($colors, bordergrey), 30%);
-  border-top: 1px solid darken(map-get($colors, bordergrey), 30%);
-  border-left: 1px solid darken(map-get($colors, bordergrey), 30%);
+  border-right: 1px solid map-get($colors, bordergrey);
+  border-top: 1px solid map-get($colors, bordergrey);
+  border-left: 1px solid map-get($colors, bordergrey);
 }
 
 .nav-tabs > li > a.visible-lg-inline-block:not(.pull-right) {
@@ -471,6 +483,9 @@ table{
 
 .table {
     margin-bottom: 0px !important;
+    tbody {
+      background-color: #fff;
+    }
 }
 
 .nav-tabs-justified, .nav-tabs.nav-justified {
@@ -534,7 +549,7 @@ table{
     }
 
     &:before{
-        background: #EA7105;
+        background: map-get($colors, green);
         content: "";
         height: 42px;
         min-height: 100%;
@@ -556,25 +571,71 @@ table{
     padding-left: 56px;
 }
 
+// new add contrast to top menu
+// a.list-group-item.active-menu-title  {
+//   &:before{
+//     background-color: darken(map-get($colors, green),20%);
+//   }
+// }
+
+// temporary replace footer copyright text
+footer {
+
+  div.container-fluid a {
+      visibility: hidden;
+      display: none
+    }
+
+}
+
+footer {
+  div.container-fluid:before {
+      content:"OPNids powered by CounterFlow AI & Deciso B.V.,";
+  }
+}
+
+div.login-foot a {
+      visibility: hidden;
+      display: none
+}
+
+div.login-foot:before  {
+  content:"OPNids powered by CounterFlow AI & Deciso B.V.,";
+}
+
+
+// new submenu color
+.collapse.active-menu.in {
+  a.list-group-item.active-menu-title  {
+    &:before{
+      background-color: map-get($colors, green) !important;
+    }
+  }
+}
+
 .active-menu-title, .active-menu a{
     text-decoration: none;
     position: relative;
-    background-color: #F5F5F5;
+    background-color: #777777; //959595; //#F5F5F5;
 
     &:before{
         width: 3px;
     }
 
     &.active{
-        background-color: #E8E8E8;
+        background-color: #5e5e5e; //777777; //#E8E8E8;
     }
 }
 
 .active-menu a:before{
-    background: #ED9A50;
+    background: map-get($colors, green);
 }
 
-.alert.alert-danger{
+.alert-danger{
+    color: #FFF !important;
+}
+
+.alert-info{
     color: #FFF !important;
 }
 
@@ -601,10 +662,9 @@ table{
   padding: 5px 10px;
 }
 
-.label-opnsense-xs,
-.btn-xs {
+.label-opnsense-xs {
   /* emulates btn-xs */
-  padding: 1px 3px;
+  padding: 1px 5px;
 }
 
 ::-webkit-scrollbar {
@@ -620,12 +680,12 @@ table{
   border-radius:0;
 }
 ::-webkit-scrollbar-thumb {
-  background: #e5e5e5;
-  border: thin solid #e5e5e5;
+  background: #888;
+  border: thin solid #888;
   border-radius: 0px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background:#e5e5e5;
+  background:#888;
 }
 
 .widgetdiv {
@@ -652,45 +712,5 @@ select {
 .table-responsive {
   @media screen and (max-width: $screen-xs-max) {
     margin-bottom: 0;
-    > .table {
-      > thead,
-      > tbody,
-      > tfoot {
-        > tr {
-          > th,
-          > td {
-            white-space: normal;
-          }
-        }
-      }
-    }
   }
-}
-
-label>input[type="checkbox"],
-label>input[type="radio"] {
-  margin-right: .4em;
-  float:left;
-}
-
-div[data-for*="help_for"] {
-  padding-top: .4em;
-}
-
-#log-settings label[for^="act"] {
-  margin-right: 1.5em;
-}
-
-#log-settings table>tbody>tr>td {
-  vertical-align: middle;
-}
-
-#log-settings select#filterlogentries,
-#log-settings select#filterlogentriesupdateinterval {
-  width: 5em;
-}
-
-#log-settings select#filterlogentriesinterfaces {
-  min-width: 100%;
-  max-width: 100%;
 }

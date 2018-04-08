@@ -17,8 +17,7 @@ $gray-dark:              lighten(#000, 20%) !default;   // #333
 $gray:                   lighten(#000, 33.5%) !default; // #555
 $gray-light:             lighten(#000, 46.7%) !default; // #777
 $gray-lighter:           lighten(#000, 93.5%) !default; // #eee
-
-$brand-primary:         map-get($colors, orange) !default;
+$brand-primary:         darken(map-get($colors, green ),20%) !default;
 $brand-success:         #9BD275 !default;
 $brand-info:            #B0CDDB !default;
 $brand-warning:         #f0ad4e !default;
@@ -30,7 +29,7 @@ $brand-danger:          #F05050 !default;
 //## Settings for some of the most global styles.
 
 //** Background color for `<body>`.
-$body-bg:               #fff !default;
+$body-bg:               #ddd !default; //#fff
 //** Global text color on `<body>`.
 $text-color:            map-get($colors, darkgrey) !default;
 
@@ -151,27 +150,27 @@ $btn-font-weight:                normal !default;
 
 $btn-default-color:              #444 !default;
 $btn-default-bg:                 #FFFFFF !default;
-$btn-default-border:             #e5e5e5 !default;
+$btn-default-border:             #999 !default;
 
-$btn-primary-color:              #fff !default;
-$btn-primary-bg:                 $brand-primary !default;
-$btn-primary-border:             #D95100 !default;
+$btn-primary-color:              #000 !default;
+$btn-primary-bg:                 map-get($colors, green) !default; //$brand-primary !default;
+$btn-primary-border:             darken(map-get($colors, green),20%) !default; //#D95100 !default;
 
 $btn-success-color:              #fff !default;
 $btn-success-bg:                 $brand-success !default;
-$btn-success-border:             darken($btn-success-bg, 5%) !default;
+$btn-success-border:             #ccc !default; //darken($btn-success-bg, 5%) !default;
 
 $btn-info-color:                 #fff !default;
 $btn-info-bg:                    $brand-info !default;
-$btn-info-border:                darken($btn-info-bg, 5%) !default;
+$btn-info-border:                #ccc !default; //darken($btn-info-bg, 5%) !default;
 
 $btn-warning-color:              #fff !default;
 $btn-warning-bg:                 $brand-warning !default;
-$btn-warning-border:             darken($btn-warning-bg, 5%) !default;
+$btn-warning-border:             #ccc !default;// darken($btn-warning-bg, 5%) !default;
 
 $btn-danger-color:               #fff !default;
 $btn-danger-bg:                  $brand-danger !default;
-$btn-danger-border:              darken($btn-danger-bg, 5%) !default;
+$btn-danger-border:              #ccc !default; //darken($btn-danger-bg, 5%) !default;
 
 $btn-link-disabled-color:        $gray-light !default;
 
@@ -205,7 +204,7 @@ $input-height-large:             (ceil($font-size-large * $line-height-large) + 
 $input-height-small:             (floor($font-size-small * $line-height-small) + ($padding-small-vertical * 2) + 2) !default;
 
 $legend-color:                   $gray-dark !default;
-$legend-border-color:            #e5e5e5 !default;
+$legend-border-color:            #888 !default;
 
 //** Background color for textual input addons
 $input-group-addon-bg:           $gray-lighter !default;
@@ -224,7 +223,7 @@ $dropdown-border:                rgba(0,0,0,.15) !default;
 //** Dropdown menu `border-color` **for IE8**.
 $dropdown-fallback-border:       #ccc !default;
 //** Divider color for between dropdown items.
-$dropdown-divider-bg:            #e5e5e5 !default;
+$dropdown-divider-bg:            #888 !default;
 
 //** Dropdown link text color.
 $dropdown-link-color:            $gray-dark !default;
@@ -351,12 +350,12 @@ $navbar-padding-vertical:          15px;
 $navbar-collapse-max-height:       340px !default;
 
 $navbar-default-color:             map-get($colors, lightgrey) !default;
-$navbar-default-bg:                map-get($colors, darkgrey) !default;
-$navbar-default-border:            darken($navbar-default-bg, 6.5%) !default;
+$navbar-default-bg:                map-get($colors, black) !default;
+$navbar-default-border:            $navbar-default-bg !default;
 
 // Navbar links
 $navbar-default-link-color:                map-get($colors, lightgrey) !default;
-$navbar-default-link-hover-color:          map-get($colors, orange) !default;
+$navbar-default-link-hover-color:          map-get($colors, green) !default;
 $navbar-default-link-hover-bg:             transparent !default;
 $navbar-default-link-active-color:         #555 !default;
 $navbar-default-link-active-bg:            darken($navbar-default-bg, 6.5%) !default;
@@ -414,7 +413,7 @@ $nav-disabled-link-hover-color:             $gray-light !default;
 $nav-open-link-hover-color:                 #fff !default;
 
 //== Tabs
-$nav-tabs-border-color:                     #E5E5E5 !default;
+$nav-tabs-border-color:                     #888 !default;
 
 $nav-tabs-link-hover-border-color:          $gray-lighter !default;
 
@@ -488,8 +487,8 @@ $state-success-bg:               $brand-success !default;
 $state-success-border:           $brand-success !default;
 
 $state-info-text:                #31708f !default;
-$state-info-bg:                  #d9edf7 !default;
-$state-info-border:              darken(adjust-hue($state-info-bg, -10), 7%) !default;
+$state-info-bg:                  #82a4c0 !default;  //#82a4c0 !default; //#d9edf7 !default;
+$state-info-border:              darken($state-info-bg, 10%) !default;
 
 $state-warning-text:             $brand-warning !default;
 $state-warning-bg:               #fcf8e3 !default;
@@ -565,9 +564,9 @@ $label-warning-bg:            $brand-warning !default;
 $label-danger-bg:             $brand-danger !default;
 
 //** Default label text color
-$label-color:                 #fff !default;
+$label-color:                 #000 !default; // #fff !default;
 //** Default text color of a linked label
-$label-link-hover-color:      #fff !default;
+$label-link-hover-color:      #000 !default; //#fff !default;
 
 
 //== Modals
@@ -594,7 +593,7 @@ $modal-backdrop-bg:           #000 !default;
 //** Modal backdrop opacity
 $modal-backdrop-opacity:      .5 !default;
 //** Modal header border color
-$modal-header-border-color:   #e5e5e5 !default;
+$modal-header-border-color:   #888 !default;
 //** Modal footer border color
 $modal-footer-border-color:   $modal-header-border-color !default;
 
@@ -635,12 +634,12 @@ $alert-danger-border:         $state-danger-border !default;
 //** Background color of the whole progress component
 $progress-bg:                 #f5f5f5 !default;
 //** Progress bar text color
-$progress-bar-color:          #fff !default;
+$progress-bar-color:          #000 !default; //#fff !default;
 
 //** Default progress bar color
-$progress-bar-bg:             $brand-primary !default;
+$progress-bar-bg:             $brand-success !default; //$brand-primary !default;
 //** Success progress bar color
-$progress-bar-success-bg:     $brand-success !default;
+$progress-bar-success-bg:     $brand-success !default; //$brand-success !default;
 //** Warning progress bar color
 $progress-bar-warning-bg:     $brand-warning !default;
 //** Danger progress bar color
@@ -654,14 +653,14 @@ $progress-bar-info-bg:        $brand-info !default;
 //##
 
 //** Background color on `.list-group-item`
-$list-group-bg:                 #fff !default;
+$list-group-bg:                 #aaa !default;
 //** `.list-group-item` border color
 $list-group-border:             #ddd !default;
 //** List group border radius
 $list-group-border-radius:      $border-radius-base !default;
 
 //** Background color of single list items on hover
-$list-group-hover-bg:           #f5f5f5 !default;
+$list-group-hover-bg:           #d5d5d5 !default;//#f5f5f5 !default;
 //** Text color of active list items
 $list-group-active-color:       $component-active-color !default;
 //** Background color of active list items
@@ -678,8 +677,8 @@ $list-group-disabled-bg:         $gray-lighter !default;
 //** Text color for content within disabled list items
 $list-group-disabled-text-color: $list-group-disabled-color !default;
 
-$list-group-link-color:         map-get($colors, darkgrey) !default;
-$list-group-link-hover-color:   map-get($colors, orange) !default;
+$list-group-link-color:         map-get($colors, white) !default;
+$list-group-link-hover-color:   map-get($colors, green) !default;
 $list-group-link-heading-color: #333 !default;
 
 
@@ -698,12 +697,12 @@ $panel-inner-border:          #ddd !default;
 $panel-footer-bg:             #f5f5f5 !default;
 
 $panel-default-text:          $gray-dark !default;
-$panel-default-border:        #ddd !default;
+$panel-default-border:        #888 !default; //#ddd !default;
 $panel-default-heading-bg:    #f5f5f5 !default;
 
 $panel-primary-text:          #fff !default;
-$panel-primary-border:        $brand-primary !default;
-$panel-primary-heading-bg:    $brand-primary !default;
+$panel-primary-border:        $brand-primary !default; // map-get($colors, green) !default;
+$panel-primary-heading-bg:   $brand-primary !default;
 
 $panel-success-text:          $state-success-text !default;
 $panel-success-border:        $state-success-border !default;

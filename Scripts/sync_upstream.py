@@ -6,6 +6,7 @@ import os
 import sys
 import ujson
 import argparse
+import hashlib
 
 
 def get_commits_branch(branch_name):
@@ -25,8 +26,10 @@ def get_commits_branch(branch_name):
 
 def find_sync_point(tgt_commits, src_commits):
     for tgt_commit_hash in tgt_commits:
+        tgt_message_hash = hashlib.md5('\n'.join(tgt_commits[tgt_commit_hash][1:])).hexdigest()
         for src_commit_hash in src_commits:
-            if src_commit_hash == tgt_commit_hash:
+            src_message_hash = hashlib.md5('\n'.join(src_commits[src_commit_hash][1:])).hexdigest()
+            if src_message_hash == tgt_message_hash:
                 return src_commit_hash
     return None
 
@@ -69,6 +72,7 @@ def main(branch_name):
     if git_add_upstream():
         print ('add upstream')
     if git_checkout("upstream_%s" % branch_name):
+        git_pull_upstream(branch_name)
         if git_checkout(branch_name):
             target_commits = get_commits_branch(branch_name)
             source_commits = get_commits_branch("upstream_%s" % branch_name)

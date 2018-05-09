@@ -1,47 +1,47 @@
 <menu>
+    <!-- LOBBY MENU ITEMS -->
     <Lobby order="10" cssClass="fa fa-laptop">
-        <License  Visibility="delete"/>
+        <License Visibility="delete"/>
     </Lobby>
-
+    <!-- REPORTING MENU ITEMS -->
+    <Reporting>
+        <NetFlow Visibility="delete"/>
+    </Reporting>
+    <!-- SYSTEM MENU ITEMS -->
     <System>
-        <HighAvailability  Visibility="delete"/>
-        <Routes  Visibility="delete"/>
-        <Gateways  Visibility="delete"/>
+        <HighAvailability Visibility="delete"/>
+        <Routes Visibility="delete"/>
+        <Gateways Visibility="delete"/>
         <Settings order="20" cssClass="fa fa-cogs fa-fw">
-            <Notifications  Visibility="delete"/>
+            <Notifications Visibility="delete"/>
         </Settings>
-        <Wizard  Visibility="delete"/>
+        <Wizard Visibility="delete"/>
     </System>
+    <!-- INTERFACES MENU ITEMS -->
     <Interfaces>
         <Assignments order="900" url="/interfaces_assign.php" cssClass="fa fa-pencil fa-fw"/>
         <Overview order="910" url="/status_interfaces.php" cssClass="fa fa-tasks fa-fw"/>
         <Settings order="920" url="/system_advanced_network.php" cssClass="fa fa-cogs fa-fw"/>
-        <Wireless  Visibility="delete"/>
-        <PPP  Visibility="delete"/>
-        <Types  Visibility="delete"/>
-        <Diagnostics  Visibility="delete"/>
+        <Wireless Visibility="delete"/>
+        <PPP Visibility="delete"/>
+        <Types Visibility="delete"/>
+        <Diagnostics Visibility="delete"/>
     </Interfaces>
-    <Firewall>
-        <NAT  Visibility="delete"/>
-        <VIP  Visibility="delete"/>
-        <TrafficShaper  Visibility="delete"/>
-        <LogFiles>
-            <Normal  Visibility="delete"/>
-            <Dynamic Visibility="delete"/>
-            <Summary Visibility="delete"/>
-            <Plain VisibleName="Plain View" order="400" url="/diag_logs_filter_plain.php"/>
-        </LogFiles>
-    </Firewall>
+    <!-- FIREWALL MENU ITEMS -->
+    <Firewall Visibility="delete"/>
+    <!-- SERVICES MENU ITEMS -->
     <Services>
-      <CaptivePortal Visibility="delete"/>
-      <DHCPv4 Visibility="delete"/>
-      <DHCPv6 Visibility="delete"/>
-      <Dnsmasq Visibility="delete"/>
-      <NTP Visibility="delete"/>
-      <OpenDNS Visibility="delete"/>
-      <Unbound Visibility="delete"/>
-      <WebProxy Visibility="delete"/>
+        <CaptivePortal Visibility="delete"/>
+        <DHCPv4 Visibility="delete"/>
+        <DHCPv6 Visibility="delete"/>
+        <Dnsmasq Visibility="delete"/>
+        <NTP Visibility="delete"/>
+        <OpenDNS Visibility="delete"/>
+        <Unbound Visibility="delete"/>
+        <WebProxy Visibility="delete"/>
     </Services>
+    <!-- VPN MENU ITEMS -->
     <VPN Visibility="delete"/>
-    <Help  Visibility="delete"/>
+    <!-- HELP MENU ITEMS -->
+    <Help Visibility="delete"/>
 </menu>

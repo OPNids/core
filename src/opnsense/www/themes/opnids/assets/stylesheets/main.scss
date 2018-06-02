@@ -1,137 +1,176 @@
+@font-face {
+  font-family: 'counterflowai';
+  src: url('/ui/themes/opnids/build/fonts/counterflowai.eot');
+}
+@font-face {
+  font-family: 'counterflowai';
+  src: url('/ui/themes/opnids/build/fonts/counterflowai.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+[class^='cfai-'],
+[class*=' cfai-'] {
+  /* use !important to prevent issues with browser extensions that change fonts */
+  font-family: 'counterflowai' !important;
+  speak: none;
+  font-style: normal;
+  font-weight: normal;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+
+  /* Better Font Rendering =========== */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.cfai-ids-beats:before {
+  content: '\e900';
+}
+.cfai-ids-mle:before {
+  content: '\e901';
+}
+.cfai-ids-cfai:before {
+  content: '\e902';
+}
+
 $colors: (
   green: #62bb46,
-  orange: #D94700, //#EA7105,
-  lightgrey: #F7F7F7,
-  lightergrey: #FBFBFB,
-  darkgrey: #3C3C3B,
+  orange: #d94700,
+  /*#EA7105,*/ lightgrey: #f7f7f7,
+  lightergrey: #fbfbfb,
+  darkgrey: #3c3c3b,
   black: #000,
-  bordergrey: #888, //#E5E5E5,
-  white: #ffffff,
+  bordergrey: #888,
+  /*#E5E5E5,*/ white: #ffffff
 );
 
 $zindex: (
   header: 2,
   footer: 2,
   main: 1,
-  sidebar: 3,
+  sidebar: 3
 );
 
 // format dashboard widget headers
 .widgetdiv {
-    .content-box-head {
-        background: #E8E8E8 !important;
-        color: #000 !important; //map-get($colors, darkgrey) !important;
-        padding-bottom: 2px !important;
-        padding-top:  0px !important;
-        padding-right: 1px !important;
-        padding-left: 5px !important;
-        min-height: 25px !important;
+  .content-box-head {
+    background: #e8e8e8 !important;
+    color: #000 !important; //map-get($colors, darkgrey) !important;
+    padding-bottom: 2px !important;
+    padding-top: 0px !important;
+    padding-right: 1px !important;
+    padding-left: 5px !important;
+    min-height: 25px !important;
 
-        .btn-group {
-            .btn {
-                color: map-get($colors, darkgrey) !important;
-                background: #E8E8E8 !important;
-                border: 0px;
-                .glyphicon {
-                    color: map-get($colors, darkgrey) !important;
-                }
-            }
+    .btn-group {
+      .btn {
+        color: map-get($colors, darkgrey) !important;
+        background: #e8e8e8 !important;
+        border: 0px;
+        .glyphicon {
+          color: map-get($colors, darkgrey) !important;
         }
-        .list-inline {
-            li > h3 {
-                padding-top: 4px;
-            }
-        }
+      }
     }
+    .list-inline {
+      li > h3 {
+        padding-top: 4px;
+      }
+    }
+  }
 }
 
 @font-face {
   font-family: 'SourceSansProBold';
   src: url('/ui/themes/opnids/build/fonts/SourceSansPro-Bold/SourceSansPro-Bold.woff') format('woff'),
-       url('/ui/themes/opnids/build/fonts/SourceSansPro-Bold/SourceSansPro-Bold.ttf') format('truetype');
+    url('/ui/themes/opnids/build/fonts/SourceSansPro-Bold/SourceSansPro-Bold.ttf') format('truetype');
 }
 
 @font-face {
   font-family: 'SourceSansProSemibold';
   src: url('/ui/themes/opnids/build/fonts/SourceSansPro-Semibold/SourceSansPro-Semibold.woff') format('woff'),
-       url('/ui/themes/opnids/build/fonts/SourceSansPro-Semibold/SourceSansPro-Semibold.ttf') format('truetype');
+    url('/ui/themes/opnids/build/fonts/SourceSansPro-Semibold/SourceSansPro-Semibold.ttf') format('truetype');
 }
 
 @font-face {
   font-family: 'SourceSansProRegular';
   src: url('/ui/themes/opnids/build/fonts/SourceSansPro-Regular/SourceSansPro-Regular.woff') format('woff'),
-       url('/ui/themes/opnids/build/fonts/SourceSansPro-Regular/SourceSansPro-Regular.ttf') format('truetype');
+    url('/ui/themes/opnids/build/fonts/SourceSansPro-Regular/SourceSansPro-Regular.ttf') format('truetype');
 }
 
 // Core variables and mixins
-@import "bootstrap/variables";
-@import "bootstrap/mixins";
+@import 'bootstrap/variables';
+@import 'bootstrap/mixins';
 
 // Reset and dependencies
-@import "bootstrap/normalize";
-@import "bootstrap/print";
-@import "bootstrap/glyphicons";
+@import 'bootstrap/normalize';
+@import 'bootstrap/print';
+@import 'bootstrap/glyphicons';
 
 // Core CSS
-@import "bootstrap/scaffolding";
-@import "bootstrap/type";
-@import "bootstrap/code";
-@import "bootstrap/grid";
-@import "bootstrap/tables";
-@import "bootstrap/forms";
-@import "bootstrap/buttons";
+@import 'bootstrap/scaffolding';
+@import 'bootstrap/type';
+@import 'bootstrap/code';
+@import 'bootstrap/grid';
+@import 'bootstrap/tables';
+@import 'bootstrap/forms';
+@import 'bootstrap/buttons';
 
 // Components
-@import "bootstrap/component-animations";
-@import "bootstrap/dropdowns";
-@import "bootstrap/button-groups";
-@import "bootstrap/input-groups";
-@import "bootstrap/navs";
-@import "bootstrap/navbar";
-@import "bootstrap/breadcrumbs";
-@import "bootstrap/pagination";
-@import "bootstrap/pager";
-@import "bootstrap/labels";
-@import "bootstrap/badges";
-@import "bootstrap/jumbotron";
-@import "bootstrap/thumbnails";
-@import "bootstrap/alerts";
-@import "bootstrap/progress-bars";
-@import "bootstrap/media";
-@import "bootstrap/list-group";
-@import "bootstrap/panels";
-@import "bootstrap/responsive-embed";
-@import "bootstrap/wells";
-@import "bootstrap/close";
+@import 'bootstrap/component-animations';
+@import 'bootstrap/dropdowns';
+@import 'bootstrap/button-groups';
+@import 'bootstrap/input-groups';
+@import 'bootstrap/navs';
+@import 'bootstrap/navbar';
+@import 'bootstrap/breadcrumbs';
+@import 'bootstrap/pagination';
+@import 'bootstrap/pager';
+@import 'bootstrap/labels';
+@import 'bootstrap/badges';
+@import 'bootstrap/jumbotron';
+@import 'bootstrap/thumbnails';
+@import 'bootstrap/alerts';
+@import 'bootstrap/progress-bars';
+@import 'bootstrap/media';
+@import 'bootstrap/list-group';
+@import 'bootstrap/panels';
+@import 'bootstrap/responsive-embed';
+@import 'bootstrap/wells';
+@import 'bootstrap/close';
 
 // Components w/ JavaScript
-@import "bootstrap/modals";
-@import "bootstrap/tooltip";
-@import "bootstrap/popovers";
-@import "bootstrap/carousel";
+@import 'bootstrap/modals';
+@import 'bootstrap/tooltip';
+@import 'bootstrap/popovers';
+@import 'bootstrap/carousel';
 
 // Utility classes
-@import "bootstrap/utilities";
-@import "bootstrap/responsive-utilities";
+@import 'bootstrap/utilities';
+@import 'bootstrap/responsive-utilities';
 
-*{
-    -webkit-font-smoothing: antialiased;
+* {
+  -webkit-font-smoothing: antialiased;
 }
 
-html, body{
+html,
+body {
   height: 100%;
   font-family: 'SourceSansProRegular';
 }
 
-body{
+body {
   touch-action: manipulation;
   min-width: 320px;
 }
 
 .widget-sort-handle {
-  touch-action: none; }
+  touch-action: none;
+}
 
-.page-head{
+.page-head {
   background: map-get($colors, darkgrey);
   top: 0;
   left: 0;
@@ -140,42 +179,44 @@ body{
   z-index: map-get($zindex, header);
 }
 
-.page-content{
+.page-content {
   height: calc(100% - 52px);
   padding-top: 52px;
   position: relative;
   z-index: map-get($zindex, main);
 
-  > .row{
+  > .row {
     height: 100%;
   }
 }
 
-.page-content-head{
+.page-content-head {
   background: #eee; //map-get($colors, lightergrey);
   border-bottom: 1px solid #aaa; //rgba(#D9D9D9, .50);
   padding-bottom: 15px;
   padding-top: 20px;
 
-  .navbar-nav{
+  .navbar-nav {
     width: 100%;
   }
 
-  h1,h2,h3{
+  h1,
+  h2,
+  h3 {
     line-height: 1;
     margin: 0;
   }
 }
 
-.page-content-main{
+.page-content-main {
   background: #ddd; // cacaca; //map-get($colors, lightgrey);
   min-height: calc(100% - 64px);
   padding: 15px 0 (15px + 58px);
 }
 
-.page-side{
+.page-side {
   background: #eee;
-  border-right: 1px solid rgba(0,0,0,.15);
+  border-right: 1px solid rgba(0, 0, 0, 0.15);
   height: 100% !important;
   height: calc(100% - 52px) !important;
   left: 0;
@@ -189,14 +230,13 @@ body{
 }
 
 .page-side-nav {
-
-  &--active{
+  &--active {
     background: map-get($colors, lightgrey);
     border-left: 3px solid map-get($colors, green);
   }
 }
 
-.page-foot{
+.page-foot {
   background: #ddd; //map-get($colors, lightergrey);
   bottom: 0;
   border-top: 1px solid #ccc; //rgba(#D9D9D9, .50);
@@ -207,162 +247,160 @@ body{
   z-index: map-get($zindex, footer);
 }
 
-.content-box{
-  background: #FFF;
-  border: 1px solid map-get($colors, bordergrey);;
+.content-box {
+  background: #fff;
+  border: 1px solid map-get($colors, bordergrey);
 
   @extend .clearfix;
 
-  &-head{
-  @extend .page-content-head;
+  &-head {
+    @extend .page-content-head;
   }
 
-  &-main{
-  //background: map-get($colors, lightgrey);
-  padding-bottom: 15px;
-  padding-top: 15px;
+  &-main {
+    //background: map-get($colors, lightgrey);
+    padding-bottom: 15px;
+    padding-top: 15px;
   }
 }
 
-
-.tab-content{
-//  border-top: 0px;
+.tab-content {
+  //  border-top: 0px;
   padding: 0px 0;
 
-  > .tab-content{
-  margin-bottom: 0;
-  padding: 0 15px;
+  > .tab-content {
+    margin-bottom: 0;
+    padding: 0 15px;
   }
 
-  .tab-content:last-child{
-  margin-bottom: 0;
+  .tab-content:last-child {
+    margin-bottom: 0;
   }
 }
 
-.page-content-main [class^="col-"] + [class^="col-"]{
+.page-content-main [class^='col-'] + [class^='col-'] {
   padding-top: ($grid-gutter-width/2);
 }
 
-.brand-logo{
-    display: none;
+.brand-logo {
+  display: none;
 
-    @media (min-width: $screen-sm-min) {
-        display: inline-block;
-    }
-}
-
-.brand-icon{
+  @media (min-width: $screen-sm-min) {
     display: inline-block;
-
-    @media (min-width: $screen-sm-min) {
-        display: none;
-    }
+  }
 }
 
-.col-sm-disable-spacer{
-    @media (min-width: $screen-sm-min) {
-        padding-top: 0 !important;
-    }
+.brand-icon {
+  display: inline-block;
+
+  @media (min-width: $screen-sm-min) {
+    display: none;
+  }
 }
 
-.col-md-disable-spacer{
-    @media (min-width: $screen-md-min) {
-        padding-top: 0 !important;
-    }
+.col-sm-disable-spacer {
+  @media (min-width: $screen-sm-min) {
+    padding-top: 0 !important;
+  }
 }
 
-.col-lg-disable-spacer{
-    @media (min-width: $screen-lg-min) {
-        padding-top: 0 !important;
-    }
+.col-md-disable-spacer {
+  @media (min-width: $screen-md-min) {
+    padding-top: 0 !important;
+  }
 }
 
-.page-login{
-    background: #ddd;
-
-    .container{
-        min-height: 100%;
-        margin-bottom: -60px;
-
-        &:after{
-            height: 60px;
-        }
-    }
+.col-lg-disable-spacer {
+  @media (min-width: $screen-lg-min) {
+    padding-top: 0 !important;
+  }
 }
 
-.login-foot{
-    font-size: 12px;
+.page-login {
+  background: #ddd;
+
+  .container {
+    min-height: 100%;
+    margin-bottom: -60px;
+
+    &:after {
+      height: 60px;
+    }
+  }
 }
 
-.login-modal{
-
-    &-container{
-        background: #FFF;
-        border: 1px solid map-get($colors, bordergrey);
-        max-width: 400px;
-        margin: 100px auto 15px auto;
-    }
-
-    &-head{
-        background: map-get($colors, darkgrey);
-        height: 75px;
-        padding: 0 20px;
-    }
-
-    &-content{
-        padding: 20px 20px 20px 20px;
-    }
-
-    &-foot{
-        background: map-get($colors, lightgrey);
-        border-top: 1px solid map-get($colors, bordergrey);
-        height: 60px;
-        padding: 20px 20px 0 20px;
-
-        a{
-            color: #7D7D7D;
-            text-decoration: none;
-
-            &:hover{
-                color: darken(#7D7D7D, 10%);
-                text-decoration: underline;
-            }
-        }
-    }
+.login-foot {
+  font-size: 12px;
 }
 
-.list-inline .btn-group-container{
-    @media (min-width:$screen-sm-min){
-        float:right;
+.login-modal {
+  &-container {
+    background: #fff;
+    border: 1px solid map-get($colors, bordergrey);
+    max-width: 400px;
+    margin: 100px auto 15px auto;
+  }
+
+  &-head {
+    background: map-get($colors, darkgrey);
+    height: 75px;
+    padding: 0 20px;
+  }
+
+  &-content {
+    padding: 20px 20px 20px 20px;
+  }
+
+  &-foot {
+    background: map-get($colors, lightgrey);
+    border-top: 1px solid map-get($colors, bordergrey);
+    height: 60px;
+    padding: 20px 20px 0 20px;
+
+    a {
+      color: #7d7d7d;
+      text-decoration: none;
+
+      &:hover {
+        color: darken(#7d7d7d, 10%);
+        text-decoration: underline;
+      }
     }
+  }
 }
 
-.btn.btn-fixed{
-    max-width: 174px;
-    width: 100%;
+.list-inline .btn-group-container {
+  @media (min-width: $screen-sm-min) {
+    float: right;
+  }
 }
 
-.progress-bar-placeholder{
-    font-size: 12px;
-    position: absolute;
-    text-align: center;
-    width: 100%;
-    z-index: 1;
+.btn.btn-fixed {
+  max-width: 174px;
+  width: 100%;
+}
+
+.progress-bar-placeholder {
+  font-size: 12px;
+  position: absolute;
+  text-align: center;
+  width: 100%;
+  z-index: 1;
 }
 
 /* BOOTSTRAP EDIT */
-.list-group-item{
+.list-group-item {
   border-left: none;
   border-right: none;
 
-  &.collapsed .caret{
+  &.collapsed .caret {
     border-bottom: 4px solid map-get($colors, green);
     border-top: 0;
   }
 }
 
-#navigation.collapse.in{
-    display: block !important;
+#navigation.collapse.in {
+  display: block !important;
 }
 
 .list-group-submenu .list-group-item:last-child,
@@ -406,7 +444,7 @@ body{
 }
 
 .nav-tabs > li.active > a {
-  background: #FFF !important;
+  background: #fff !important;
 }
 
 .nav-tabs > li.active > a,
@@ -429,146 +467,146 @@ body{
   padding-right: 10px !important;
 }
 
-
-.nav-tabs.nav-justified{
-  border-right:1px solid map-get($colors, bordergrey);
+.nav-tabs.nav-justified {
+  border-right: 1px solid map-get($colors, bordergrey);
   > li {
-    border-bottom:1px solid map-get($colors, bordergrey);
-    border-top:1px solid map-get($colors, bordergrey);
-    border-left:1px solid map-get($colors, bordergrey);
+    border-bottom: 1px solid map-get($colors, bordergrey);
+    border-top: 1px solid map-get($colors, bordergrey);
+    border-left: 1px solid map-get($colors, bordergrey);
     border-radius: 0px;
     background: map-get($colors, lightgrey);
-  > a {
-    color: map-get($colors, darkgrey);
-    font-family: 'SourceSansProSemibold';
+    > a {
+      color: map-get($colors, darkgrey);
+      font-family: 'SourceSansProSemibold';
 
-    @media (min-width:$screen-sm-min){
-    border-bottom: 1px solid transparent;
-  }
-  }
-  }
-
-  > li.active > a{
-  @media (max-width:$screen-xs-max){
-    border-right: 0 !important;
-  }
-  }
+      @media (min-width: $screen-sm-min) {
+        border-bottom: 1px solid transparent;
+      }
+    }
   }
 
-  > li.active + li > a{
-  @media (min-width:$screen-sm-min){
+  > li.active > a {
+    @media (max-width: $screen-xs-max) {
+      border-right: 0 !important;
+    }
+  }
+}
+
+> li.active + li > a {
+  @media (min-width: $screen-sm-min) {
     border-left: 1px solid transparent;
   }
-  }
+}
 
-  > li:last-child > a{
-    border-right:1px solid transparent !important;
+> li:last-child > a {
+  border-right: 1px solid transparent !important;
 
-    @media (max-width:$screen-xs-max){
+  @media (max-width: $screen-xs-max) {
     margin-bottom: 0;
   }
-  }
+}
 
 .btn .glyphicon {
-    vertical-align: -1px;
+  vertical-align: -1px;
 }
 
 .btn-default .glyphicon {
-    color: #757575;
+  color: #757575;
 }
 
-table{
-    width: 100%;
+table {
+  width: 100%;
 }
 
 .table {
-    margin-bottom: 0px !important;
-    tbody {
-      background-color: #fff;
-    }
+  margin-bottom: 0px !important;
+  tbody {
+    background-color: #fff;
+  }
 }
 
-.nav-tabs-justified, .nav-tabs.nav-justified {
-    .nav-tabs.nav-justified > .active > a:focus {
-        border: 0px !important;
-    }
+.nav-tabs-justified,
+.nav-tabs.nav-justified {
+  .nav-tabs.nav-justified > .active > a:focus {
+    border: 0px !important;
+  }
 }
 
-.table th, strong, b{
-    font-family: 'SourceSansProSemibold';
-    font-weight: normal;
+.table th,
+strong,
+b {
+  font-family: 'SourceSansProSemibold';
+  font-weight: normal;
 }
 
-.table > tbody > tr > td:last-child{
-    padding-right: 15px;
+.table > tbody > tr > td:last-child {
+  padding-right: 15px;
 }
 
 /* helpers */
-.__nowrap{
-    white-space: nowrap;
+.__nowrap {
+  white-space: nowrap;
 }
 
-.__nomb{
-    margin-bottom: 0;
+.__nomb {
+  margin-bottom: 0;
 }
 
-.__mb{
-    margin-bottom: 15px;
+.__mb {
+  margin-bottom: 15px;
 }
 
-.__mt{
-    margin-top: 15px;
+.__mt {
+  margin-top: 15px;
 }
 
-.__ml{
-    margin-left: 15px;
+.__ml {
+  margin-left: 15px;
 }
 
-.__mr{
-    margin-right: 15px;
+.__mr {
+  margin-right: 15px;
 }
 
-.__iconspacer{
-    padding-right: 10px;
+.__iconspacer {
+  padding-right: 10px;
 }
 
-#mainmenu .glyphicon{
-    vertical-align: -2px;
+#mainmenu .glyphicon {
+  vertical-align: -2px;
 }
 
-.list-group-item{
-    overflow: hidden;
-    text-overflow: ellipsis;
+.list-group-item {
+  overflow: hidden;
+  text-overflow: ellipsis;
 
-    + div.collapse{
-        margin-bottom: -1px;
-    }
+  + div.collapse {
+    margin-bottom: -1px;
+  }
 
-    + div > a{
-        padding-left: 44px;
-    }
+  + div > a {
+    padding-left: 44px;
+  }
 
-    &:before{
-        background: map-get($colors, green);
-        content: "";
-        height: 42px;
-        min-height: 100%;
-        left: 0;
-        position: absolute;
-        top: 0px;
-        width: 0;
+  &:before {
+    background: map-get($colors, green);
+    content: '';
+    height: 42px;
+    min-height: 100%;
+    left: 0;
+    position: absolute;
+    top: 0px;
+    width: 0;
 
-        -webkit-transition: width .2s;
-        -moz-transition: width .2s;
-        -o-transition: width .2s;
-        transition: width .2s;
-
-    }
-
+    -webkit-transition: width 0.2s;
+    -moz-transition: width 0.2s;
+    -o-transition: width 0.2s;
+    transition: width 0.2s;
+  }
 }
 
-.list-group-submenu a{
-    padding-left: 56px;
+.list-group-submenu a {
+  padding-left: 56px;
 }
 
 // new add contrast to top menu
@@ -580,71 +618,70 @@ table{
 
 // temporary replace footer copyright text
 footer {
-
   div.container-fluid a {
-      visibility: hidden;
-      display: none
-    }
-
+    visibility: hidden;
+    display: none;
+  }
 }
 
 footer {
   div.container-fluid:before {
-      content:"OPNids powered by CounterFlow AI & Deciso B.V.,";
+    content: 'OPNids powered by CounterFlow AI & Deciso B.V.,';
   }
 }
 
 div.login-foot a {
-      visibility: hidden;
-      display: none
+  visibility: hidden;
+  display: none;
 }
 
-div.login-foot:before  {
-  content:"OPNids powered by CounterFlow AI & Deciso B.V.,";
+div.login-foot:before {
+  content: 'OPNids powered by CounterFlow AI & Deciso B.V.,';
 }
-
 
 // new submenu color
 .collapse.active-menu.in {
-  a.list-group-item.active-menu-title  {
-    &:before{
+  a.list-group-item.active-menu-title {
+    &:before {
       background-color: map-get($colors, green) !important;
     }
   }
 }
 
-.active-menu-title, .active-menu a{
-    text-decoration: none;
-    position: relative;
-    background-color: #777777; //959595; //#F5F5F5;
+.active-menu-title,
+.active-menu a {
+  text-decoration: none;
+  position: relative;
+  background-color: #777777; //959595; //#F5F5F5;
 
-    &:before{
-        width: 3px;
-    }
+  &:before {
+    width: 3px;
+  }
 
-    &.active{
-        background-color: #5e5e5e; //777777; //#E8E8E8;
-    }
+  &.active {
+    background-color: #5e5e5e; //777777; //#E8E8E8;
+  }
 }
 
-.active-menu a:before{
-    background: map-get($colors, green);
+.active-menu a:before {
+  background: map-get($colors, green);
 }
 
-.alert-danger{
-    color: #FFF !important;
+.alert-danger {
+  color: #fff !important;
 }
 
-.alert-info{
-    color: #FFF !important;
+.alert-info {
+  color: #fff !important;
 }
 
-.nav-tabs-justified>li>a, .nav-tabs.nav-justified>li>a{
-    border-radius: 0 !important;
+.nav-tabs-justified > li > a,
+.nav-tabs.nav-justified > li > a {
+  border-radius: 0 !important;
 }
 
-.navbar-brand{
-    padding: 10px 20px;
+.navbar-brand {
+  padding: 10px 20px;
 }
 
 .label-opnsense {
@@ -672,12 +709,12 @@ div.login-foot:before  {
 }
 ::-webkit-scrollbar-button {
   width: 8px;
-  height:5px;
+  height: 5px;
 }
 ::-webkit-scrollbar-track {
   background: #f7f7f7;
   box-shadow: 0px 0px 0px;
-  border-radius:0;
+  border-radius: 0;
 }
 ::-webkit-scrollbar-thumb {
   background: #888;
@@ -685,12 +722,12 @@ div.login-foot:before  {
   border-radius: 0px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background:#888;
+  background: #888;
 }
 
 .widgetdiv {
-    padding-top:0px !important;
-    padding-bottom:20px;
+  padding-top: 0px !important;
+  padding-bottom: 20px;
 }
 
 select {
@@ -702,10 +739,11 @@ select {
   cursor: pointer;
   background-repeat: no-repeat;
   background-position: right;
-  background-image: url(/ui/themes/opnids/build/images/caret.png) !important;}
+  background-image: url(/ui/themes/opnids/build/images/caret.png) !important;
+}
 
-#grid-log th[data-column-id="__timestamp__"],
-#filter-log-entries th[data-column-id="__timestamp__"] {
+#grid-log th[data-column-id='__timestamp__'],
+#filter-log-entries th[data-column-id='__timestamp__'] {
   min-width: 3.5em;
 }
 

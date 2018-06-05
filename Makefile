@@ -50,7 +50,7 @@ CORE_REPOSITORY?=	${CORE_ABI}/libressl
 CORE_REPOSITORY?=	${FLAVOUR}
 .endif
 
-CORE_NAME?=		opnsense-devel
+CORE_NAME?=		opnids-devel
 CORE_TYPE?=		development
 CORE_MESSAGE?=		Insert Name Here
 

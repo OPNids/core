@@ -50,7 +50,7 @@ CORE_REPOSITORY?=	${CORE_ABI}/libressl
 CORE_REPOSITORY?=	${FLAVOUR}
 .endif
 
-CORE_NAME?=		opnsense
+CORE_NAME?=		opnids
 CORE_TYPE?=		release
 CORE_MESSAGE?=		Gecko got the groove
 

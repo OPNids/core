@@ -121,7 +121,7 @@ CORE_DEPENDS?=		${CORE_DEPENDS_${CORE_ARCH}} \
 			radvd \
 			rate \
 			redis \
-			rrdtool12 \
+			rrdtool \
 			samplicator \
 			squid \
 			sshlockout_pf \

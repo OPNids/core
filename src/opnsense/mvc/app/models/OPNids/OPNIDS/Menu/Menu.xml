@@ -35,7 +35,6 @@
         <DHCPv4 Visibility="delete"/>
         <DHCPv6 Visibility="delete"/>
         <Dnsmasq Visibility="delete"/>
-        <NTP Visibility="delete"/>
         <OpenDNS Visibility="delete"/>
         <Unbound Visibility="delete"/>
         <WebProxy Visibility="delete"/>

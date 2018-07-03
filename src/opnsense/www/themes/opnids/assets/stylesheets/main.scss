@@ -8,7 +8,6 @@
   font-weight: normal;
   font-style: normal;
 }
-
 [class^='cfai-'],
 [class*=' cfai-'] {
   /* use !important to prevent issues with browser extensions that change fonts */
@@ -35,69 +34,50 @@
   content: '\e902';
 }
 
+// START OF CUSTOM CSS
+* {
+  -webkit-font-smoothing: antialiased;
+}
+
 $colors: (
-  green: #62bb46,
+  green: #ff0135,
   orange: #d94700,
-  /*#EA7105,*/ lightgrey: #f7f7f7,
+  lightgrey: #f7f7f7,
   lightergrey: #fbfbfb,
   darkgrey: #3c3c3b,
   black: #000,
   bordergrey: #888,
-  /*#E5E5E5,*/ white: #ffffff
+  white: #ffffff,
 );
+
+$primaryColor: #ff0135;
+$menuColor: #2e2e2e;
+$backgroundColor: #ffffff; // #f9f8f8
+$white: #ffffff;
 
 $zindex: (
   header: 2,
   footer: 2,
   main: 1,
-  sidebar: 3
+  sidebar: 3,
 );
 
-// format dashboard widget headers
-.widgetdiv {
-  .content-box-head {
-    background: #e8e8e8 !important;
-    color: #000 !important; //map-get($colors, darkgrey) !important;
-    padding-bottom: 2px !important;
-    padding-top: 0px !important;
-    padding-right: 1px !important;
-    padding-left: 5px !important;
-    min-height: 25px !important;
-
-    .btn-group {
-      .btn {
-        color: map-get($colors, darkgrey) !important;
-        background: #e8e8e8 !important;
-        border: 0px;
-        .glyphicon {
-          color: map-get($colors, darkgrey) !important;
-        }
-      }
-    }
-    .list-inline {
-      li > h3 {
-        padding-top: 4px;
-      }
-    }
-  }
+@font-face {
+  font-family: 'Open Sans Bold';
+  src: url('/ui/themes/opnids/build/fonts/OpenSans-Bold/OpenSans-Bold-webfont.woff') format('woff'),
+    url('/ui/themes/opnids/build/fonts/OpenSans-Bold/OpenSans-Bold-webfont.ttf') format('truetype');
 }
 
 @font-face {
-  font-family: 'SourceSansProBold';
-  src: url('/ui/themes/opnids/build/fonts/SourceSansPro-Bold/SourceSansPro-Bold.woff') format('woff'),
-    url('/ui/themes/opnids/build/fonts/SourceSansPro-Bold/SourceSansPro-Bold.ttf') format('truetype');
+  font-family: 'Open Sans Semibold';
+  src: url('/ui/themes/opnids/build/fonts/OpenSans-Semibold/OpenSans-Semibold-webfont.woff') format('woff'),
+    url('/ui/themes/opnids/build/fonts/OpenSans-Semibold/OpenSans-Semibold-webfont.ttf') format('truetype');
 }
 
 @font-face {
-  font-family: 'SourceSansProSemibold';
-  src: url('/ui/themes/opnids/build/fonts/SourceSansPro-Semibold/SourceSansPro-Semibold.woff') format('woff'),
-    url('/ui/themes/opnids/build/fonts/SourceSansPro-Semibold/SourceSansPro-Semibold.ttf') format('truetype');
-}
-
-@font-face {
-  font-family: 'SourceSansProRegular';
-  src: url('/ui/themes/opnids/build/fonts/SourceSansPro-Regular/SourceSansPro-Regular.woff') format('woff'),
-    url('/ui/themes/opnids/build/fonts/SourceSansPro-Regular/SourceSansPro-Regular.ttf') format('truetype');
+  font-family: 'Open Sans';
+  src: url('/ui/themes/opnids/build/fonts/OpenSans-Regular/OpenSans-Regular-webfont.woff') format('woff'),
+    url('/ui/themes/opnids/build/fonts/OpenSans-Regular/OpenSans-Regular-webfont.ttf') format('truetype');
 }
 
 // Core variables and mixins
@@ -158,12 +138,36 @@ $zindex: (
 html,
 body {
   height: 100%;
-  font-family: 'SourceSansProRegular';
+  font-family: 'Open Sans';
 }
 
 body {
+  background-color: $backgroundColor;
   touch-action: manipulation;
   min-width: 320px;
+}
+
+.h1,
+.h2,
+.h3,
+.h4,
+.h5,
+.h6,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: 'Open Sans Semibold';
+}
+
+.panel > .list-group:first-child .list-group-item:first-child {
+  border-radius: 0;
+}
+
+.list-group-item {
+  padding: 12px 20px;
 }
 
 .widget-sort-handle {
@@ -191,8 +195,7 @@ body {
 }
 
 .page-content-head {
-  background: #eee; //map-get($colors, lightergrey);
-  border-bottom: 1px solid #aaa; //rgba(#D9D9D9, .50);
+  background: $backgroundColor;
   padding-bottom: 15px;
   padding-top: 20px;
 
@@ -209,13 +212,13 @@ body {
 }
 
 .page-content-main {
-  background: #ddd; // cacaca; //map-get($colors, lightgrey);
+  background: $backgroundColor;
   min-height: calc(100% - 64px);
-  padding: 15px 0 (15px + 58px);
+  padding: 0 0 (15px + 58px);
 }
 
 .page-side {
-  background: #eee;
+  background: $menuColor;
   border-right: 1px solid rgba(0, 0, 0, 0.15);
   height: 100% !important;
   height: calc(100% - 52px) !important;
@@ -237,9 +240,8 @@ body {
 }
 
 .page-foot {
-  background: #ddd; //map-get($colors, lightergrey);
+  background: $backgroundColor;
   bottom: 0;
-  border-top: 1px solid #ccc; //rgba(#D9D9D9, .50);
   font-size: 12px;
   padding: 20px 0;
   position: fixed;
@@ -247,9 +249,72 @@ body {
   z-index: map-get($zindex, footer);
 }
 
+.show {
+  font-size: 0.8em;
+}
+a.showhelp {
+  color: darken($brand-primary, 20%) !important;
+  padding-right: 5px;
+  cursor: pointer;
+}
+
+// format dashboard widget headers
+.widgetdiv {
+  .content-box-head {
+    background: $white !important;
+    color: #000 !important; //map-get($colors, darkgrey) !important;
+    padding: 0;
+    min-height: 25px !important;
+    text-transform: uppercase;
+    cursor: grab;
+
+    h3 > u {
+      text-decoration: none;
+      color: $primaryColor;
+      span:hover {
+        color: darken($primaryColor, 10%);
+      }
+    }
+
+    .btn-group {
+      .btn {
+        color: map-get($colors, darkgrey) !important;
+        background: transparent !important;
+        border: 0px;
+        .glyphicon {
+          color: map-get($colors, darkgrey) !important;
+        }
+        :hover {
+          color: $primaryColor;
+          .glyphicon {
+            color: $primaryColor;
+          }
+        }
+      }
+    }
+    .list-inline {
+      li > h3 {
+        padding-top: 4px;
+      }
+    }
+  }
+  .content-box-main {
+    padding-top: 15px;
+  }
+}
+
 .content-box {
   background: #fff;
-  border: 1px solid map-get($colors, bordergrey);
+  padding: 15px !important;
+  border-radius: 4px;
+  border: 1px solid #999;
+  margin-top: 20px;
+
+  // edge-case where there's a content box within a content box
+  .content-box {
+    padding: 0 !important;
+    box-shadow: unset;
+  }
 
   @extend .clearfix;
 
@@ -265,9 +330,6 @@ body {
 }
 
 .tab-content {
-  //  border-top: 0px;
-  padding: 0px 0;
-
   > .tab-content {
     margin-bottom: 0;
     padding: 0 15px;
@@ -278,10 +340,14 @@ body {
   }
 }
 
-.page-content-main [class^='col-'] + [class^='col-'] {
-  padding-top: ($grid-gutter-width/2);
+.btn-logout {
+  font-family: 'Open Sans Semibold';
+  color: #fff;
+  background-color: transparent;
+  &:hover {
+    color: darken($brand-primary, 20%);
+  }
 }
-
 .brand-logo {
   display: none;
 
@@ -389,10 +455,17 @@ body {
 }
 
 /* BOOTSTRAP EDIT */
-.list-group-item {
+a.list-group-item {
+  font-family: 'Open Sans Semibold';
   border-left: none;
   border-right: none;
+  background-color: $menuColor;
 
+  &:hover,
+  &:focus {
+    color: $white;
+    background-color: lighten($menuColor, 5%);
+  }
   &.collapsed .caret {
     border-bottom: 4px solid map-get($colors, green);
     border-top: 0;
@@ -416,93 +489,40 @@ body {
 .nav {
   margin-bottom: -1px !important;
 }
+
 .nav-tabs {
-  margin-right: 1px;
-  //border-bottom: 1px solid darken(map-get($colors, bordergrey), 30%);
-}
-
-.nav-tabs > li {
-  border-radius: 0px;
-  border-top-right-radius: 10px;
-  margin-right: 2px;
-}
-
-.nav-tabs > li > a {
-  background: #eee;
-  border-radius: 0px;
-  border-top-right-radius: 10px;
-  margin-right: 0px;
-}
-
-.nav-tabs > li > a,
-.nav-tabs > li > a:hover,
-.nav-tabs > li > a:focus {
-  border-right: 1px solid darken(#eee, 15%);
-  border-top: 1px solid darken(#eee, 15%);
-  border-left: 1px solid darken(#eee, 15%);
-  border-bottom: 1px solid map-get($colors, bordergrey);
-}
-
-.nav-tabs > li.active > a {
-  background: #fff !important;
-}
-
-.nav-tabs > li.active > a,
-.nav-tabs > li.active > a:hover,
-.nav-tabs > li.active > a:focus {
-  border-right: 1px solid map-get($colors, bordergrey);
-  border-top: 1px solid map-get($colors, bordergrey);
-  border-left: 1px solid map-get($colors, bordergrey);
-}
-
-.nav-tabs > li > a.visible-lg-inline-block:not(.pull-right) {
-  border-top-right-radius: 0px !important;
-  padding-left: 10px !important;
-  padding-right: 5px !important;
-}
-
-.nav-tabs > li > a.visible-lg-inline-block.pull-right {
-  border-left: 0px !important;
-  padding-left: 5px !important;
-  padding-right: 10px !important;
-}
-
-.nav-tabs.nav-justified {
-  border-right: 1px solid map-get($colors, bordergrey);
+  border-bottom: 0px;
+  &.nav {
+    .open > a,
+    .open > a:focus,
+    .open > a:hover {
+      background-color: $white;
+    }
+  }
   > li {
-    border-bottom: 1px solid map-get($colors, bordergrey);
-    border-top: 1px solid map-get($colors, bordergrey);
-    border-left: 1px solid map-get($colors, bordergrey);
-    border-radius: 0px;
-    background: map-get($colors, lightgrey);
+    border-top: 3px solid $white;
     > a {
-      color: map-get($colors, darkgrey);
-      font-family: 'SourceSansProSemibold';
-
-      @media (min-width: $screen-sm-min) {
-        border-bottom: 1px solid transparent;
+      border: 0;
+      cursor: pointer;
+      &:focus,
+      &:hover {
+        border: 0;
+        background-color: $white;
       }
     }
-  }
-
-  > li.active > a {
-    @media (max-width: $screen-xs-max) {
-      border-right: 0 !important;
+    &:hover {
+      border-top: 3px solid $primaryColor;
     }
-  }
-}
-
-> li.active + li > a {
-  @media (min-width: $screen-sm-min) {
-    border-left: 1px solid transparent;
-  }
-}
-
-> li:last-child > a {
-  border-right: 1px solid transparent !important;
-
-  @media (max-width: $screen-xs-max) {
-    margin-bottom: 0;
+    &.active {
+      border-top: 3px solid $primaryColor;
+      > a,
+      > a:focus,
+      > a:hover {
+        font-family: 'Open Sans Bold';
+        border: 0;
+        background-color: $white;
+      }
+    }
   }
 }
 
@@ -525,17 +545,10 @@ table {
   }
 }
 
-.nav-tabs-justified,
-.nav-tabs.nav-justified {
-  .nav-tabs.nav-justified > .active > a:focus {
-    border: 0px !important;
-  }
-}
-
 .table th,
 strong,
 b {
-  font-family: 'SourceSansProSemibold';
+  font-family: 'Open Sans Semibold';
   font-weight: normal;
 }
 
@@ -576,6 +589,10 @@ b {
   vertical-align: -2px;
 }
 
+#menu_messages {
+  font-family: 'Open Sans Semibold';
+}
+
 .list-group-item {
   overflow: hidden;
   text-overflow: ellipsis;
@@ -589,7 +606,7 @@ b {
   }
 
   &:before {
-    background: map-get($colors, green);
+    background: $primaryColor;
     content: '';
     height: 42px;
     min-height: 100%;
@@ -597,11 +614,17 @@ b {
     position: absolute;
     top: 0px;
     width: 0;
-
-    -webkit-transition: width 0.2s;
-    -moz-transition: width 0.2s;
-    -o-transition: width 0.2s;
-    transition: width 0.2s;
+  }
+  &:focus:before,
+  &:hover:before {
+    background: $primaryColor !important;
+    content: '';
+    height: 42px;
+    min-height: 100%;
+    left: 0;
+    position: absolute;
+    top: 0px;
+    width: 0;
   }
 }
 
@@ -609,12 +632,10 @@ b {
   padding-left: 56px;
 }
 
-// new add contrast to top menu
-// a.list-group-item.active-menu-title  {
-//   &:before{
-//     background-color: darken(map-get($colors, green),20%);
-//   }
-// }
+// adjustment since this div is off
+div#content {
+  padding: 0;
+}
 
 // temporary replace footer copyright text
 footer {
@@ -626,7 +647,7 @@ footer {
 
 footer {
   div.container-fluid:before {
-    content: 'OPNids powered by CounterFlow AI & Deciso B.V.,';
+    content: 'CounterFlow AI';
   }
 }
 
@@ -636,52 +657,50 @@ div.login-foot a {
 }
 
 div.login-foot:before {
-  content: 'OPNids powered by CounterFlow AI & Deciso B.V.,';
+  content: 'CounterFlow AI';
 }
 
-// new submenu color
-.collapse.active-menu.in {
-  a.list-group-item.active-menu-title {
+.active-menu a,
+.active-menu-title {
+  text-decoration: none;
+  position: relative;
+  background-color: lighten($menuColor, 5%);
+
+  &:before {
+    width: 3px;
+    background-color: transparent;
+  }
+
+  &:hover {
+    background-color: lighten($menuColor, 15%);
     &:before {
-      background-color: map-get($colors, green) !important;
+      background-color: lighten($primaryColor, 15%) !important;
+    }
+  }
+
+  &.active {
+    background-color: lighten($menuColor, 15%);
+    &:before,
+    &:focus:before,
+    &:hover:before {
+      background-color: lighten($primaryColor, 15%);
     }
   }
 }
 
-.active-menu-title,
-.active-menu a {
-  text-decoration: none;
-  position: relative;
-  background-color: #777777; //959595; //#F5F5F5;
-
+.active-menu-title {
   &:before {
-    width: 3px;
+    background-color: $primaryColor;
   }
-
-  &.active {
-    background-color: #5e5e5e; //777777; //#E8E8E8;
-  }
-}
-
-.active-menu a:before {
-  background: map-get($colors, green);
-}
-
-.alert-danger {
-  color: #fff !important;
-}
-
-.alert-info {
-  color: #fff !important;
-}
-
-.nav-tabs-justified > li > a,
-.nav-tabs.nav-justified > li > a {
-  border-radius: 0 !important;
 }
 
 .navbar-brand {
   padding: 10px 20px;
+}
+.login-modal-container {
+  .navbar-brand {
+    padding: 10px 0px;
+  }
 }
 
 .label-opnsense {
@@ -728,6 +747,28 @@ div.login-foot:before {
 .widgetdiv {
   padding-top: 0px !important;
   padding-bottom: 20px;
+
+  // fix for the widgets because
+  // the upper containers are editing styles via js
+  .content-box-main {
+    > div > table {
+      margin-top: 10px;
+    }
+    > table {
+      margin-top: 10px;
+    }
+  }
+}
+
+#menu_search_box,
+.page-head form .input-group-addon {
+  background-color: $white;
+  border-color: transparent;
+}
+.page-head {
+  input[type='text']:focus {
+    box-shadow: unset;
+  }
 }
 
 select {
@@ -739,7 +780,7 @@ select {
   cursor: pointer;
   background-repeat: no-repeat;
   background-position: right;
-  background-image: url(/ui/themes/opnids/build/images/caret.png) !important;
+  background-image: url(/ui/themes/opnsense/build/images/caret.png) !important;
 }
 
 #grid-log th[data-column-id='__timestamp__'],
@@ -751,4 +792,8 @@ select {
   @media screen and (max-width: $screen-xs-max) {
     margin-bottom: 0;
   }
+}
+
+.page-foot {
+  display: none;
 }

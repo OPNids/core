@@ -77,11 +77,13 @@ CORE_DEPENDS?=		${CORE_DEPENDS_${CORE_ARCH}} \
 			ifinfo \
 			flock \
 			flowd \
+			hiredis \
 			hostapd \
 			isc-dhcp43-client \
 			isc-dhcp43-relay \
 			isc-dhcp43-server \
 			lighttpd \
+			luajit \
 			monit \
 			mpd5 \
 			ntp \
@@ -119,6 +121,7 @@ CORE_DEPENDS?=		${CORE_DEPENDS_${CORE_ARCH}} \
 			py${CORE_PYTHON}-ujson \
 			radvd \
 			rate \
+			redis \
 			rrdtool12 \
 			samplicator \
 			squid \

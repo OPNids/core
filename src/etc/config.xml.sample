@@ -243,6 +243,7 @@
     <ssh>
       <group>admins</group>
     </ssh>
+    <disablevlanhwfilter>1</disablevlanhwfilter>
   </system>
   <interfaces>
     <wan>

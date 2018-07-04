@@ -38,7 +38,7 @@
         Source routing is another way for an attacker to try to reach non-routable addresses behind your box.
         It can also be used to probe for information about your internal networks. These functions come enabled
         as part of the standard FreeBSD core system.
-      ]]></descr>
+      ]]>      </descr>
       <tunable>net.inet.ip.sourceroute</tunable>
       <value>default</value>
     </item>
@@ -47,7 +47,7 @@
         Source routing is another way for an attacker to try to reach non-routable addresses behind your box.
         It can also be used to probe for information about your internal networks. These functions come enabled
         as part of the standard FreeBSD core system.
-      ]]></descr>
+      ]]>      </descr>
       <tunable>net.inet.ip.accept_sourceroute</tunable>
       <value>default</value>
     </item>
@@ -56,7 +56,7 @@
         Redirect attacks are the purposeful mass-issuing of ICMP type 5 packets. In a normal network, redirects
         to the end stations should not be required. This option enables the NIC to drop all inbound ICMP redirect
         packets without returning a response.
-      ]]></descr>
+      ]]>      </descr>
       <tunable>net.inet.icmp.drop_redirect</tunable>
       <value>default</value>
     </item>
@@ -64,7 +64,7 @@
       <descr><![CDATA[
         This option turns off the logging of redirect packets because there is no limit and this could fill
         up your logs consuming your whole hard drive.
-      ]]></descr>
+      ]]>      </descr>
       <tunable>net.inet.icmp.log_redirect</tunable>
       <value>default</value>
     </item>
@@ -374,7 +374,8 @@
     <prefer>0.opnsense.pool.ntp.org</prefer>
   </ntpd>
   <widgets>
-    <sequence>system_information-container:00000000-col3:show,services_status-container:00000001-col4:show,gateways-container:00000002-col4:show,interface_list-container:00000003-col4:show</sequence>
+    <sequence>system_information-container:00000000-col3:show,system_log-container:00000001-col3:show,services_status-container:00000002-col4:show,interface_list-container:00000003-col4:show,interface_statistics-container:00000004-col4:show</sequence>
     <column_count>2</column_count>
+    <systemlogfiltercount>5</systemlogfiltercount>
   </widgets>
 </opnsense>

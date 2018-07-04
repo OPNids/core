@@ -198,7 +198,7 @@
     <optimization>normal</optimization>
     <hostname>OPNsense</hostname>
     <domain>localdomain</domain>
-    <dnsallowoverride/>
+    <dnsallowoverride>1</dnsallowoverride>
     <group>
       <name>admins</name>
       <description><![CDATA[System Administrators]]></description>
@@ -244,6 +244,7 @@
       <group>admins</group>
     </ssh>
     <disablevlanhwfilter>1</disablevlanhwfilter>
+    <prefer_ipv4>1</prefer_ipv4>
   </system>
   <interfaces>
     <wan>

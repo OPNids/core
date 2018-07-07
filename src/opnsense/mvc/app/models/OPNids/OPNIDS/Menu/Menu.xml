@@ -29,10 +29,10 @@
         <Diagnostics Visibility="delete" />
     </Interfaces>
     <IDS VisibleName="Intrusion Detection" cssClass="fa fa-shield fa-fw" order="14">
-        <Administration url="/ui/ids" />
-        <Log VisibleName="Log File" url="/diag_logs_suricata.php" />
+        <Administration url="/ui/ids" cssClass="fa fa-cog" />
+        <Log VisibleName="Log File" url="/diag_logs_suricata.php" cssClass="fa fa-history" />
     </IDS>
-    <MLE VisibleName="Machine Learning Engine" cssClass="cfai-ids-cfai" order="15" url="/ui/mle" />
+    <MLE VisibleName="Machine Learning Engine" cssClass="cfai-ids-mle" order="15" url="/ui/mle" />
     <Firewall Visibility="delete" />
     <Services order="16">
         <CaptivePortal Visibility="delete" />

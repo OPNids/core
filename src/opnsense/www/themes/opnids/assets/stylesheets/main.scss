@@ -24,14 +24,11 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-.cfai-ids-beats:before {
-  content: '\e900';
-}
 .cfai-ids-mle:before {
-  content: '\e901';
+  content: "\e900";
 }
 .cfai-ids-cfai:before {
-  content: '\e902';
+  content: "\e902";
 }
 
 // START OF CUSTOM CSS

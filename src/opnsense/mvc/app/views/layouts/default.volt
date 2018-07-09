@@ -222,6 +222,9 @@
                 </div>
               </form>
             </li>
+            <li>
+                <a href="/index.php?logout" class="btn btn-primary" style="margin:9px 10px;padding: 6px 12px;">Logout</a>
+            </li>
           </ul>
         </div>
       </div>

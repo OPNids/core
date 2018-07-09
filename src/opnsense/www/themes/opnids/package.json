@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "OPNids theme assets",
   "scripts": {
-    "build": "npm install && gulp build && rm -rf node_modules"
+    "build": "rm -rf build && npm install && gulp build && rm -rf node_modules"
   },
   "author": "",
   "license": "ISC",

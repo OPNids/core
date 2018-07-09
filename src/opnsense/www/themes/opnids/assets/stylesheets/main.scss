@@ -27,9 +27,6 @@
 .cfai-ids-mle:before {
   content: "\e900";
 }
-.cfai-ids-cfai:before {
-  content: "\e902";
-}
 
 // START OF CUSTOM CSS
 * {
@@ -311,6 +308,8 @@ a.showhelp {
   .content-box {
     padding: 0 !important;
     box-shadow: unset;
+    border: 0px;
+    margin-top: 0;
   }
 
   @extend .clearfix;
@@ -547,6 +546,10 @@ strong,
 b {
   font-family: 'Open Sans Semibold';
   font-weight: normal;
+}
+
+.table-condensed>tbody>tr>td, .table-condensed>tbody>tr>th, .table-condensed>tfoot>tr>td, .table-condensed>tfoot>tr>th, .table-condensed>thead>tr>td, .table-condensed>thead>tr>th {
+  border-top: 0;
 }
 
 .table > tbody > tr > td:last-child {

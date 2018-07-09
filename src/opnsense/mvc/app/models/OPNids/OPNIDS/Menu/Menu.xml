@@ -1,49 +1,60 @@
 <menu>
     <Dashboard order="10" url="/index.php" cssClass="fa fa-dashboard fa-fw" />
-    <Lobby Visibility="delete" />
-    <Reporting order="11">
-        <Settings url="/reporting_settings.php" cssClass="fa fa-cog fa-fw" order="2" />
-        <NetFlow Visibility="delete" />
-        <Health Visibility="delete" />
-        <Insight Visibility="delete" />
-    </Reporting>
-    <System order="12">
-        <HighAvailability Visibility="delete" />
-        <Routes Visibility="delete" />
-        <Gateways Visibility="delete" />
-        <Settings order="20" cssClass="fa fa-cogs fa-fw">
-            <Notifications Visibility="delete" />
-            <Password order="2" url="/system_usermanager_passwordmg.php" cssClass="fa fa-key fa-fw">
-                <Edit url="/system_usermanager_passwordmg.php*" visibility="hidden" />
-            </Password>
-        </Settings>
-        <Wizard Visibility="delete"/>
-    </System>
-    <Interfaces order="13">
-        <Assignments order="900" url="/interfaces_assign.php" cssClass="fa fa-pencil fa-fw" />
-        <Overview order="910" url="/status_interfaces.php" cssClass="fa fa-tasks fa-fw" />
-        <Settings order="920" url="/system_advanced_network.php" cssClass="fa fa-cogs fa-fw" />
-        <Wireless Visibility="delete" />
-        <PPP Visibility="delete" />
-        <Types Visibility="delete" />
-        <Diagnostics Visibility="delete" />
+    <Interfaces order="20">
+        <Wireless order="999" visibility="delete" />
+        <PPP order="999" visibility="delete" />
+        <Types order="999" visibility="delete" />
+        <Diagnostics order="999" visibility="delete" />
     </Interfaces>
-    <IDS VisibleName="Intrusion Detection" cssClass="fa fa-shield fa-fw" order="14">
+    <IDS VisibleName="Suricata IDS" cssClass="fa fa-shield fa-fw" order="30">
         <Administration url="/ui/ids" cssClass="fa fa-cog" />
         <Log VisibleName="Log File" url="/diag_logs_suricata.php" cssClass="fa fa-history" />
     </IDS>
-    <MLE VisibleName="Machine Learning Engine" cssClass="cfai-ids-mle" order="15" url="/ui/mle" />
-    <Firewall Visibility="delete" />
-    <Services order="16">
-        <CaptivePortal Visibility="delete" />
-        <DHCPv4 Visibility="delete" />
-        <DHCPv6 Visibility="delete" />
-        <Dnsmasq Visibility="delete" />
-        <OpenDNS Visibility="delete" />
-        <Unbound Visibility="delete" />
-        <WebProxy Visibility="delete" />
-        <IDS Visibility="delete" />
+    <MLE VisibleName="Machine Learning" cssClass="cfai-ids-mle" order="40" url="/ui/mle" />
+    <Services order="50">
+        <CaptivePortal order="999" visibility="delete" />
+        <DHCPv4 order="999" visibility="delete" />
+        <DHCPv6 order="999" visibility="delete" />
+        <Dnsmasq order="999" visibility="delete" />
+        <OpenDNS order="999" visibility="delete" />
+        <Unbound order="999" visibility="delete" />
+        <WebProxy order="999" visibility="delete" />
+        <IDS order="999" visibility="delete" />
     </Services>
-    <VPN Visibility="delete" />
-    <Help Visibility="delete" />
+    <Reporting order="60">
+        <NetFlow order="999" visibility="delete" />
+        <Health order="999" visibility="delete" />
+        <Insight order="999" visibility="delete" />
+        <Traffic order="1" />
+        <Settings order="2" />
+    </Reporting>
+    <System order="70">
+        <Access VisibleName="Access Management"/>
+        <HighAvailability order="999" visibility="delete" />
+        <Routes order="999" visibility="delete" />
+        <Gateways order="999" visibility="delete" />
+        <Wizard order="999" visibility="delete"/>
+        <Settings order="999" visibility="delete"/>
+    </System>
+    <Settings order="80" cssClass="fa fa-cogs">
+        <Notifications order="999" visibility="delete" />
+        <Administration url="/system_advanced_admin.php" cssClass="fa fa-cog"/>
+        <General url="/system_general.php" cssClass="fa fa-cog">
+            <Edit url="/system_general.php*" visibility="hidden"/>
+        </General>
+        <Logging url="/diag_logs_settings.php" cssClass="fa fa-history"/>
+        <Miscellaneous url="/system_advanced_misc.php" cssClass="fa fa-cog"/>
+        <Password url="/system_usermanager_passwordmg.php" cssClass="fa fa-key">
+            <Edit url="/system_usermanager_passwordmg.php*" visibility="hidden" />
+        </Password>
+        <Tunables url="/system_advanced_sysctl.php" cssClass="fa fa-table">
+            <Edit url="/system_advanced_sysctl.php*" visibility="hidden"/>
+        </Tunables>
+    </Settings>
+    <Power order="90" />
+    <Lobby order="999" visibility="delete" />
+    <VPN order="999" visibility="delete" />
+    <Firewall order="999" visibility="delete" />
+    <Help order="999" visibility="delete" />
+
 </menu>

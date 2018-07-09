@@ -1,5 +1,5 @@
 <menu>
-    <Lobby order="10" cssClass="fa fa-laptop">
+    <Lobby order="999" cssClass="fa fa-laptop">
         <Dashboard order="0" url="/index.php" cssClass="fa fa-dashboard fa-fw">
             <Args url="/index.php*" visibility="hidden"/>
             <Root url="/" visibility="hidden"/>
@@ -11,11 +11,11 @@
         </Password>
         <Logout order="3" url="/index.php?logout" cssClass="fa fa-sign-out fa-fw"/>
     </Lobby>
-    <Reporting order="15" cssClass="fa fa-area-chart">
+    <Reporting order="60" cssClass="fa fa-area-chart">
         <Settings url="/reporting_settings.php" cssClass="fa fa-cog fa-fw"/>
         <Traffic url="/status_graph.php" cssClass="fa fa-line-chart fa-fw"/>
     </Reporting>
-    <System order="20" cssClass="fa fa-server">
+    <System order="70" cssClass="fa fa-server">
         <Access cssClass="fa fa-users fa-fw">
             <Users order="10" url="/system_usermanager.php">
                 <All url="/system_usermanager.php*" visibility="hidden"/>
@@ -100,9 +100,9 @@
             </Services>
         </Diagnostics>
     </System>
-    <Interfaces order="30" cssClass="fa fa-sitemap">
-        <Assignments order="900" url="/interfaces_assign.php" cssClass="fa fa-pencil fa-fw"/>
-        <Overview order="910" url="/status_interfaces.php" cssClass="fa fa-tasks fa-fw"/>
+    <Interfaces order="20" cssClass="fa fa-sitemap">
+        <Assignments order="910" url="/interfaces_assign.php" cssClass="fa fa-pencil fa-fw"/>
+        <Overview order="900" url="/status_interfaces.php" cssClass="fa fa-tasks fa-fw"/>
         <Settings order="920" url="/system_advanced_network.php" cssClass="fa fa-cogs fa-fw"/>
         <Wireless order="930" cssClass="fa fa-wifi fa-fw">
             <Devices url="/interfaces_wireless.php">
@@ -143,7 +143,7 @@
             <Traceroute VisibleName="Trace Route" url="/diag_traceroute.php"/>
         </Diagnostics>
     </Interfaces>
-    <Firewall order="40" cssClass="glyphicon glyphicon-fire">
+    <Firewall order="999" cssClass="glyphicon glyphicon-fire">
         <Aliases order="10" cssClass="fa fa-list-alt fa-fw">
             <View order="100" url="/firewall_aliases.php">
                 <Edit url="/firewall_aliases_edit.php*" visibility="hidden"/>
@@ -153,13 +153,13 @@
         <Rules order="20" cssClass="fa fa-check fa-fw" />
         <NAT order="30" cssClass="fa fa-exchange fa-fw">
             <PortForward order="100" VisibleName="Port Forward" url="/firewall_nat.php">
-              <Edit url="/firewall_nat_edit.php*" visibility="hidden"/>
+                <Edit url="/firewall_nat_edit.php*" visibility="hidden"/>
             </PortForward>
             <OneToOne order="200" VisibleName="One-to-One" url="/firewall_nat_1to1.php">
-              <Edit url="/firewall_nat_1to1_edit.php*" visibility="hidden"/>
+                <Edit url="/firewall_nat_1to1_edit.php*" visibility="hidden"/>
             </OneToOne>
             <Outbound order="300" VisibleName="Outbound" url="/firewall_nat_out.php">
-              <Edit url="/firewall_nat_out_edit.php*" visibility="hidden"/>
+                <Edit url="/firewall_nat_out_edit.php*" visibility="hidden"/>
             </Outbound>
             <NPTv6 order="400" url="/firewall_nat_npt.php">
                 <Edit url="/firewall_nat_npt_edit.php*" visibility="hidden"/>
@@ -205,7 +205,7 @@
             <Plain VisibleName="Plain View" url="/diag_logs_filter_plain.php"/>
         </LogFiles>
     </Firewall>
-    <Services order="60" cssClass="fa fa-cog">
+    <Services order="50" cssClass="fa fa-tasks">
         <DHCPv4 cssClass="fa fa-bullseye fa-fw">
             <Relay order="200" url="/services_dhcp_relay.php"/>
             <Leases order="300" url="/status_dhcp_leases.php">
@@ -222,7 +222,7 @@
         <OpenDNS VisibleName="OpenDNS" url="/services_opendns.php" cssClass="fa fa-tags fa-fw"/>
         <RouterAdv VisibleName="Router Advertisements" cssClass="fa fa-bullseye fa-fw" />
     </Services>
-    <VPN order="50" cssClass="fa fa-globe">
+    <VPN order="999" cssClass="fa fa-globe">
         <IPsec cssClass="fa fa-lock fa-fw" order="10">
             <Tunnels order="10" VisibleName="Tunnel Settings" url="/vpn_ipsec.php">
                 <Phase1 url="/vpn_ipsec_phase1.php*" visibility="hidden"/>
@@ -261,11 +261,11 @@
             <LogFile order="70" VisibleName="Log File" url="/diag_logs_openvpn.php"/>
         </OpenVPN>
     </VPN>
-    <Power order="70" cssClass="fa fa-plug">
+    <Power order="90" cssClass="fa fa-plug">
         <Reboot order="10" url="/reboot.php" cssClass="fa fa-repeat fa-fw"/>
         <PowerOff VisibleName="Power Off" order="20" url="/diag_halt.php" cssClass="fa fa-power-off fa-fw"/>
     </Power>
-    <Help order="80" cssClass="fa fa-support">
+    <Help order="999" cssClass="fa fa-support">
         <Documentation order="10" url="https://docs.opnsense.org/" cssClass="fa fa-book" IsExternal="Y"/>
         <Forum VisibleName="User Forum" order="20" url="https://forum.opnsense.org/" cssClass="fa fa-ticket" IsExternal="Y"/>
         <Support VisibleName="Commercial Support" order="30" url="https://opnsense.org/support-overview/commercial-support/" cssClass="fa fa-phone" IsExternal="Y"/>

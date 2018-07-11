@@ -197,7 +197,7 @@
   <system>
     <optimization>normal</optimization>
     <hostname>OPNids</hostname>
-    <domain>localdomain</domain>
+    <domain/>
     <dnsallowoverride>1</dnsallowoverride>
     <group>
       <name>admins</name>
@@ -250,9 +250,10 @@
     <wan>
       <enable>1</enable>
       <if>mismatch1</if>
-      <mtu/>
       <ipaddr>dhcp</ipaddr>
       <ipaddrv6>dhcp6</ipaddrv6>
+      <mtu/>
+      <spoofmac/>
       <subnet/>
       <gateway/>
       <blockpriv/>

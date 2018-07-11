@@ -72,6 +72,7 @@ CORE_DEPENDS?=		${CORE_DEPENDS_${CORE_ARCH}} \
 			dhcpleases \
 			dnsmasq \
 			dpinger \
+			dragonfly-mle \
 			expiretable \
 			filterlog \
 			ifinfo \

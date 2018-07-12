@@ -197,7 +197,7 @@
   <system>
     <optimization>normal</optimization>
     <hostname>OPNids</hostname>
-    <domain/>
+    <domain>localdomain</domain>
     <dnsallowoverride>1</dnsallowoverride>
     <group>
       <name>admins</name>

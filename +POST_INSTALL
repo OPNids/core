@@ -40,6 +40,17 @@ echo "%%CORE_COMMIT%%" > /usr/local/opnsense/version/opnsense
 echo "%%CORE_NAME%%" > /usr/local/opnsense/version/opnsense.name
 echo "%%CORE_ABI%%" > /usr/local/opnsense/version/opnsense.abi
 
+cp /usr/local/etc/rc.d/redis /usr/local/etc/rc.d/redis.backup
+
+# reconfigure daemon file
+sed -i -r 's/redis_enable="NO"/redis_enable="YES"/' /usr/local/etc/rc.d/redis
+
+# backup default
+cp /usr/local/etc/rc.d/dragonfly-mle /usr/local/etc/rc.d/dragonfly-mle.backup
+
+# reconfigure daemon file
+sed -i -r 's/dragonflymle_enable="NO"/dragonflymle_enable="YES"/' /usr/local/etc/rc.d/dragonfly-mle
+
 /usr/local/etc/rc.d/configd start
 
 /usr/local/etc/rc.configure_firmware

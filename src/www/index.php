@@ -135,8 +135,8 @@ include("fbegin.inc");?>
                     } else {
                         echo '<p>' . sprintf(gettext('Congratulations! %s is now configured.'), $g['product_name']) . "</p>\n";
                         echo '<p>' . sprintf(gettext(
-                            'Please consider donating to the project to help us with our overhead costs. ' .
-                            'See %sour website%s to donate or purchase available %s support services.'),
+                            'Please consider upgrading to the \'Pro\' version. ' .
+                            'See %sour website%s to purchase \'Pro\' with available %s support services.'),
                             '<a target="_new" href="' . $g['product_website'] . '">', '</a>', $g['product_name']) . "</p>\n";
                         echo '<p class="__nomb">' . sprintf(gettext('Click to %scontinue to the dashboard%s.'), '<a href="/">', '</a>') . "</p>\n";
                     }

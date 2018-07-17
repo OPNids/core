@@ -10,7 +10,10 @@
         <Administration url="/ui/ids" cssClass="fa fa-cog" />
         <Log VisibleName="Log File" url="/diag_logs_suricata.php" cssClass="fa fa-history" />
     </IDS>
-    <MLE VisibleName="Machine Learning" cssClass="cfai-ids-mle" order="40" url="/ui/mle" />
+    <MLE VisibleName="Dragonfly MLE" cssClass="cfai-ids-brain" order="40">
+        <Administration url="/ui/mle" cssClass="fa fa-cog" />
+        <Log VisibleName="Log File" url="/diag_logs_dragonflymle.php" cssClass="fa fa-history"/>
+    </MLE>
     <Services order="50">
         <CaptivePortal order="999" visibility="delete" />
         <DHCPv4 order="999" visibility="delete" />

@@ -25,10 +25,21 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-function dragonflymle_services()
+ function dragonflymle_enabled()
 {
     global $config;
+    return isset($config['OPNids']['MLE']['general']['enabled']) &&
+        $config['OPNids']['MLE']['general']['enabled'] == '1';
+}
+
+function dragonflymle_services()
+{
     $services = array();
+
+    if (!dragonflymle_enabled()) {
+        return $services;
+    }
+
     $services[] = array(
         'name' => 'dragonfly-mle',
         'description' => gettext('Dragonfly MLE Daemon'),

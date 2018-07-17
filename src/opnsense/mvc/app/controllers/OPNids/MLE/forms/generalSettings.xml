@@ -1,0 +1,8 @@
+<form>
+  <field>
+    <id>mle.general.enabled</id>
+    <label>Enabled</label>
+    <type>checkbox</type>
+    <help>Enable Dragonfly machine learning engine.</help>
+  </field>
+</form>

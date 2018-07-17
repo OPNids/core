@@ -189,7 +189,7 @@ function updateServiceControlUI(serviceName) {
         buttons +=
           '<span id="restartService" class="btn btn-sm btn-default"><i class="fa fa-refresh fa-fw"></i></span> ';
         buttons += '<span id="stopService" class="btn btn-sm btn-default"><i class="fa fa-stop fa-fw"></span>';
-      } else if (data['status'] == 'stopped' || data['status'].includes('is not running.')) {
+      } else if (data['status'] == 'stopped') {
         status_html += 'label-danger';
         status_icon = 'stop';
         buttons += '<span id="startService" class="btn btn-sm btn-default"><i class="fa fa-play fa-fw"></i></span>';

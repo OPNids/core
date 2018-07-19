@@ -256,8 +256,8 @@
       <spoofmac/>
       <subnet/>
       <gateway/>
-      <blockpriv/>
-      <blockbogons/>
+      <blockpriv>0</blockpriv>
+      <blockbogons>0</blockbogons>
       <dhcphostname/>
       <media/>
       <mediaopt/>

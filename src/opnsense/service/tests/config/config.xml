@@ -6,6 +6,8 @@
       <if>em1</if>
       <descr>WAN</descr>
       <ipaddr>dhcp</ipaddr>
+      <blockpriv/>
+      <blockbog/>
       <dhcphostname/>
       <alias-address/>
       <alias-subnet>32</alias-subnet>
@@ -88,4 +90,4 @@
   <filter>
     <rule></rule>
   </filter>
-  </opnsense>
+</opnsense>

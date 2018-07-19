@@ -373,4 +373,11 @@
     <column_count>2</column_count>
     <systemlogfiltercount>5</systemlogfiltercount>
   </widgets>
+  <OPNids>
+    <MLE>
+      <general>
+        <enabled>1</enabled>
+      </general>
+    </MLE>
+  </OPNids>
 </opnsense>

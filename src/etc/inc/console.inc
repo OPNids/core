@@ -387,9 +387,9 @@ EOD;
         $config['interfaces']['wan']['enable'] = true;
         $config['interfaces']['wan']['ipaddr'] = 'dhcp';
         $config['interfaces']['wan']['ipaddrv6'] = 'dhcp6';
-        $config['interfaces']['wan']['blockbogons'] = true;
+        $config['interfaces']['wan']['blockbogons'] = false;
         if ($lanif) {
-            $config['interfaces']['wan']['blockpriv'] = true;
+            $config['interfaces']['wan']['blockpriv'] = false;
         }
 
         if (match_wireless_interface($wanif)) {

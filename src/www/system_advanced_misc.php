@@ -355,7 +355,7 @@ include("head.inc");
                   </div>
                 </td>
               </tr>
-              <tr>
+              <tr style="display:none;">
                 <td><a id="help_for_dhcpbackup" href="#" class="showhelp"><i class="fa fa-info-circle"></i></a> <?=gettext("Periodic DHCP Leases Backup");?></td>
                 <td>
                   <select name="dhcpbackup" class="selectpicker" data-style="btn-default" id="dhcpbackup">
@@ -373,7 +373,7 @@ include("head.inc");
                   </div>
                 </td>
               </tr>
-              <tr>
+              <tr style="display:none;">
                 <td><a id="help_for_netflowbackup" href="#" class="showhelp"><i class="fa fa-info-circle"></i></a> <?=gettext("Periodic NetFlow Backup");?></td>
                 <td>
                   <select name="netflowbackup" class="selectpicker" data-style="btn-default" id="netflowbackup">
@@ -391,7 +391,7 @@ include("head.inc");
                   </div>
                 </td>
               </tr>
-              <tr>
+              <tr style="display:none;">
                 <td><a id="help_for_captiveportalbackup" href="#" class="showhelp"><i class="fa fa-info-circle"></i></a> <?=gettext("Periodic Captive Portal Backup");?></td>
                 <td>
                   <select name="captiveportalbackup" class="selectpicker" data-style="btn-default" id="captiveportalbackup">

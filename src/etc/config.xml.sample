@@ -232,7 +232,9 @@
     <powerd_ac_mode>hadp</powerd_ac_mode>
     <powerd_battery_mode>hadp</powerd_battery_mode>
     <powerd_normal_mode>hadp</powerd_normal_mode>
-    <bogons/>
+    <bogons>
+      <interval>monthly</interval>
+    </bogons>
     <kill_states/>
     <backupcount>60</backupcount>
     <crypto_hardware>aesni</crypto_hardware>

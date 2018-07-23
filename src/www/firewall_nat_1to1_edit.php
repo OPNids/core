@@ -45,7 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $pconfig = array();
     // set defaults
     $pconfig['interface'] = "wan";
-    $pconfig['src'] = 'lan';
+    $pconfig['src'] = 'mgt';
     $pconfig['dst'] = 'any';
     $pconfig['type'] = 'binat';
     if (isset($configId)) {

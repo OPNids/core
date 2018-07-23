@@ -86,13 +86,13 @@ function filter_rules_sort()
             return $a['seq'] - $b['seq'];
         } elseif ($a['interface'] == $b['interface']) {
             return 0;
-        } elseif ($a['interface'] == 'wan') {
+        } elseif ($a['interface'] == 'tap') {
             return -1;
-        } elseif ($b['interface'] == 'wan') {
+        } elseif ($b['interface'] == 'tap') {
             return 1;
-        } elseif ($a['interface'] == 'lan') {
+        } elseif ($a['interface'] == 'mgt') {
             return -1;
-        } elseif ($b['interface'] == 'lan') {
+        } elseif ($b['interface'] == 'mgt') {
             return 1;
         } else {
             return strnatcmp($a['interface'], $b['interface']);
@@ -270,15 +270,15 @@ function filter_configure_sync($verbose = false, $flush_states = false)
     // prevent redirection on ports with "lock out" protection
     $lockoutprts = filter_core_antilockout_ports();
     if (count($lockoutprts) > 0 &&
-        (!empty($cnfint['lan']['if']) || (count($config['interfaces']) == 1 && !empty($cnfint['wan']['if'])))
+        (!empty($cnfint['mgt']['if']) || (count($config['interfaces']) == 1 && !empty($cnfint['tap']['if'])))
     ) {
         foreach ($lockoutprts as $port) {
             $rule = array(
-                "interface" => !empty($cnfint['lan']['if']) ? "lan" : "wan",
+                "interface" => !empty($cnfint['mgt']['if']) ? "mgt" : "tap",
                 "nordr" => true,
                 "protocol" => "tcp",
                 "destination" => array(
-                    "network" => !empty($cnfint['lan']['if']) ? "lanip" : "wanip",
+                    "network" => !empty($cnfint['mgt']['if']) ? "mgtip" : "tapip",
                     "port" => $port
                 ),
                 "descr" => "Anti lockout, prevent redirects for protected ports to this interface ip"
@@ -802,10 +802,10 @@ function filter_setup_logging_interfaces(&$FilterIflist)
 {
     $rules = '';
 
-    if (isset($FilterIflist['lan'])) {
-        $rules .= "set loginterface {$FilterIflist['lan']['if']}\n";
-    } elseif (isset($FilterIflist['wan'])) {
-        $rules .= "set loginterface {$FilterIflist['wan']['if']}\n";
+    if (isset($FilterIflist['mgt'])) {
+        $rules .= "set loginterface {$FilterIflist['mgt']['if']}\n";
+    } elseif (isset($FilterIflist['tap'])) {
+        $rules .= "set loginterface {$FilterIflist['tap']['if']}\n";
     }
 
     return $rules;

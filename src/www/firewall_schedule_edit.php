@@ -109,10 +109,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $pconfig = $_POST;
 
     // validate
-    if (strtolower($pconfig['name']) == 'lan') {
+    if (strtolower($pconfig['name']) == 'mgt') {
         $input_errors[] = gettext('Schedule may not be named LAN.');
     }
-    if (strtolower($pconfig['name']) == 'wan') {
+    if (strtolower($pconfig['name']) == 'tap') {
         $input_errors[] = gettext('Schedule may not be named WAN.');
     }
     if (empty($pconfig['name'])) {

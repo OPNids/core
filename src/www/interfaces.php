@@ -1888,7 +1888,7 @@ include("head.inc");
                                   </tr>
                                   <tr>
                                     <td><?= gettext('Default gateway') ?></td>
-                                    <td><input type="checkbox" id="defaultgw" name="defaultgw" <?= strtolower($if) == 'wan' ? 'checked="checked"' : '' ?> /></td>
+                                    <td><input type="checkbox" id="defaultgw" name="defaultgw" <?= strtolower($if) == 'tap' ? 'checked="checked"' : '' ?> /></td>
                                   </tr>
                                   <tr>
                                     <td><?= gettext('Far gateway') ?></td>
@@ -2411,7 +2411,7 @@ include("head.inc");
                                   </tr>
                                   <tr>
                                     <td><?= gettext('Default gateway') ?></td>
-                                    <td><input type="checkbox" id="defaultgwv6" name="defaultgwv6" <?= strtolower($if) == 'wan' ?  'checked="checked"' : '' ?> /></td>
+                                    <td><input type="checkbox" id="defaultgwv6" name="defaultgwv6" <?= strtolower($if) == 'tap' ?  'checked="checked"' : '' ?> /></td>
                                   </tr>
                                   <tr>
                                     <td><?= gettext('Multi-WAN gateway') ?></td>

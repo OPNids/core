@@ -82,7 +82,7 @@ function prompt_for_enable_dhcp_server($version = 4)
 {
     global $config, $fp, $interface;
     if ($interface == "wan") {
-        if ($config['interfaces']['lan']) {
+        if ($config['interfaces']['mgt']) {
             return false;
         }
     }
@@ -228,7 +228,7 @@ function add_gateway_to_config($interface, $gatewayip, $inet_type, $is_in_subnet
     }
 
     if (!$is_default) {
-        if (console_prompt_for_yn(sprintf('Do you want to use it as the default %s gateway?', $label_IPvX), $interface == 'wan' ? 'y' : 'n')) {
+        if (console_prompt_for_yn(sprintf('Do you want to use it as the default %s gateway?', $label_IPvX), $interface == 'tap' ? 'y' : 'n')) {
             foreach ($a_gateways as &$item) {
                 if ($item['ipprotocol'] === $inet_type) {
                     if (isset($item['defaultgw'])) {
@@ -296,8 +296,8 @@ function console_configure_ip_address($version)
 
     $upperifname = strtoupper($interface);
 
-    if ($interface != 'wan' && $version === 6 && !empty($config['interfaces']['wan']['ipaddrv6']) &&
-        $config['interfaces']['wan']['ipaddrv6'] == 'dhcp6' && console_prompt_for_yn(sprintf(
+    if ($interface != 'tap' && $version === 6 && !empty($config['interfaces']['tap']['ipaddrv6']) &&
+        $config['interfaces']['tap']['ipaddrv6'] == 'dhcp6' && console_prompt_for_yn(sprintf(
             'Configure %s address %s interface via WAN tracking?',
             $label_IPvX,
             $upperifname
@@ -307,7 +307,7 @@ function console_configure_ip_address($version)
         $isintdhcp = true;
         $restart_dhcpd = true;
         echo "\n";
-    } elseif (console_prompt_for_yn(sprintf('Configure %s address %s interface via %s?', $label_IPvX, $upperifname, $label_DHCP), $interface == 'wan' ? 'y' : 'n')) {
+    } elseif (console_prompt_for_yn(sprintf('Configure %s address %s interface via %s?', $label_IPvX, $upperifname, $label_DHCP), $interface == 'tap' ? 'y' : 'n')) {
         $ifppp = console_get_interface_from_ppp(get_real_interface($interface));
         if (!empty($ifppp)) {
             $ifaceassigned = $ifppp;
@@ -426,7 +426,7 @@ $config['interfaces'][$interface]['gatewayv6'] = $gwname6;
 $config['interfaces'][$interface]['enable'] = true;
 
 if ($intip6 == 'track6') {
-    $config['interfaces'][$interface]['track6-interface'] = 'wan';
+    $config['interfaces'][$interface]['track6-interface'] = 'tap';
     $config['interfaces'][$interface]['track6-prefix-id'] = '0';
 } else {
     if (isset($config['interfaces'][$interface]['track6-interface'])) {
@@ -526,26 +526,26 @@ if (isset($config['system']['webgui']['noantilockout'])) {
     unset($config['system']['webgui']['noantilockout']);
 }
 
-if ($config['interfaces']['lan']) {
+if ($config['interfaces']['mgt']) {
     if ($config['dhcpd']) {
-        if ($config['dhcpd']['wan']) {
-            unset($config['dhcpd']['wan']);
+        if ($config['dhcpd']['tap']) {
+            unset($config['dhcpd']['tap']);
         }
     }
     if ($config['dhcpdv6']) {
-        if ($config['dhcpdv6']['wan']) {
-            unset($config['dhcpdv6']['wan']);
+        if ($config['dhcpdv6']['tap']) {
+            unset($config['dhcpdv6']['tap']);
         }
     }
 }
 
-if (!$config['interfaces']['lan']) {
-    unset($config['interfaces']['lan']);
-    if ($config['dhcpd']['lan']) {
-        unset($config['dhcpd']['lan']);
+if (!$config['interfaces']['mgt']) {
+    unset($config['interfaces']['mgt']);
+    if ($config['dhcpd']['mgt']) {
+        unset($config['dhcpd']['mgt']);
     }
-    if ($config['dhcpdv6']['lan']) {
-        unset($config['dhcpdv6']['lan']);
+    if ($config['dhcpdv6']['mgt']) {
+        unset($config['dhcpdv6']['mgt']);
     }
     unset($config['nat']);
     system("rm /var/dhcpd/var/db/* >/dev/null 2>/dev/null");
@@ -575,7 +575,7 @@ if ($restart_webgui) {
 echo "\n";
 
 if ($intip != '' || $intip6 != '') {
-    if (count($ifdescrs) == '1' or $interface == 'lan') {
+    if (count($ifdescrs) == '1' or $interface == 'mgt') {
         $intip = get_interface_ip($interface);
         $intip6 = get_interface_ipv6($interface);
         echo "You can now access the web GUI by opening\nthe following URL in your web browser:\n\n";

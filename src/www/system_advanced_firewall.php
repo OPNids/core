@@ -674,8 +674,8 @@ include("head.inc");
                                 "rule set. Check this box to disable the automatically added rule, so access " .
                                 "is controlled only by the user-defined firewall rules. Ensure you have a firewall rule " .
                                 "in place that allows you in, or you will lock yourself out."),
-                                count($config['interfaces']) == 1 && !empty($config['interfaces']['wan']['if']) ?
-                                gettext('WAN') : gettext('LAN')) ?>
+                                count($config['interfaces']) == 1 && !empty($config['interfaces']['tap']['if']) ?
+                                gettext('TAP') : gettext('MGT')) ?>
                   </div>
                 </td>
               </tr>

@@ -468,9 +468,9 @@ if (count($input_errors)) {
 
 	foreach ($config['ppps']['ppp'] as $pppid => $ppp) {
 		if ($ppp['ptpid'] == "0") {
-			if ((substr($config['interfaces']['wan']['if'],0,5) == "pppoe") || (substr($config['interfaces']['wan']['if'],0,4) == "pptp")) {
+			if ((substr($config['interfaces']['tap']['if'],0,5) == "pppoe") || (substr($config['interfaces']['tap']['if'],0,4) == "pptp")) {
 				$oldif = explode(",", $ppp['ports']);
-				$config['interfaces']['wan']['if'] = $oldif[0];
+				$config['interfaces']['tap']['if'] = $oldif[0];
 			}
 			if ($type == "pppoe" || $type == "pptp") {
 				unset($config['ppps']['ppp'][$pppid]);
@@ -480,32 +480,32 @@ if (count($input_errors)) {
 
 	if ($type == "pppoe" || $type == "pptp") {
 		if ($type == "pptp") {
-			$config['wizardtemp']['wan']['username'] = $config['wizardtemp']['wan']['pptpusername'];
-			$config['wizardtemp']['wan']['password'] = $config['wizardtemp']['wan']['pptppassword'];
-			$config['wizardtemp']['wan']['ondemand'] = $config['wizardtemp']['wan']['pptpondemand'];
-			$config['wizardtemp']['wan']['idletimeout'] = $config['wizardtemp']['wan']['pptpidletimeout'];
-			unset($config['wizardtemp']['wan']['pptpusername']);
-			unset($config['wizardtemp']['wan']['pptppassword']);
-			unset($config['wizardtemp']['wan']['pptpondemand']);
-			unset($config['wizardtemp']['wan']['pptpidletimeout']);
+			$config['wizardtemp']['tap']['username'] = $config['wizardtemp']['tap']['pptpusername'];
+			$config['wizardtemp']['tap']['password'] = $config['wizardtemp']['tap']['pptppassword'];
+			$config['wizardtemp']['tap']['ondemand'] = $config['wizardtemp']['tap']['pptpondemand'];
+			$config['wizardtemp']['tap']['idletimeout'] = $config['wizardtemp']['tap']['pptpidletimeout'];
+			unset($config['wizardtemp']['tap']['pptpusername']);
+			unset($config['wizardtemp']['tap']['pptppassword']);
+			unset($config['wizardtemp']['tap']['pptpondemand']);
+			unset($config['wizardtemp']['tap']['pptpidletimeout']);
 		}
-		$config['wizardtemp']['wan']['password'] = base64_encode($config['wizardtemp']['wan']['password']);
+		$config['wizardtemp']['tap']['password'] = base64_encode($config['wizardtemp']['tap']['password']);
 		$tmp = array();
 		$tmp['ptpid'] = "0";
 		$tmp['type'] = $type;
 		$tmp['if'] = $type . "0";
-		$tmp['ports'] = $config['interfaces']['wan']['if'];
-		$config['ppps']['ppp'][] = array_merge($tmp, $config['wizardtemp']['wan']);
+		$tmp['ports'] = $config['interfaces']['tap']['if'];
+		$config['ppps']['ppp'][] = array_merge($tmp, $config['wizardtemp']['tap']);
 		unset($tmp);
-		$config['interfaces']['wan']['if'] = $type."0";
+		$config['interfaces']['tap']['if'] = $type."0";
 	}
-	unset($config['wizardtemp']['wan']);
+	unset($config['wizardtemp']['tap']);
 }
 	]]></stepsubmitphpaction>
 	<stepsubmitbeforesave><![CDATA[
 if ($_POST['selectedtype'] != "Static") {
 	$_POST['ipaddress'] = $_POST['selectedtype'];
-	$config['interfaces']['wan']['ipaddr'] = $_POST['selectedtype'];
+	$config['interfaces']['tap']['ipaddr'] = $_POST['selectedtype'];
 }
 	]]></stepsubmitbeforesave>
 </step>
@@ -549,15 +549,15 @@ if (!empty(trim($_POST['lanipaddress']))) {
 	} else {
 		$ft = explode(".", $_POST['lanipaddress']);
 		$ft_ip = $ft[0] . "." . $ft[1] . "." . $ft[2] . ".";
-		$config['dhcpd']['lan']['range']['from'] = $ft_ip . "10";
-		$highestip = gen_subnet_max($_POST['lanipaddress'], $config['interfaces']['lan']['subnet']);
+		$config['dhcpd']['mgt']['range']['from'] = $ft_ip . "10";
+		$highestip = gen_subnet_max($_POST['lanipaddress'], $config['interfaces']['mgt']['subnet']);
 		$hi = explode(".", $highestip);
 		$highestip = $hi[3]-10;
-		$config['dhcpd']['lan']['range']['to'] = $ft_ip . $highestip;
+		$config['dhcpd']['mgt']['range']['to'] = $ft_ip . $highestip;
 	}
 } else {
-	if (isset($config['interfaces']['lan'])) {
-		unset($config['interfaces']['lan']);
+	if (isset($config['interfaces']['mgt'])) {
+		unset($config['interfaces']['mgt']);
 	}
 }
 	]]></stepsubmitphpaction>
@@ -624,7 +624,7 @@ if (!empty($config['wizardtemp']['wangateway'])) {
 		if ($gw['name'] == 'WANGW' || (!empty($config['wizardtemp']['wangateway']) && $gw['gateway'] == $config['wizardtemp']['wangateway'])) {
 			$found = true;
 			$gw['gateway'] = $config['wizardtemp']['wangateway'];
-			$config['interfaces']['wan']['gateway'] = $gw['name'];
+			$config['interfaces']['tap']['gateway'] = $gw['name'];
 		}
 	}
 	if (!$found) {
@@ -636,7 +636,7 @@ if (!empty($config['wizardtemp']['wangateway'])) {
 		$newgw['descr'] = "WAN Gateway";
 		$newgw['defaultgw'] = !$defaultgw_found;
 		$config['gateways']['gateway_item'][] = $newgw;
-		$config['interfaces']['wan']['gateway'] = "WANGW";
+		$config['interfaces']['tap']['gateway'] = "WANGW";
 	}
 }
 

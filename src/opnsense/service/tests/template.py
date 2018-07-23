@@ -59,8 +59,8 @@ class TestConfigMethods(unittest.TestCase):
         :return:
         """
         self.assertIn('interfaces', self.conf.get(), 'interfaces section missing')
-        self.assertIn('lan', self.conf.get()['interfaces'], 'lan section missing')
-        self.assertIn('ipaddr', self.conf.get()['interfaces']['lan'], 'lan address missing')
+        self.assertIn('mgt', self.conf.get()['interfaces'], 'mgt section missing')
+        self.assertIn('ipaddr', self.conf.get()['interfaces']['mgt'], 'mgt address missing')
 
 
 class TestTemplateMethods(unittest.TestCase):

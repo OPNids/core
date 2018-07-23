@@ -2308,7 +2308,7 @@ function interface_virtual_create($interface)
     }
 }
 
-function interface_configure($verbose = false, $interface = 'wan', $reload = false, $linkupevent = false)
+function interface_configure($verbose = false, $interface = 'tap', $reload = false, $linkupevent = false)
 {
     global $config;
 
@@ -2537,7 +2537,7 @@ function interface_configure($verbose = false, $interface = 'wan', $reload = fal
     interfaces_staticarp_configure($interface);
 }
 
-function interface_track6_configure($interface = 'lan', $lancfg, $linkupevent = false)
+function interface_track6_configure($interface = 'mgt', $lancfg, $linkupevent = false)
 {
     global $config;
 
@@ -2595,14 +2595,14 @@ function interface_track6_configure($interface = 'lan', $lancfg, $linkupevent = 
     }
 }
 
-function interface_track6_slaac_configure($interface = 'lan', $lancfg)
+function interface_track6_slaac_configure($interface = 'mgt', $lancfg)
 {
     $realif = get_real_interface($interface);
     log_error("Accept router advertisements on interface {$realif}");
     mwexecf('/sbin/ifconfig %s inet6 accept_rtadv -ifdisabled', $realif);
 }
 
-function interface_track6_6rd_configure($interface = 'lan', $lancfg)
+function interface_track6_6rd_configure($interface = 'mgt', $lancfg)
 {
     global $config;
 
@@ -2654,7 +2654,7 @@ function interface_track6_6rd_configure($interface = 'lan', $lancfg)
     return 0;
 }
 
-function interface_track6_6to4_configure($interface = 'lan', $lancfg)
+function interface_track6_6to4_configure($interface = 'mgt', $lancfg)
 {
     $ip4address = get_interface_ip($lancfg['track6-interface']);
     if (!is_ipaddrv4($ip4address) || is_private_ip($ip4address)) {
@@ -2767,7 +2767,7 @@ function interface_6rd_configure($interface = "wan", $wancfg)
     return 0;
 }
 
-function interface_6to4_configure($interface = 'wan', $wancfg)
+function interface_6to4_configure($interface = 'tap', $wancfg)
 {
     if (!is_array($wancfg)) {
         return;
@@ -2860,7 +2860,7 @@ function interface_6to4_configure($interface = 'wan', $wancfg)
     return 0;
 }
 
-function interface_dhcpv6_configure($interface = 'wan', $wancfg)
+function interface_dhcpv6_configure($interface = 'tap', $wancfg)
 {
     global $config;
 
@@ -2909,7 +2909,7 @@ function interface_dhcpv6_configure($interface = 'wan', $wancfg)
     }
 }
 
-function interface_dhcpv6_prepare($interface = 'wan', $wancfg)
+function interface_dhcpv6_prepare($interface = 'tap', $wancfg)
 {
     if (!is_array($wancfg)) {
         return;
@@ -3199,7 +3199,7 @@ function DHCP6_Config_File_Substitutions($wancfg, $wanif, $dhcp6cconf)
     return DHCP_Config_File_Substitutions($wancfg, $wanif, $dhcp6cconf);
 }
 
-function interface_dhcp_configure($interface = 'wan')
+function interface_dhcp_configure($interface = 'tap')
 {
     global $config;
 
@@ -3468,7 +3468,7 @@ function interface_group_add_member($interface, $groupname)
 }
 
 /* convert fxp0 -> wan, etc. */
-function convert_real_interface_to_friendly_interface_name($interface = 'wan')
+function convert_real_interface_to_friendly_interface_name($interface = 'tap')
 {
     global $config;
 
@@ -3654,7 +3654,7 @@ function interface_get_wireless_clone($wlif)
     }
 }
 
-function get_real_interface($interface = 'wan', $family = 'all')
+function get_real_interface($interface = 'tap', $family = 'all')
 {
     global $config;
 
@@ -4038,7 +4038,7 @@ function get_interface_ip($interface = "wan")
     }
 }
 
-function get_interface_ipv6($interface = 'wan')
+function get_interface_ipv6($interface = 'tap')
 {
     global $config;
 

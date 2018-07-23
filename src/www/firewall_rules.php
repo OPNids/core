@@ -349,8 +349,8 @@ $( document ).ready(function() {
 <?php
                 endif; ?>
 <?php
-                if (!isset($config['system']['webgui']['noantilockout']) && ($selected_if == 'lan'
-                        || ((count($config['interfaces']) == 1) && ($selected_if == 'wan')))):
+                if (!isset($config['system']['webgui']['noantilockout']) && ($selected_if == 'mgt'
+                        || ((count($config['interfaces']) == 1) && ($selected_if == 'tap')))):
                         $alports = implode(', ', filter_core_antilockout_ports());
 ?>
                   <tr>

@@ -263,10 +263,10 @@ $( document ).ready(function() {
                   </tr>
                 </thead>
                 <tbody>
-<?php           if (isset($config['interfaces']['lan'])) {
-                    $lockout_intf_name = empty($config['interfaces']['lan']['descr']) ? "LAN" :$config['interfaces']['lan']['descr'];
-                } elseif (count($config['interfaces']) == 1 && isset($config['interfaces']['wan'])) {
-                    $lockout_intf_name = empty($config['interfaces']['wan']['descr']) ? "WAN" :$config['interfaces']['wan']['descr'];
+<?php           if (isset($config['interfaces']['mgt'])) {
+                    $lockout_intf_name = empty($config['interfaces']['mgt']['descr']) ? "LAN" :$config['interfaces']['mgt']['descr'];
+                } elseif (count($config['interfaces']) == 1 && isset($config['interfaces']['tap'])) {
+                    $lockout_intf_name = empty($config['interfaces']['tap']['descr']) ? "WAN" :$config['interfaces']['tap']['descr'];
                 } else {
                     $lockout_intf_name = null;
                 }

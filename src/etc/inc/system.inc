@@ -339,7 +339,7 @@ function system_hosts_generate($verbose = false)
 
     $hosts = "127.0.0.1\tlocalhost localhost.{$syscfg['domain']}\n";
 
-    if (isset($config['interfaces']['lan'])) {
+    if (isset($config['interfaces']['mgt'])) {
         $cfgip = get_interface_ip("lan");
         if (is_ipaddr($cfgip)) {
             $hosts .= "{$cfgip}\t{$syscfg['hostname']}.{$syscfg['domain']} {$syscfg['hostname']}\n";
@@ -532,13 +532,13 @@ function system_routing_configure($verbose = false, $interface = '')
      */
 
     if (!$foundgw) {
-        $interfacegw = 'wan';
+        $interfacegw = 'tap';
         log_error("ROUTING: no IPv4 default gateway set, assuming {$interfacegw}");
         $gatewayip = get_interface_gateway($interfacegw);
     }
 
     if (!$foundgwv6) {
-        $interfacegwv6 = 'wan';
+        $interfacegwv6 = 'tap';
         log_error("ROUTING: no IPv6 default gateway set, assuming {$interfacegwv6}");
         $gatewayipv6 = get_interface_gateway_v6($interfacegwv6);
     }

@@ -330,7 +330,7 @@ include("head.inc");
                     </tr>
 <?php
                     endif;
-                    if ($ifdescr == 'wan' && file_exists('/etc/resolv.conf')): ?>
+                    if ($ifdescr == 'tap' && file_exists('/etc/resolv.conf')): ?>
                     <tr>
                       <td><?= gettext("DNS servers") ?></td>
                       <td>

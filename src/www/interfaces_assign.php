@@ -132,7 +132,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         /* find next free optional interface number */
-        if(empty($config['interfaces']['lan'])) {
+        if(empty($config['interfaces']['mgt'])) {
             $newifname = gettext("lan");
             $descr = gettext("LAN");
         } else {
@@ -208,8 +208,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
              * then ensure that we are not running DHCP on the wan which
              * will make a lot of ISP's unhappy.
              */
-            if(!empty($config['interfaces']['lan']) && !empty($config['dhcpd']['wan']) && !empty($config['dhcpd']['wan']) ) {
-                unset($config['dhcpd']['wan']);
+            if(!empty($config['interfaces']['mgt']) && !empty($config['dhcpd']['tap']) && !empty($config['dhcpd']['tap']) ) {
+                unset($config['dhcpd']['tap']);
             }
             link_interface_to_vlans($realid);
             header(url_safe('Location: /interfaces_assign.php'));
@@ -228,7 +228,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         /* Go through the list of ports selected by the user,
         build a list of port-to-interface mappings in portifmap */
         foreach ($_POST as $ifname => $ifport) {
-            if ($ifname == 'lan' || $ifname == 'wan' || substr($ifname, 0, 3) == 'opt') {
+            if ($ifname == 'mgt' || $ifname == 'tap' || substr($ifname, 0, 3) == 'opt') {
                 $portifmap[$ifport][] = strtoupper($ifname);
             }
         }
@@ -270,7 +270,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           /* No errors detected, so update the config */
           $changes = 0;
           foreach ($_POST as $ifname => $ifport) {
-              if (!is_array($ifport) && ($ifname == 'lan' || $ifname == 'wan' || substr($ifname, 0, 3) == 'opt')) {
+              if (!is_array($ifport) && ($ifname == 'mgt' || $ifname == 'tap' || substr($ifname, 0, 3) == 'opt')) {
                   $reloadif = false;
                   if (!empty($config['interfaces'][$ifname]['if']) && $config['interfaces'][$ifname]['if'] <> $ifport) {
                       interface_bring_down($ifname);

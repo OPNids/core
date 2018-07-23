@@ -494,10 +494,10 @@ function filter_core_rules_system($fw, $defaults)
     $lockoutprts = filter_core_antilockout_ports();
     if (count($lockoutprts) > 0) {
         $lockoutif = null;
-        if (!empty($config['interfaces']['lan']['if'])) {
-            $lockoutif = 'lan';
-        } elseif (count($config['interfaces']) == 1 && !empty($config['interfaces']['wan']['if'])) {
-            $lockoutif = 'wan';
+        if (!empty($config['interfaces']['mgt']['if'])) {
+            $lockoutif = 'mgt';
+        } elseif (count($config['interfaces']) == 1 && !empty($config['interfaces']['tap']['if'])) {
+            $lockoutif = 'tap';
         }
         if (!empty($lockoutif)) {
             $fw->registerFilterRule(5,
@@ -513,12 +513,12 @@ function filter_core_rules_system($fw, $defaults)
     $pptpdcfg = $config['pptpd'];
     if (isset($pptpdcfg['mode']) && $pptpdcfg['mode'] == 'server') {
         $fw->registerFilterRule(5,
-          array('direction' => 'in', 'interface' => 'wan', 'statetype' => 'modulate','protocol' => 'tcp',
+          array('direction' => 'in', 'interface' => 'tap', 'statetype' => 'modulate','protocol' => 'tcp',
                 'to' => '(self)', 'to_port' => '1723', 'quick' => false, 'label' =>'allow pptpd'),
           $defaults['pass']
         );
         $fw->registerFilterRule(5,
-          array('direction' => 'in', 'interface' => 'wan', 'statetype' => 'modulate',
+          array('direction' => 'in', 'interface' => 'tap', 'statetype' => 'modulate',
                 'protocol' => 'gre', 'label' =>'allow pptpd', 'quick' => false),
           $defaults['pass']
         );

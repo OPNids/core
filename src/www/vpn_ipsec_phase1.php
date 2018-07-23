@@ -118,7 +118,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         }
     } else {
         /* defaults new */
-        if (isset($config['interfaces']['lan'])) {
+        if (isset($config['interfaces']['mgt'])) {
             $pconfig['localnet'] = "lan";
         }
         $pconfig['mode'] = "main";

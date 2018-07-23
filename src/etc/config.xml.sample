@@ -247,7 +247,7 @@
     <prefer_ipv4>1</prefer_ipv4>
   </system>
   <interfaces>
-    <wan>
+    <tap>
       <enable>1</enable>
       <if>mismatch1</if>
       <ipaddr>dhcp</ipaddr>
@@ -261,8 +261,8 @@
       <media/>
       <mediaopt/>
       <dhcp6-ia-pd-len>0</dhcp6-ia-pd-len>
-    </wan>
-    <lan>
+    </tap>
+    <mgt>
       <enable>1</enable>
       <if>mismatch0</if>
       <ipaddr>192.168.1.1</ipaddr>
@@ -271,9 +271,9 @@
       <subnetv6>64</subnetv6>
       <media/>
       <mediaopt/>
-      <track6-interface>wan</track6-interface>
+      <track6-interface>tap</track6-interface>
       <track6-prefix-id>0</track6-prefix-id>
-    </lan>
+    </mgt>
   </interfaces>
   <dhcpd/>
   <unbound>

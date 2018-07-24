@@ -1,6 +1,5 @@
 <?xml version="1.0"?>
 <opnsense>
-  <trigger_initial_wizard/>
   <theme>opnids</theme>
   <sysctl>
     <item>
@@ -296,10 +295,10 @@
     <rule>
       <type>pass</type>
       <ipprotocol>inet</ipprotocol>
-      <descr><![CDATA[Default allow LAN to any rule]]></descr>
-      <interface>lan</interface>
+      <descr><![CDATA[Default allow MGT to any rule]]></descr>
+      <interface>mgt</interface>
       <source>
-        <network>lan</network>
+        <network>mgt</network>
       </source>
       <destination>
         <any/>
@@ -308,10 +307,10 @@
     <rule>
       <type>pass</type>
       <ipprotocol>inet6</ipprotocol>
-      <descr><![CDATA[Default allow LAN IPv6 to any rule]]></descr>
-      <interface>lan</interface>
+      <descr><![CDATA[Default allow MGT IPv6 to any rule]]></descr>
+      <interface>mgt</interface>
       <source>
-        <network>lan</network>
+        <network>mgt</network>
       </source>
       <destination>
         <any/>

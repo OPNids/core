@@ -966,7 +966,7 @@ function interface_vip_bring_down($vip)
     }
 }
 
-function interface_bring_down($interface = "wan", $ifacecfg = false)
+function interface_bring_down($interface = "tap", $ifacecfg = false)
 {
     global $config;
 
@@ -2694,7 +2694,7 @@ function interface_track6_6to4_configure($interface = 'mgt', $lancfg)
     return 0;
 }
 
-function interface_6rd_configure($interface = "wan", $wancfg)
+function interface_6rd_configure($interface = "tap", $wancfg)
 {
     if (!is_array($wancfg)) {
         return;
@@ -4019,7 +4019,7 @@ function ip_in_interface_alias_subnet($interface, $ipalias)
     return false;
 }
 
-function get_interface_ip($interface = "wan")
+function get_interface_ip($interface = "tap")
 {
     $realif = get_failover_interface($interface);
     if (!$realif) {
@@ -4077,7 +4077,7 @@ function get_interface_ipv6($interface = 'tap')
     }
 }
 
-function get_interface_linklocal($interface = "wan")
+function get_interface_linklocal($interface = "tap")
 {
     $realif = get_failover_interface($interface, "inet6");
     if (!$realif) {
@@ -4097,7 +4097,7 @@ function get_interface_linklocal($interface = "wan")
     }
 }
 
-function get_interface_subnet($interface = "wan")
+function get_interface_subnet($interface = "tap")
 {
     $realif = get_real_interface($interface);
     if (!$realif) {
@@ -4117,7 +4117,7 @@ function get_interface_subnet($interface = "wan")
     return null;
 }
 
-function get_interface_subnetv6($interface = "wan")
+function get_interface_subnetv6($interface = "tap")
 {
     $realif = get_real_interface($interface, "inet6");
     if (!$realif) {

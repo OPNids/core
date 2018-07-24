@@ -4,7 +4,7 @@
     <wan>
       <enable/>
       <if>em1</if>
-      <descr>WAN</descr>
+      <descr>TAP</descr>
       <ipaddr>dhcp</ipaddr>
       <blockpriv/>
       <blockbog/>

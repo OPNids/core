@@ -511,16 +511,16 @@ if ($_POST['selectedtype'] != "Static") {
 </step>
 <step>
 	<id>5</id>
-	<title>Configure LAN Interface</title>
+	<title>Configure MGT Interface</title>
 	<description>On this screen we will configure the Local Area Network information.</description>
 	<fields>
 		<field>
-			<name>LAN IP Address</name>
+			<name>MGT IP Address</name>
 			<type>input</type>
 			<bindstofield>interfaces->lan->ipaddr</bindstofield>
 			<validate>^(?:[0]*(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:[0]*(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[1-9]))$</validate>
 			<description>(leave empty for none)</description>
-			<message>LAN IP Address field is invalid</message>
+			<message>MGT IP Address field is invalid</message>
 		</field>
 				<field>
 			<name>Subnet Mask</name>
@@ -617,7 +617,7 @@ if (!empty($config['wizardtemp']['wangateway'])) {
 	$found = false;
 	$defaultgw_found = false;
 	foreach ($config['gateways']['gateway_item'] as & $gw) {
-		if ($gw['interface'] != "wan")
+		if ($gw['interface'] != "tap")
 			continue;
 		if (isset($gw['defaultgw']))
 			$defaultgw_found = true;
@@ -629,7 +629,7 @@ if (!empty($config['wizardtemp']['wangateway'])) {
 	}
 	if (!$found) {
 		$newgw = array();
-		$newgw['interface'] = "wan";
+		$newgw['interface'] = "tap";
 		$newgw['gateway'] = $config['wizardtemp']['wangateway'];
 		$newgw['name'] = "WANGW";
 		$newgw['weight'] = 1;

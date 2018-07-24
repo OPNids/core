@@ -122,12 +122,12 @@ foreach ($arg_array as $arg_element) {
     if ($arg_element == "all") {
         $interface = "";
     } else {
-        // e.g. $arg_element = "WANGW", $interface = "wan"
+        // e.g. $arg_element = "WANGW", $interface = "tap"
         $interface = lookup_gateway_interface_by_name($arg_element);
         if (empty($interface))
             $interface = $arg_element;
         else
-            // e.g. $arg_element = "WANGW", $gwgroups = array of gateway groups that use "wan"
+            // e.g. $arg_element = "WANGW", $gwgroups = array of gateway groups that use "tap"
             $gwgroups = gateway_is_gwgroup_member($arg_element);
     }
 

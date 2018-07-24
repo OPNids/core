@@ -1441,7 +1441,7 @@ function services_dhcrelay_configure($verbose = false)
                     }
                 }
             } else {
-                $destif = get_real_interface("wan");
+                $destif = get_real_interface("tap");
             }
         }
 
@@ -1556,7 +1556,7 @@ function services_dhcrelay6_configure($verbose = false)
                     }
                 }
             } else {
-                $destif = get_real_interface("wan");
+                $destif = get_real_interface("tap");
             }
         }
 

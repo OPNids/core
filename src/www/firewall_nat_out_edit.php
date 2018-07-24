@@ -94,7 +94,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $pconfig['source_subnet'] = 24;
     $pconfig['destination'] = "any";
     $pconfig['destination_subnet'] = 24;
-    $pconfig['interface'] = "wan";
+    $pconfig['interface'] = "tap";
 
     if (isset($configId)) {
         // load data from config

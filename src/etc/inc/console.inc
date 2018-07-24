@@ -155,12 +155,12 @@ hitting 'a' to initiate auto detection.
 EOD;
 
     do {
-        echo "\nEnter the WAN interface name or 'a' for auto-detection: ";
+        echo "\nEnter the TAP interface name or 'a' for auto-detection: ";
 
         if ($interactive) {
             $wanif = chop(fgets($fp));
         } else {
-            /* more than one interface: put WAN as second one */
+            /* more than one interface: put TAP as second one */
             $wanif = count($ifnames) > 1 ? $ifnames[1] : '';
             echo $wanif . PHP_EOL;
         }
@@ -296,10 +296,10 @@ EOD;
         echo "\nThe interfaces will be assigned as follows:\n\n";
 
         if ($wanif != '') {
-            echo "WAN  -> " . $wanif . "\n";
+            echo "TAP  -> " . $wanif . "\n";
         }
         if ($lanif != '') {
-            echo "LAN  -> " . $lanif . "\n";
+            echo "MGT  -> " . $lanif . "\n";
         }
         for ($i = 0; $i < count($optif); $i++) {
             echo "OPT" . ($i+1) . " -> " . $optif[$i] . "\n";

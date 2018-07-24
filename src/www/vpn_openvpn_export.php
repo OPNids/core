@@ -653,7 +653,7 @@ function openvpn_client_export_sharedkey_config($srvid, $useaddr, $proxy, $zipco
             $server_host = $settings['ipaddr'];
         } else {
             if (!$interface) {
-                $interface = "wan";
+                $interface = "tap";
             }
             if (in_array(strtolower($settings['protocol']), array("udp6", "tcp6"))) {
                 $server_host = get_interface_ipv6($interface);
@@ -775,7 +775,7 @@ function openvpn_client_export_build_remote_lines($settings, $useaddr, $interfac
             $server_host = $settings['ipaddr'];
         } else {
             if (!$interface || ($interface == "any")) {
-                $interface = "wan";
+                $interface = "tap";
             }
             if (in_array(strtolower($settings['protocol']), array("udp6", "tcp6"))) {
                 $server_host = get_interface_ipv6($interface);
@@ -835,7 +835,7 @@ function openvpn_client_export_find_port_forwards($targetip, $targetport, $targe
             $dest['port'] = $dports[0];
 
             // Could be network or address ...
-            $natif = (!$natent['interface']) ? "wan" : $natent['interface'];
+            $natif = (!$natent['interface']) ? "tap" : $natent['interface'];
 
             if (!isset($FilterIflist[$natif])) {
                 continue; // Skip if there is no interface

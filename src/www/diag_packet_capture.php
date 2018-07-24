@@ -201,7 +201,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     } else {
         // set form defaults
         $pconfig = array();
-        $pconfig['interface'] = "WAN";
+        $pconfig['interface'] = "TAP";
         $pconfig['promiscuous'] = null;
         $pconfig['fam'] = null;
         $pconfig['proto'] = null;

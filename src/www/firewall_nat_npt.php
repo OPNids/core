@@ -222,7 +222,7 @@ $main_buttons = array(
                         </a>
                       </td>
                       <td>
-                          <?= htmlspecialchars(convert_friendly_interface_to_friendly_descr(!empty($natent['interface']) ? $natent['interface'] : "wan"));?>
+                          <?= htmlspecialchars(convert_friendly_interface_to_friendly_descr(!empty($natent['interface']) ? $natent['interface'] : "tap"));?>
                       </td>
                       <td>
                           <?= pprint_address($natent['destination']);?>

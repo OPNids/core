@@ -43,7 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 
     $pconfig = array();
     // set defaults
-    $pconfig['interface'] = "wan";
+    $pconfig['interface'] = "tap";
     if (isset($configId)) {
       // copy 1-to-1 attributes
       foreach (array('disabled','interface','descr') as $fieldname) {

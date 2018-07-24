@@ -274,7 +274,7 @@ function display_login_form($Login_Error)
 
     /*
      * Check against locally configured IP addresses, which will catch when
-     * someone port-forwards WebGUI access from WAN to an internal IP on the
+     * someone port-forwards WebGUI access from TAP to an internal IP on the
      * router.
      */
     $local_ip = isAuthLocalIP($http_host);

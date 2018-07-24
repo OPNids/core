@@ -267,7 +267,7 @@ function openvpn_port_used($prot, $interface, $port, $curvpnid = 0)
     return 0;
 }
 
-function openvpn_port_next($prot, $interface = "wan")
+function openvpn_port_next($prot, $interface = "tap")
 {
     $port = 1194;
 

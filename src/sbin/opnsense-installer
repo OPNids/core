@@ -83,7 +83,7 @@ echo
 echo "The installation finished successfully."
 echo
 echo "After reboot, open a web browser and navigate to"
-echo "https://192.168.1.1 (or the LAN IP address)."
+echo "https://192.168.1.1 (or the MGT IP address)."
 echo
 echo "You might need to acknowledge the HTTPS certificate if "
 echo "your browser reports it as untrusted.  This is normal"

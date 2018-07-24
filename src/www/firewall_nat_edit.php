@@ -53,7 +53,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $pconfig['protocol'] = "tcp";
     $pconfig['srcbeginport'] = "any";
     $pconfig['srcendport'] = "any";
-    $pconfig['interface'] = "wan";
+    $pconfig['interface'] = "tap";
     $pconfig['dstbeginport'] = 80 ;
     $pconfig['dstendport'] = 80 ;
     $pconfig['local-port'] = 80;
@@ -86,8 +86,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
           }
     } elseif (isset($_GET['template']) && $_GET['template'] == 'transparent_proxy') {
         // new rule for transparent proxy reflection, to use as sample
-        $pconfig['interface'] = "lan";
-        $pconfig['src'] = "lan";
+        $pconfig['interface'] = "mgt";
+        $pconfig['src'] = "mgt";
         $pconfig['dst'] = "any";
         $pconfig['ipprotocol'] = "inet";
         if (isset($_GET['https'])){

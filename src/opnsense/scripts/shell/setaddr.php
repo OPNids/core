@@ -81,7 +81,7 @@ function console_get_interface_from_ppp($realif)
 function prompt_for_enable_dhcp_server($version = 4)
 {
     global $config, $fp, $interface;
-    if ($interface == "wan") {
+    if ($interface == "tap") {
         if ($config['interfaces']['mgt']) {
             return false;
         }
@@ -298,7 +298,7 @@ function console_configure_ip_address($version)
 
     if ($interface != 'tap' && $version === 6 && !empty($config['interfaces']['tap']['ipaddrv6']) &&
         $config['interfaces']['tap']['ipaddrv6'] == 'dhcp6' && console_prompt_for_yn(sprintf(
-            'Configure %s address %s interface via WAN tracking?',
+            'Configure %s address %s interface via TAP tracking?',
             $label_IPvX,
             $upperifname
         ), 'y')) {
@@ -381,8 +381,8 @@ function console_configure_ip_address($version)
                 $is_in_subnet = true;
 
                 do {
-                    echo sprintf('For a WAN, enter the new %s %s upstream gateway address.', $upperifname, $label_IPvX) . "\n" .
-                                'For a LAN, press <ENTER> for none:' . "\n> ";
+                    echo sprintf('For a TAP, enter the new %s %s upstream gateway address.', $upperifname, $label_IPvX) . "\n" .
+                                'For a MGT, press <ENTER> for none:' . "\n> ";
                     $gwip = chop(fgets($fp));
                     $is_ipaddr = ($version === 6) ? is_ipaddrv6($gwip) : is_ipaddrv4($gwip);
                     $is_in_subnet = $is_ipaddr && ip_in_subnet($gwip, $subnet . "/" . $intbits);

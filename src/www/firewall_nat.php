@@ -264,9 +264,9 @@ $( document ).ready(function() {
                 </thead>
                 <tbody>
 <?php           if (isset($config['interfaces']['mgt'])) {
-                    $lockout_intf_name = empty($config['interfaces']['mgt']['descr']) ? "LAN" :$config['interfaces']['mgt']['descr'];
+                    $lockout_intf_name = empty($config['interfaces']['mgt']['descr']) ? "MGT" :$config['interfaces']['mgt']['descr'];
                 } elseif (count($config['interfaces']) == 1 && isset($config['interfaces']['tap'])) {
-                    $lockout_intf_name = empty($config['interfaces']['tap']['descr']) ? "WAN" :$config['interfaces']['tap']['descr'];
+                    $lockout_intf_name = empty($config['interfaces']['tap']['descr']) ? "TAP" :$config['interfaces']['tap']['descr'];
                 } else {
                     $lockout_intf_name = null;
                 }
@@ -318,7 +318,7 @@ $( document ).ready(function() {
                         </a>
                       </td>
                       <td>
-                        <?=htmlspecialchars(convert_friendly_interface_to_friendly_descr(isset($natent['interface']) ? $natent['interface'] : "wan"));?>
+                        <?=htmlspecialchars(convert_friendly_interface_to_friendly_descr(isset($natent['interface']) ? $natent['interface'] : "tap"));?>
                       </td>
                       <td>
                         <?=strtoupper($natent['protocol']);?>

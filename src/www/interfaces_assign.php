@@ -133,8 +133,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         /* find next free optional interface number */
         if(empty($config['interfaces']['mgt'])) {
-            $newifname = gettext("lan");
-            $descr = gettext("LAN");
+            $newifname = gettext("mgt");
+            $descr = gettext("mgt");
         } else {
             for ($i = 1; $i <= count($config['interfaces']); $i++) {
                 if (empty($config['interfaces']["opt{$i}"])) {

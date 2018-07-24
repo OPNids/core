@@ -68,7 +68,7 @@ $(document).ready(function() {
             <li><?= gettext('Reset to factory defaults') ?></li>
             <li><?= gettext('LAN IP address will be reset to 192.168.1.1') ?></li>
             <li><?= gettext('System will be configured as a DHCP server on the default LAN interface') ?></li>
-            <li><?= gettext('WAN interface will be set to obtain an address automatically from a DHCP server') ?></li>
+            <li><?= gettext('TAP interface will be set to obtain an address automatically from a DHCP server') ?></li>
             <li><?= gettext('Admin user name and password will be reset') ?></li>
             <li><?= gettext('Shut down after changes are complete') ?></li>
           </ul>

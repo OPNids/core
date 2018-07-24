@@ -762,7 +762,7 @@ function get_configured_interface_list($only_opt = false, $withdisabled = false)
     /* if list */
     if (isset($config['interfaces'])) {
         foreach (legacy_config_get_interfaces(array("virtual" => false)) as $if => $ifdetail) {
-            if ($only_opt && ($if == "wan" || $if == "lan")) {
+            if ($only_opt && ($if == "tap" || $if == "mgt")) {
                 continue;
             }
             if (isset($ifdetail['enable']) || $withdisabled == true) {
@@ -783,7 +783,7 @@ function get_configured_interface_list_by_realif ($only_opt = false, $withdisabl
     /* if list */
     if (isset($config['interfaces'])) {
         foreach (legacy_config_get_interfaces(array("virtual" => false)) as $if => $ifdetail) {
-            if ($only_opt && ($if == "wan" || $if == "lan")) {
+            if ($only_opt && ($if == "tap" || $if == "mgt")) {
                 continue;
             }
             if (isset($ifdetail['enable']) || $withdisabled == true) {
@@ -805,7 +805,7 @@ function get_configured_interface_with_descr($only_opt = false, $withdisabled = 
 
     if (isset($config['interfaces'])) {
         foreach (legacy_config_get_interfaces(array("virtual" => false)) as $if => $ifdetail) {
-            if ($only_opt && ($if == "wan" || $if == "lan")) {
+            if ($only_opt && ($if == "tap" || $if == "mgt")) {
                 continue;
             }
 

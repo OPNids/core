@@ -180,7 +180,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             $pconfig['ikeid'] = $_GET['ikeid'];
         }
         /* defaults */
-        $pconfig['localid_type'] = "lan";
+        $pconfig['localid_type'] = "mgt";
         $pconfig['remoteid_type'] = "network";
         $pconfig['protocol'] = "esp";
         $pconfig['ealgos'] = explode(",", "3des,blowfish,cast128,aes");

@@ -44,7 +44,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 
     $pconfig = array();
     // set defaults
-    $pconfig['interface'] = "wan";
+    $pconfig['interface'] = "tap";
     $pconfig['src'] = 'mgt';
     $pconfig['dst'] = 'any';
     $pconfig['type'] = 'binat';
@@ -270,7 +270,7 @@ include("head.inc");
                       </div>
                       <div class="hidden" data-for="help_for_interface">
                         <?=gettext("Choose which interface this rule applies to"); ?>.<br />
-                        <?=gettext("Hint: in most cases, you'll want to use WAN here"); ?>
+                        <?=gettext("Hint: in most cases, you'll want to use TAP here"); ?>
                       </div>
                     </td>
                   </tr>

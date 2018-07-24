@@ -326,7 +326,7 @@ function ipsec_get_phase1_src(&$ph1ent)
             return $ph1ent['interface'];
         }
     } else {
-        $if = "wan";
+        $if = "tap";
     }
     if ($ph1ent['protocol'] == "inet6") {
         return get_interface_ipv6($if);

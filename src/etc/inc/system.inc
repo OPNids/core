@@ -340,7 +340,7 @@ function system_hosts_generate($verbose = false)
     $hosts = "127.0.0.1\tlocalhost localhost.{$syscfg['domain']}\n";
 
     if (isset($config['interfaces']['mgt'])) {
-        $cfgip = get_interface_ip("lan");
+        $cfgip = get_interface_ip("mgt");
         if (is_ipaddr($cfgip)) {
             $hosts .= "{$cfgip}\t{$syscfg['hostname']}.{$syscfg['domain']} {$syscfg['hostname']}\n";
         }

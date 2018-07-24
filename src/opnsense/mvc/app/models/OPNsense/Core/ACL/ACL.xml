@@ -407,7 +407,7 @@
         </patterns>
     </page-interfaces-vlan-edit>
     <page-interfaces>
-        <name>Interfaces: WAN</name>
+        <name>Interfaces: TAP</name>
         <patterns>
             <pattern>interfaces.php*</pattern>
         </patterns>

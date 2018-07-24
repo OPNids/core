@@ -75,7 +75,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $pconfig = array();
 
     // generice defaults
-    $pconfig['interface'] = "wan";
+    $pconfig['interface'] = "tap";
     $pconfig['iketype'] = "ikev1";
     $phase1_fields = "mode,protocol,myid_type,myid_data,peerid_type,peerid_data
     ,encryption-algorithm,hash-algorithm,dhgroup,lifetime,authentication_method,descr,nat_traversal
@@ -119,7 +119,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     } else {
         /* defaults new */
         if (isset($config['interfaces']['mgt'])) {
-            $pconfig['localnet'] = "lan";
+            $pconfig['localnet'] = "mgt";
         }
         $pconfig['mode'] = "main";
         $pconfig['protocol'] = "inet";
@@ -410,7 +410,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         }
 
         /* if the remote gateway changed and the interface is not WAN then remove route */
-        if ($pconfig['interface'] <> "wan") {
+        if ($pconfig['interface'] <> "tap") {
             if ($old_ph1ent['remote-gateway'] <> $pconfig['remote-gateway']) {
                 /* XXX does this even apply? only use of system.inc at the top! */
                 system_host_route($old_ph1ent['remote-gateway'], $old_ph1ent['remote-gateway'], true, false);

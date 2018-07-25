@@ -673,6 +673,7 @@
 /usr/local/opnsense/scripts/proxy/fetchACLs.py
 /usr/local/opnsense/scripts/proxy/generate_cert.php
 /usr/local/opnsense/scripts/proxy/setup.sh
+/usr/local/opnsense/scripts/redis/setup.sh
 /usr/local/opnsense/scripts/remote_backup.php
 /usr/local/opnsense/scripts/routes/gateways.php
 /usr/local/opnsense/scripts/routes/show_routes.py

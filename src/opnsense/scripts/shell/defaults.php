@@ -35,8 +35,8 @@ $fp = fopen('php://stdin', 'r');
 $yes_no_prompt = '[y/N]: ';
 
 echo <<<EOD
-You are about to reset the IDS to factory defaults.
-The IDS will shut down directly after completion.
+You are about to reset the OPNids to factory defaults.
+The OPNids will shut down directly after completion.
 
 Do you want to proceed? {$yes_no_prompt}
 EOD;

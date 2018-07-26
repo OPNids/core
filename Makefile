@@ -123,7 +123,6 @@ CORE_DEPENDS?=		${CORE_DEPENDS_${CORE_ARCH}} \
 			radvd \
 			rate \
 			redis \
-			redis-ml \
 			rrdtool \
 			samplicator \
 			squid \

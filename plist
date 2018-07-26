@@ -574,6 +574,7 @@
 /usr/local/opnsense/mvc/tests/app/models/OPNsense/Base/FieldTypes/Field_Framework_TestCase.php
 /usr/local/opnsense/mvc/tests/app/models/OPNsense/Base/FieldTypes/IntegerFieldTest.php
 /usr/local/opnsense/mvc/tests/setup.php
+/usr/local/opnsense/scripts/OPNids/redis/setup.sh
 /usr/local/opnsense/scripts/OPNsense/CaptivePortal/allow.py
 /usr/local/opnsense/scripts/OPNsense/CaptivePortal/cp-background-process.py
 /usr/local/opnsense/scripts/OPNsense/CaptivePortal/disconnect.py
@@ -673,7 +674,6 @@
 /usr/local/opnsense/scripts/proxy/fetchACLs.py
 /usr/local/opnsense/scripts/proxy/generate_cert.php
 /usr/local/opnsense/scripts/proxy/setup.sh
-/usr/local/opnsense/scripts/redis/setup.sh
 /usr/local/opnsense/scripts/remote_backup.php
 /usr/local/opnsense/scripts/routes/gateways.php
 /usr/local/opnsense/scripts/routes/show_routes.py

@@ -54,11 +54,11 @@ CORE_NAME?=		opnids-devel
 CORE_TYPE?=		development
 CORE_MESSAGE?=		Insert Name Here
 
-CORE_MAINTAINER?=	franco@opnsense.org
-CORE_PACKAGESITE?=	http://pkg.opnsense.org
+CORE_MAINTAINER?=	project@opnids.io
+CORE_PACKAGESITE?=	http://pkg.us.opnsids.org
 CORE_ORIGIN?=		opnsense/${CORE_NAME}
-CORE_COMMENT?=		OPNsense ${CORE_TYPE} package
-CORE_WWW?=		https://opnsense.org/
+CORE_COMMENT?=		OPNids ${CORE_TYPE} package
+CORE_WWW?=		https://opnids.io/
 
 CORE_DEPENDS_amd64?=	beep bsdinstaller
 CORE_DEPENDS_i386?=	${CORE_DEPENDS_amd64}

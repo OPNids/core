@@ -1,6 +1,6 @@
 <?php
 
-$logfile = '/var/log/dragonfly-mle.log';
+$logfile = '/var/log/dragonfly-mle/dragonfly-mle.log';
 $logclog = true;
 
 $service_hook = 'dragonfly';

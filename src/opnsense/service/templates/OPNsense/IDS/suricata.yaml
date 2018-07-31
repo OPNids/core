@@ -326,7 +326,7 @@ nflog:
 netmap:
   - interface: default
     threads: auto
-    copy-mode: ips
+    copy-mode: tap
     disable-promisc: {% if helpers.exists('OPNsense.IDS.general.promisc') and OPNsense.IDS.general.promisc|default('0') == '0' %}yes{% else %}no{% endif %} #  promiscuous mode
     checksum-checks: auto
 

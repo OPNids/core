@@ -11,12 +11,12 @@
         <type>checkbox</type>
         <help><![CDATA[Enable protection mode (block traffic).<br />Before enabling, please disable all hardware offloading first <a href="/system_advanced_network.php">in advanced network</a>.]]></help>
     </field> -->
-    <field>
+    <!-- <field>
         <id>ids.general.promisc</id>
         <label>Promiscuous mode</label>
         <type>checkbox</type>
         <help><![CDATA[Enable promiscuous mode, for certain setups (like IPS with vlans), this is required to actually capture data on the physical interface.]]></help>
-    </field>
+    </field> -->
     <field>
         <id>ids.general.syslog</id>
         <label>Enable syslog alerts</label>

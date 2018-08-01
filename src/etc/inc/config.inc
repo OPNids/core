@@ -71,7 +71,7 @@ function load_config_from_file($filename)
     return OPNsense\Core\Config::getInstance()->toArrayFromFile($filename, listtags());
 }
 
-/****f* config/parse_config
+/****** config/parse_config
  * NAME
  *   parse_config - Read in config.xml if needed and return $config array
  * RESULT
@@ -90,7 +90,7 @@ function parse_config()
     return $config;
 }
 
-/****f* config/convert_config
+/****** config/convert_config
  * NAME
  *   convert_config - Attempt to update config.xml.
  * DESCRIPTION
@@ -124,7 +124,7 @@ function convert_config($verbose = false)
     $config = parse_config();
 }
 
-/****f* config/write_config
+/****** config/write_config
  * NAME
  *   write_config - Backup and write the firewall configuration.
  * DESCRIPTION

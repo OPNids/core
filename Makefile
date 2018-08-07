@@ -55,7 +55,7 @@ CORE_TYPE?=		development
 CORE_MESSAGE?=		Insert Name Here
 
 CORE_MAINTAINER?=	project@opnids.io
-CORE_PACKAGESITE?=	http://pkg.us.opnsids.org
+CORE_PACKAGESITE?=	http://pkg.us.opnids.org
 CORE_ORIGIN?=		opnsense/${CORE_NAME}
 CORE_COMMENT?=		OPNids ${CORE_TYPE} package
 CORE_WWW?=		https://opnids.io/

@@ -274,7 +274,11 @@
       <track6-prefix-id>0</track6-prefix-id>
     </mgt>
   </interfaces>
-  <dhcpd/>
+  <dhcpd>
+    <mgt>
+      <enable>0</enable>
+    </mgt>
+  </dhcpd>
   <unbound>
     <enable>1</enable>
   </unbound>

@@ -52,7 +52,7 @@ CORE_REPOSITORY?=	${FLAVOUR}
 
 CORE_NAME?=		opnids-devel
 CORE_TYPE?=		development
-CORE_MESSAGE?=		Insert Name Here
+CORE_MESSAGE?=		Rockfish
 
 CORE_MAINTAINER?=	project@opnids.io
 CORE_PACKAGESITE?=	http://pkg.us.opnids.org

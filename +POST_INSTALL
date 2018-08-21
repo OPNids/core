@@ -46,6 +46,16 @@ sed -i -r 's/redis_enable="NO"/redis_enable="YES"/' /usr/local/etc/rc.d/redis
 # reconfigure dragonfly-mle daemon file
 sed -i -r 's/dragonflymle_enable="NO"/dragonflymle_enable="YES"/' /usr/local/etc/rc.d/dragonfly-mle
 
+# filebeats
+mkdir -p /usr/local/etc/filebeat
+sed -i -r 's/filebeat_enable:="NO"/filebeat_enable:="YES"/' /usr/local/etc/rc.d/filebeat
+sed -i -r 's/\/usr\/local\/etc/\/usr\/local\/etc\/filebeat/' /usr/local/etc/rc.d/filebeat
+
+# metricbeats
+mkdir -p /usr/local/etc/metricbeat
+sed -i -r 's/metricbeat_enable:="NO"/metricbeat_enable:="YES"/' /usr/local/etc/rc.d/metricbeat
+sed -i -r 's/\/usr\/local\/etc/\/usr\/local\/etc\/metricbeat/' /usr/local/etc/rc.d/metricbeat
+
 # remove residue from sed operation
 rm -f /usr/local/etc/rc.d/dragonfly-mle-r
 rm -f /usr/local/etc/rc.d/redis-r

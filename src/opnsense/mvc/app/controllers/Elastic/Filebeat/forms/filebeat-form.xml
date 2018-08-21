@@ -1,0 +1,193 @@
+<form>
+  <field>
+    <label>General</label>
+    <type>header</type>
+  </field>
+  <field>
+    <id>filebeat.general.output</id>
+    <label>Output Method</label>
+    <type>dropdown</type>
+    <help>Select the output method you would like to use for exporting logs</help>
+  </field>
+  <field>
+    <label>Log Input</label>
+    <type>header</type>
+  </field>
+  <field>
+    <id>filebeat.inputs.log.enabled</id>
+    <label>Enabled</label>
+    <type>dropdown</type>
+    <help>Toggle log inputs</help>
+  </field>
+  <field>
+    <id>filebeat.inputs.log.paths</id>
+    <label>Path(s)</label>
+    <type>textbox</type>
+    <help>
+      <![CDATA[Log paths - line-break delimited list of hosts to connect to. No spaces permitted, only line-breaks. Paths that should be crawled and fetched. Glob based paths.]]>
+    </help>
+  </field>
+  <field>
+    <id>filebeat.inputs.log.encoding</id>
+    <label>Encoding</label>
+    <type>dropdown</type>
+    <help>
+      <![CDATA[Configure the file encoding for reading files with international characters following the W3C recommendation for HTML5 (<a rel="noopener noreferrer" href="http://www.w3.org/TR/encoding">http://www.w3.org/TR/encoding</a>).]]>
+    </help>
+    <advanced>true</advanced>
+  </field>
+  <field>
+    <id>filebeat.inputs.log.exclude_lines</id>
+    <label>Exclude Lines</label>
+    <type>text</type>
+    <help>
+      <![CDATA[A list of regular expressions to match. It drops the lines that are matching any regular expression from the list. The include_lines is called before exclude_lines. By default, no lines are dropped.]]>
+    </help>
+    <advanced>true</advanced>
+  </field>
+  <field>
+    <id>filebeat.inputs.log.include_lines</id>
+    <label>Include Lines</label>
+    <type>text</type>
+    <help>
+      <![CDATA[Include lines. A list of regular expressions to match. It exports the lines that are matching any regular expression from the list. The include_lines is called before exclude_lines. By default, all the lines are exported.]]>
+    </help>
+    <advanced>true</advanced>
+  </field>
+  <field>
+    <id>filebeat.inputs.log.exclude_files</id>
+    <label>Exclude Files</label>
+    <type>text</type>
+    <help>
+      <![CDATA[A list of regular expressions to match. Filebeat drops the files that are matching any regular expression from the list. By default, no files are dropped.]]>
+    </help>
+    <advanced>true</advanced>
+  </field>
+  <field>
+    <id>filebeat.inputs.log.harvester_buffer_size</id>
+    <label>Harvester Buffer Size</label>
+    <type>text</type>
+    <help>
+      <![CDATA[Defines the buffer size every harvester uses when fetching the file]]>
+    </help>
+    <advanced>true</advanced>
+  </field>
+  <field>
+    <id>filebeat.inputs.log.max_bytes</id>
+    <label>Max Bytes</label>
+    <type>text</type>
+    <help>
+      <![CDATA[Maximum number of bytes a single log event can have. All bytes after max_bytes are discarded and not sent. The default is 10MB. This is especially useful for multiline log messages which can get large.]]>
+    </help>
+    <advanced>true</advanced>
+  </field>
+  <field>
+    <label>Logstash Output</label>
+    <type>header</type>
+  </field>
+  <field>
+    <id>filebeat.outputs.logstash.hosts</id>
+    <label>Host(s)</label>
+    <type>textbox</type>
+    <help>
+      <![CDATA[Logstash hosts - line-break delimited list of hosts to connect to. No spaces permitted, only line-breaks.]]>
+    </help>
+  </field>
+  <field>
+    <id>filebeat.outputs.logstash.workers</id>
+    <label>Workers</label>
+    <type>text</type>
+    <help>
+      <![CDATA[Number of workers per Logstash host.]]>
+    </help>
+    <advanced>true</advanced>
+  </field>
+  <field>
+    <id>filebeat.outputs.logstash.compression_level</id>
+    <label>Compression Level</label>
+    <type>text</type>
+    <help>
+      <![CDATA[Set gzip compression level.]]>
+    </help>
+    <advanced>true</advanced>
+  </field>
+  <field>
+    <id>filebeat.outputs.logstash.ttl</id>
+    <label>TTL</label>
+    <type>text</type>
+    <help>
+      <![CDATA[Optional maximum time to live for a connection to Logstash, after which the connection will be re-established.  A value of `0` (the default) will disable this feature. Not yet supported for async connections (i.e. with the "pipelining" option set)]]>
+    </help>
+    <advanced>true</advanced>
+  </field>
+  <field>
+    <id>filebeat.outputs.logstash.loadbalance</id>
+    <label>Load Balance</label>
+    <type>dropdown</type>
+    <help>
+      <![CDATA[Optional load balance the events between the Logstash hosts. Default is false.]]>
+    </help>
+    <advanced>true</advanced>
+  </field>
+  <field>
+    <id>filebeat.outputs.logstash.pipelining</id>
+    <label>Pipelining</label>
+    <type>text</type>
+    <help>
+      <![CDATA[Number of batches to be sent asynchronously to logstash while processing new batches.]]>
+    </help>
+    <advanced>true</advanced>
+  </field>
+  <field>
+    <id>filebeat.outputs.logstash.slow_start</id>
+    <label>Slow Start</label>
+    <type>dropdown</type>
+    <help>
+      <![CDATA[If enabled only a subset of events in a batch of events is transferred per transaction.  The number of events to be sent increases up to `bulk_max_size` if no error is encountered.]]>
+    </help>
+    <advanced>true</advanced>
+  </field>
+  <field>
+    <id>filebeat.outputs.logstash.index</id>
+    <label>Index</label>
+    <type>text</type>
+    <help>
+      <![CDATA[Optional index name. The default index name is set to filebeat in all lowercase. Leave blank to disable]]>
+    </help>
+    <advanced>true</advanced>
+  </field>
+  <field>
+    <id>filebeat.outputs.logstash.ssl.enabled</id>
+    <label>Enabled SSL</label>
+    <type>checkbox</type>
+    <help>Enable SSL configuration</help>
+    <advanced>true</advanced>
+  </field>
+  <field>
+    <id>filebeat.outputs.logstash.ssl.ca</id>
+    <label>Certificate Authority</label>
+    <type>textbox</type>
+    <help>
+      <![CDATA[Root certificates for HTTPS server verification]]>
+    </help>
+    <advanced>true</advanced>
+  </field>
+  <field>
+    <id>filebeat.outputs.logstash.ssl.client</id>
+    <label>Client Certificate</label>
+    <type>textbox</type>
+    <help>
+      <![CDATA[Certificate for SSL client authentication]]>
+    </help>
+    <advanced>true</advanced>
+  </field>
+  <field>
+    <id>filebeat.outputs.logstash.ssl.key</id>
+    <label>Client Key</label>
+    <type>textbox</type>
+    <help>
+      <![CDATA[Client Certificate Key]]>
+    </help>
+    <advanced>true</advanced>
+  </field>
+</form>

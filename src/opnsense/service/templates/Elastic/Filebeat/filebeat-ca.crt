@@ -1,0 +1,1 @@
+{{ Elastic.Filebeat.outputs.logstash.ssl.ca|trim }}

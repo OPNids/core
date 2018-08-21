@@ -1,0 +1,5 @@
+<menu>
+  <Services>
+    <Filebeat url="/ui/filebeat" cssClass="fa fa-file"/>
+  </Services>
+</menu>

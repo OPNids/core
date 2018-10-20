@@ -1,4 +1,1 @@
-filebeat.conf:/usr/local/etc/filebeat/filebeat.yml
-filebeat-ca.crt:/usr/local/etc/filebeat/filebeat-ca.crt
-filebeat.crt:/usr/local/etc/filebeat/filebeat.crt
-filebeat.key:/usr/local/etc/filebeat/filebeat.key
+filebeat.conf:/usr/local/etc/filebeat.yml

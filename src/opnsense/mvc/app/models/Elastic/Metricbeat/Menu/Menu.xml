@@ -1,5 +1,0 @@
-<menu>
-  <Services>
-    <Metricbeat url="/ui/metricbeat" cssClass="fa fa-area-chart"/>
-  </Services>
-</menu>

@@ -1,4 +1,0 @@
-metricbeat.conf:/usr/local/etc/metricbeat/metricbeat.yml
-metricbeat-ca.crt:/usr/local/etc/metricbeat/metricbeat-ca.crt
-metricbeat.crt:/usr/local/etc/metricbeat/metricbeat.crt
-metricbeat.key:/usr/local/etc/metricbeat/metricbeat.key

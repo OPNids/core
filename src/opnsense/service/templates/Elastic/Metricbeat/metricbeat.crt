@@ -1,1 +1,0 @@
-{{ Elastic.Metricbeat.outputs.logstash.ssl.client|trim }}

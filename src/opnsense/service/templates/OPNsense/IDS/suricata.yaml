@@ -91,37 +91,27 @@ outputs:
       enabled: yes
       type: file #file|syslog|unix_dgram|unix_stream
       filename: eve.json
-      # the following are valid when type: syslog above
-      #identity: "suricata"
-      #facility: local5
-      #level: Info ## possible levels: Emergency, Alert, Critical,
-                   ## Error, Warning, Notice, Info, Debug
       types:
         - alert:
 {% if helpers.exists('OPNsense.IDS.general.LogPayload') and OPNsense.IDS.general.LogPayload|default('0') == '1' %}
-             payload: yes
-             payload-buffer-size: 100kb
-             payload-printable: yes
+            payload: yes
+            payload-buffer-size: 100kb
+            payload-printable: yes
 {% endif %}
-             http: yes
-             tls: yes
 
-#        - http:
-#            extended: yes     # enable this for extended logging information
-#            # custom allows additional http fields to be included in eve-log
-#            # the example below adds three additional fields when uncommented
-#            #custom: [Accept-Encoding, Accept-Language, Authorization]
-#        - dns
-#        - tls:
-#            extended: yes     # enable this for extended logging information
-#        - files:
-#            force-magic: no   # force logging magic on all logged files
-#            force-md5: no     # force logging of md5 checksums
+        - http: 
+            enabled: {{OPNsense.IDS.general.eventTypes.http}}
+        - tls:
+            enabled: {{OPNsense.IDS.general.eventTypes.tls}}
+        - dns: 
+            enabled: {{OPNsense.IDS.general.eventTypes.dns}}
+            version: {% if OPNsense.IDS.general.eventTypes.dnsVersion == 'one' %}1{% else %}2{% endif %}
+
+        - flow: 
+            enabled: {{OPNsense.IDS.general.eventTypes.flow}}
         - drop:
             alerts: yes      # log alerts that caused drops
             flows: start     # start or all: 'start' logs only a single drop
-                             # per flow direction. All logs each dropped pkt.
-#        - ssh
 
   # alert output for use with Barnyard2
   - unified2-alert:
@@ -163,7 +153,7 @@ outputs:
 
   # a line based log of TLS handshake parameters (no alerts)
   - tls-log:
-      enabled: no  # Log TLS connections.
+      enabled: no
       filename: tls.log # File to store TLS logs.
       append: yes
       #filetype: regular # 'regular', 'unix_stream' or 'unix_dgram'

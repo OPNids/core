@@ -71,4 +71,38 @@
         <help>Send package payload to the log for further analyses.</help>
         <advanced>true</advanced>
     </field>
+    <field>
+        <label>Event Types</label>
+        <type>header</type>
+    </field>
+    <field>
+        <id>ids.general.eventTypes.dns</id>
+        <label>DNS Logging</label>
+        <type>dropdown</type>
+        <help>Enable logging DNS event types</help>
+    </field>
+    <field>
+        <id>ids.general.eventTypes.dnsVersion</id>
+        <label>DNS Logging Version</label>
+        <type>dropdown</type>
+        <help>Select which version of DNS logging you would like to use</help>
+    </field>
+    <field>
+        <id>ids.general.eventTypes.flow</id>
+        <label>Flow Logging</label>
+        <type>dropdown</type>
+        <help>Enable logging Flow event types</help>
+    </field>
+    <field>
+        <id>ids.general.eventTypes.http</id>
+        <label>HTTP Logging</label>
+        <type>dropdown</type>
+        <help>Enable logging HTTP event types</help>
+    </field>
+    <field>
+        <id>ids.general.eventTypes.tls</id>
+        <label>TLS Logging</label>
+        <type>dropdown</type>
+        <help>Enable logging TLS event types</help>
+    </field>
 </form>

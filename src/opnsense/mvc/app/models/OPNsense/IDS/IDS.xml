@@ -86,14 +86,14 @@
         </files>
         <fileTags>
             <tag type="ArrayField">
-              <property type="TextField">
-                  <Required>Y</Required>
-                  <mask>/^([\t\n\v\f\r\- 0-9a-zA-Z.,_\x{00A0}-\x{FFFF}]){1,255}$/u</mask>
-              </property>
-              <value type="TextField">
-                  <Required>N</Required>
-                  <mask>/^([\t\n\v\f\r\- 0-9a-zA-Z.,_\x{00A0}-\x{FFFF}]){1,255}$/u</mask>
-              </value>
+                <property type="TextField">
+                    <Required>Y</Required>
+                    <mask>/^([\t\n\v\f\r\- 0-9a-zA-Z.,_\x{00A0}-\x{FFFF}]){1,255}$/u</mask>
+                </property>
+                <value type="TextField">
+                    <Required>N</Required>
+                    <mask>/^([\t\n\v\f\r\- 0-9a-zA-Z.,_\x{00A0}-\x{FFFF}]){1,255}$/u</mask>
+                </value>
             </tag>
         </fileTags>
         <general>
@@ -109,6 +109,48 @@
                 <default>1</default>
                 <Required>Y</Required>
             </promisc>
+            <eventTypes>
+                <dns type="OptionField">
+                    <Required>Y</Required>
+                    <default>No</default>
+                    <OptionValues>
+                        <no>No</no>
+                        <yes>Yes</yes>
+                    </OptionValues>
+                </dns>
+                <dnsVersion type="OptionField">
+                    <Required>Y</Required>
+                    <default>1</default>
+                    <OptionValues>
+                        <one>1</one>
+                        <two>2</two>
+                    </OptionValues>
+                </dnsVersion>
+                <flow type="OptionField">
+                    <Required>Y</Required>
+                    <default>No</default>
+                    <OptionValues>
+                        <no>No</no>
+                        <yes>Yes</yes>
+                    </OptionValues>
+                </flow>
+                <http type="OptionField">
+                    <Required>Y</Required>
+                    <default>No</default>
+                    <OptionValues>
+                        <no>No</no>
+                        <yes>Yes</yes>
+                    </OptionValues>
+                </http>
+                <tls type="OptionField">
+                    <Required>Y</Required>
+                    <default>No</default>
+                    <OptionValues>
+                        <no>No</no>
+                        <yes>Yes</yes>
+                    </OptionValues>
+                </tls>
+            </eventTypes>
             <interfaces type="InterfaceField">
                 <Required>Y</Required>
                 <default>wan</default>
@@ -146,14 +188,14 @@
                 <Required>N</Required>
             </UpdateCron>
             <AlertLogrotate type="OptionField">
-              <Required>N</Required>
-              <default>W0D23</default>
-              <BlankDesc>Default</BlankDesc>
-              <OptionValues>
-                  <W0D23>Weekly</W0D23>
-                  <D0>Daily</D0>
-              </OptionValues>
-              <ValidationMessage>Please select a valid rotation</ValidationMessage>
+                <Required>N</Required>
+                <default>W0D23</default>
+                <BlankDesc>Default</BlankDesc>
+                <OptionValues>
+                    <W0D23>Weekly</W0D23>
+                    <D0>Daily</D0>
+                </OptionValues>
+                <ValidationMessage>Please select a valid rotation</ValidationMessage>
             </AlertLogrotate>
             <AlertSaveLogs type="IntegerField">
                 <Required>N</Required>
@@ -163,14 +205,14 @@
                 <ValidationMessage>Enter a valid number of logs to save</ValidationMessage>
             </AlertSaveLogs>
             <MPMAlgo type="OptionField">
-              <Required>N</Required>
-              <default>ac</default>
-              <BlankDesc>Default</BlankDesc>
-              <OptionValues>
-                  <ac>Aho-Corasick</ac>
-                  <hs>Hyperscan</hs>
-              </OptionValues>
-              <ValidationMessage>Please select a valid pattern matcher algorithm</ValidationMessage>
+                <Required>N</Required>
+                <default>ac</default>
+                <BlankDesc>Default</BlankDesc>
+                <OptionValues>
+                    <ac>Aho-Corasick</ac>
+                    <hs>Hyperscan</hs>
+                </OptionValues>
+                <ValidationMessage>Please select a valid pattern matcher algorithm</ValidationMessage>
             </MPMAlgo>
             <syslog type="BooleanField">
                 <default>0</default>

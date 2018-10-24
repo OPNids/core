@@ -57,6 +57,10 @@ rm -rf /usr/local/etc/redis.conf-r
 =======
 >>>>>>> b06a16943... beats version upgrade
 
+# start redis with redis-ml
+sed -i -r 's/# loadmodule \/path\/to\/other_module.so/loadmodule \/usr\/local\/lib\/redis-ml.so/' /usr/local/etc/redis.conf
+rm -rf /usr/local/etc/redis.conf-r
+
 # remove residue from sed operation
 rm -f /usr/local/etc/rc.d/dragonfly-mle-r
 rm -f /usr/local/etc/rc.d/redis-r

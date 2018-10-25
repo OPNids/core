@@ -378,7 +378,7 @@
   <OPNids>
     <MLE>
       <general>
-        <enabled>1</enabled>
+        <enabled>0</enabled>
       </general>
     </MLE>
   </OPNids>

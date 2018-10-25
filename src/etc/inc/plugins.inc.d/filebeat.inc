@@ -25,10 +25,22 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+function filebeat_enabled()
+{
+    global $config;
+    return isset($config['Elastic']['Filebeat']['general']['enabled']) &&
+        $config['Elastic']['Filebeat']['general']['enabled'] == '1';
+}
+
 function filebeat_services()
 {
     global $config;
     $services = array();
+
+    if (!filebeat_enabled()) {
+        return $services;
+    }
+
     $services[] = array(
         'description' => gettext('Filebeat Daemon'),
         'configd' => array(

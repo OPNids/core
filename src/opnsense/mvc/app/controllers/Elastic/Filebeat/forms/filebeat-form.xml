@@ -4,6 +4,12 @@
     <type>header</type>
   </field>
   <field>
+    <id>filebeat.general.enabled</id>
+    <label>Enabled</label>
+    <type>checkbox</type>
+    <help>Enable Filebeat.</help>
+  </field>
+  <field>
     <id>filebeat.general.output</id>
     <label>Output Method</label>
     <type>dropdown</type>

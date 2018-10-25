@@ -3,6 +3,10 @@
   <description>Filebeat plugin</description>
   <items>
     <general>
+      <enabled type="BooleanField">
+        <default>0</default>
+        <Required>Y</Required>
+      </enabled>
       <output type="OptionField">
         <Required>Y</Required>
         <default>logstash</default>

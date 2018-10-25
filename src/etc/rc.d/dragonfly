@@ -1,0 +1,4 @@
+
+# REQUIRE: redis
+dragonflymle_enable="YES"
+

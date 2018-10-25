@@ -41,7 +41,7 @@ echo "%%CORE_NAME%%" > /usr/local/opnsense/version/opnsense.name
 echo "%%CORE_ABI%%" > /usr/local/opnsense/version/opnsense.abi
 
 # reconfigure redis daemon file
-cp /usr/local/opnsense/src/opnsense/service/templates/OPNids/Redis/redis.rc.d /etc/rc.conf.d/.
+cp /usr/local/opnsense/service/templates/OPNids/Redis/redis.rc.d /etc/rc.conf.d/.
 sed -i -r 's/redis_enable="NO"/redis_enable="YES"/' /usr/local/etc/rc.d/redis
 
 # reconfigure dragonfly-mle daemon file

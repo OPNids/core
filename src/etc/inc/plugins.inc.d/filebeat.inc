@@ -37,10 +37,6 @@ function filebeat_services()
     global $config;
     $services = array();
 
-    if (!filebeat_enabled()) {
-        return $services;
-    }
-
     $services[] = array(
         'description' => gettext('Filebeat Daemon'),
         'configd' => array(

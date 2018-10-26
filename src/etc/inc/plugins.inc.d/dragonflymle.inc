@@ -36,6 +36,10 @@ function dragonflymle_services()
 {
     $services = array();
 
+    if (!dragonflymle_enabled()) {	
+        return $services;	
+    }
+
     $services[] = array(
         'name' => 'dragonfly-mle',
         'description' => gettext('Dragonfly MLE Daemon'),

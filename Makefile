@@ -50,7 +50,7 @@ CORE_REPOSITORY?=	${CORE_ABI}/libressl
 CORE_REPOSITORY?=	${FLAVOUR}
 .endif
 
-CORE_NAME?=		opnids-devel
+CORE_NAME?=		opnids
 CORE_TYPE?=		development
 CORE_MESSAGE?=		Rockfish
 

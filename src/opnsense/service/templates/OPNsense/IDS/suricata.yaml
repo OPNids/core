@@ -89,7 +89,7 @@ outputs:
   # Extensible Event Format (nicknamed EVE) event log in JSON format
   - eve-log:
       enabled: yes
-      type: file #file|syslog|unix_dgram|unix_stream
+      type: regular
       filename: eve.json
       types:
         - alert:
@@ -99,19 +99,53 @@ outputs:
             payload-printable: yes
 {% endif %}
 
-        - http: 
-            enabled: {{OPNsense.IDS.general.eventTypes.http}}
-        - tls:
-            enabled: {{OPNsense.IDS.general.eventTypes.tls}}
-        - dns: 
-            enabled: {{OPNsense.IDS.general.eventTypes.dns}}
-            version: {% if OPNsense.IDS.general.eventTypes.dnsVersion == 'one' %}1{% else %}2{% endif %}
+            metadata: yes
+            tagged-packets: yes
 
+            xff:
+              enabled: no
+              mode: extra-data
+              deployment: reverse
+              header: X-Forwarded-For
+
+{% if OPNsense.IDS.general.eventTypes.http|default('0') %}
+        - http: 
+            extended: yes
+{% endif %}
+
+{% if OPNsense.IDS.general.eventTypes.tls|default('0') %}
+        - tls:
+            extended: yes
+{% endif %}
+
+{% if OPNsense.IDS.general.eventTypes.dns|default('0') %}
+        - dns: 
+            extended: yes
+            query: yes
+            answer: yes
+            version: {% if OPNsense.IDS.general.eventTypes.dnsVersion == 'one' %}1{% else %}2{% endif %}
+{% endif %}
+
+{% if OPNsense.IDS.general.eventTypes.flow|default('0') %}
         - flow: 
-            enabled: {{OPNsense.IDS.general.eventTypes.flow}}
+            extended: yes
+{% endif %}
+
+        - files:
+            force-magic: no
         - drop:
-            alerts: yes      # log alerts that caused drops
-            flows: start     # start or all: 'start' logs only a single drop
+            alerts: yes
+            flows: all
+        - smtp:
+            extended: yes
+        - dnp3
+        - nfs
+        - ssh
+        - stats:
+            totals: yes
+            threads: no
+            deltas: no
+        - vars
 
   # alert output for use with Barnyard2
   - unified2-alert:

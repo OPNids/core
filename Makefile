@@ -83,6 +83,7 @@ CORE_DEPENDS?=		${CORE_DEPENDS_${CORE_ARCH}} \
 			hostapd \
 			isc-dhcp44-relay \
 			isc-dhcp44-server \
+			libmicrohttpd \
 			lighttpd \
 			lua51 \
 			luajit \

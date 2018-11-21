@@ -31,6 +31,7 @@ namespace OPNids\MLE\Api;
 use \OPNids\MLE\MLE;
 use \OPNsense\Base\ApiControllerBase;
 use \OPNsense\Core\Backend;
+use \OPNsense\Core\Router;
 
 /**
  * Class ServiceController
@@ -122,5 +123,26 @@ class ServiceController extends ApiControllerBase
             }
         }
         return array("status" => $status);
+    }
+
+    public function getAnalyzerAction()
+    {
+        // grab $analyzer_name from url
+        $params = $this->dispatcher->getParams();
+
+        // set response header
+        $this->response->setRawHeader("Content-Type: application/json");
+
+        if (!count($params)) {
+            return '{"error": "Malformed request"}';
+        }
+
+        $analyzer_name = $params[0];
+
+        // fire off python script to fetch analyzer
+        $backend = new Backend();
+        $response = $backend->configdpRun("dragonflymle fetch_analyzer", array($analyzer_name));
+        
+        return trim($response);
     }
 }

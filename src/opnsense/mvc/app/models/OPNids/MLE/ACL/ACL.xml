@@ -1,0 +1,10 @@
+<acl>
+    <page-services-mle>
+        <name>Services: Dragonfly MLE</name>
+        <patterns>
+            <pattern>ui/mle/*</pattern>
+            <pattern>api/mle/*</pattern>
+            <pattern>diag_logs_dragonflymle.php*</pattern>
+        </patterns>
+    </page-services-mle>
+</acl>

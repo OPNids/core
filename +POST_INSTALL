@@ -40,23 +40,9 @@ echo "%%CORE_COMMIT%%" > /usr/local/opnsense/version/opnsense
 echo "%%CORE_NAME%%" > /usr/local/opnsense/version/opnsense.name
 echo "%%CORE_ABI%%" > /usr/local/opnsense/version/opnsense.abi
 
-# reconfigure redis daemon file
-sed -i -r 's/redis_enable="NO"/redis_enable="YES"/' /usr/local/etc/rc.d/redis
-
-# reconfigure dragonfly-mle daemon file
-sed -i -r 's/dragonflymle_enable="NO"/dragonflymle_enable="YES"/' /usr/local/etc/rc.d/dragonfly-mle
-
-# filebeats
-sed -i -r 's/filebeat_enable:="NO"/filebeat_enable:="YES"/' /usr/local/etc/rc.d/filebeat
-rm -rf /usr/local/etc/rc.d/filebeat-r
-
 # start redis with redis-ml
 sed -i -r 's/# loadmodule \/path\/to\/other_module.so/loadmodule \/usr\/local\/lib\/redis-ml.so/' /usr/local/etc/redis.conf
 rm -rf /usr/local/etc/redis.conf-r
-
-# remove residue from sed operation
-rm -f /usr/local/etc/rc.d/dragonfly-mle-r
-rm -f /usr/local/etc/rc.d/redis-r
 
 /usr/local/etc/rc.d/configd start
 

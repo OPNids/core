@@ -1,1 +1,1 @@
-filebeat_enable:="YES"
+filebeat_enable="YES"

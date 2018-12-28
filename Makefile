@@ -89,6 +89,8 @@ CORE_DEPENDS?=		${CORE_DEPENDS_${CORE_ARCH}} \
 			luajit \
 			monit \
 			mpd5 \
+			node \
+			npm \
 			ntp \
 			openssh-portable \
 			openvpn${CORE_OPENVPN} \
@@ -137,6 +139,7 @@ CORE_DEPENDS?=		${CORE_DEPENDS_${CORE_ARCH}} \
 			syslogd \
 			unbound \
 			wpa_supplicant \
+			yarn \
 			zip
 
 WRKDIR?=${.CURDIR}/work

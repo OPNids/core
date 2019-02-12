@@ -51,6 +51,7 @@ class SNatRule extends Rule
         'target' => 'parsePlain, -> ',
         'natport' => 'parsePlain, port ',
         'poolopts' => 'parsePlain',
+        'poolopts_sourcehashkey' => 'parsePlain',
         'staticnatport' => 'parseBool,  static-port ',
         'descr' => 'parseComment'
     );
@@ -73,32 +74,44 @@ class SNatRule extends Rule
                 $interf = $rule['interface'];
                 if (!empty($this->interfaceMapping[$interf])) {
                     $interf_settings = $this->interfaceMapping[$interf];
-                    if ((($this->isIpV4($rule) && !empty($interf_settings['ifconfig']['ipv4'])) ||
-                        (!$this->isIpV4($rule) && !empty($interf_settings['ifconfig']['ipv6'])))
-                        && (!empty($rule['poolopts']) || $rule['poolopts'] != 'round-robin')
-                    ) {
-                        // When pool options are set, we may not specify our interface as a list
-                        // (which doesn't require the same network validations as single items do).
-                        $rule['target'] = "{$interf_settings['if']}:0";
-                    } elseif (!empty($interf_settings['if'])) {
-                        // Define target as list, to prevent "no IP address found for *Interface*" when pf can't
-                        // find an address on the interface for the same protocol family.
+                    if (!empty($interf_settings['if'])) {
+                        /*
+                         * ":0" does not work for IPv6, but NAT is not relevant there anyway.
+                         * The reason for this is that it selects the first address which is
+                         * the link local address so the real global address is not found.
+                         *
+                         * Also see: https://reviews.freebsd.org/D17633
+                         */
                         $rule['target'] = "({$interf_settings['if']}:0)";
                     }
                 }
                 if (empty($rule['target'])) {
                     // no target found, disable rule
+                    $this->log("SNAT / target missing");
                     $rule['disabled'] = true;
                 }
             } elseif ($rule['target'] == "other-subnet") {
                 $rule['target'] = $rule['targetip'] . '/' . $rule['targetip_subnet'];
             } elseif (!empty($rule['target']) && Util::isAlias($rule['target'])) {
                 $rule['target'] = "$".$rule['target'];
+                if (!empty($rule['poolopts']) && substr($rule['poolopts'], 0, 11) != 'round-robin') {
+                    // wrong pool type on alias, disable rule
+                    $this->log('SNAT / pool type not round-robin');
+                    $rule['disabled'] = true;
+                }
             }
             foreach (array("sourceport", "dstport", "natport") as $fieldname) {
                 if (!empty($rule[$fieldname]) && Util::isAlias($rule[$fieldname])) {
+                    if (!Util::isAlias($rule[$fieldname], true)) {
+                        // unable to map port
+                        $this->log("SNAT / unable to map port ". $rule[$fieldname]. ", empty?");
+                        $rule['disabled'] = true;
+                    }
                     $rule[$fieldname] = "$".$rule[$fieldname];
                 }
+            }
+            if (empty($rule['poolopts']) || $rule['poolopts'] != "source-hash"){
+                $rule['poolopts_sourcehashkey'] = '';
             }
             if (!empty($rule['staticnatport']) || !empty($rule['nonat'])) {
                 $rule['natport'] = '';

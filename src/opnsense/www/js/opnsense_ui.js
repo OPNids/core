@@ -51,16 +51,23 @@ function byteFormat(bytes, decimals) {
  * @param formid parent id to grep input data from
  * @param disable_dialog don't show input validation message box on failure
  */
-function saveFormToEndpoint(url, formid, callback_ok, disable_dialog) {
-  disable_dialog = disable_dialog || false;
-  var data = getFormData(formid);
-  ajaxCall(
-    (url = url),
-    (sendData = data),
-    (callback = function(data, status) {
-      if (status == 'success') {
-        // update field validation
-        handleFormValidation(formid, data['validations']);
+function saveFormToEndpoint(url,formid,callback_ok, disable_dialog) {
+    disable_dialog = disable_dialog || false;
+    var data = getFormData(formid);
+    ajaxCall(url,data,function(data,status){
+        if ( status == "success") {
+            // update field validation
+            handleFormValidation(formid,data['validations']);
+
+            // if there are validation issues, update our screen and show a dialog.
+            if (data['validations'] != undefined) {
+                if (!disable_dialog) {
+                    var detailsid = "errorfrm"+Math.floor((Math.random() * 10000000) + 1);
+                    var errorMessage = $('<div></div>');
+                    errorMessage.append('Please correct validation errors in form <br />');
+                    errorMessage.append('<i class="fa fa-bug pull-right" aria-hidden="true" data-toggle="collapse" '+
+                                        'data-target="#'+detailsid+'" aria-expanded="false" aria-controls="'+detailsid+'"></i>');
+                    errorMessage.append('<div class="collapse" id="'+detailsid+'"><hr/><pre></pre></div>');
 
         // if there are validation issues, update our screen and show a dialog.
         if (data['validations'] != undefined) {
@@ -78,28 +85,11 @@ function saveFormToEndpoint(url, formid, callback_ok, disable_dialog) {
             );
             errorMessage.append('<div class="collapse" id="' + detailsid + '"><hr/><pre></pre></div>');
 
-            // validation message box is optional, form is already updated using handleFormValidation
-            BootstrapDialog.show({
-              type: BootstrapDialog.TYPE_WARNING,
-              title: 'Input validation',
-              message: errorMessage,
-              buttons: [
-                {
-                  label: 'Dismiss',
-                  action: function(dialogRef) {
-                    dialogRef.close();
-                  },
-                },
-              ],
-              onshown: function() {
-                // set debug information
-                $('#' + detailsid + ' > pre').html(JSON.stringify(data, null, 2));
-              },
-            });
-          }
-        } else if (callback_ok != undefined) {
-          // execute callback function
-          callback_ok();
+                }
+            } else if ( callback_ok != undefined ) {
+                // execute callback function
+                callback_ok(data);
+            }
         }
       }
     })
@@ -121,23 +111,17 @@ function mapDataToFormUI(data_get_map) {
     data_map_count += 1;
   });
 
-  var collected_data = {};
-  $.each(data_get_map, function(data_index, data_url) {
-    ajaxGet(
-      (url = data_url),
-      (sendData = {}),
-      (callback = function(data, status) {
-        if (status == 'success') {
-          $('form').each(function(index) {
-            if (
-              $(this).attr('id') &&
-              $(this)
-                .attr('id')
-                .split('-')[0] == data_index
-            ) {
-              // related form found, load data
-              setFormData($(this).attr('id'), data);
-              collected_data[$(this).attr('id')] = data;
+    var collected_data = {};
+    $.each(data_get_map, function(data_index, data_url) {
+        ajaxGet(data_url,{}, function(data, status) {
+            if (status == "success") {
+                $("form").each(function( index ) {
+                    if ( $(this).attr('id') && $(this).attr('id').split('-')[0] == data_index) {
+                        // related form found, load data
+                        setFormData($(this).attr('id'), data);
+                        collected_data[$(this).attr('id')] = data;
+                    }
+                });
             }
           });
         }
@@ -174,14 +158,25 @@ function updateServiceStatusUI(status) {
 /**
  * operate service status buttons in user interface
  */
-function updateServiceControlUI(serviceName) {
-  ajaxCall(
-    (url = '/api/' + serviceName + '/service/status'),
-    (sendData = {}),
-    (callback = function(data, status) {
-      var status_html = '<span class="label label-opnsense label-opnsense-sm ';
-      var status_icon = '';
-      var buttons = '';
+function updateServiceControlUI(serviceName)
+{
+    ajaxCall("/api/" + serviceName + "/service/status", {}, function(data,status) {
+        var status_html = '<span class="label label-opnsense label-opnsense-sm ';
+        var status_icon = '';
+        var buttons = '';
+
+        if (data['status'] == "running") {
+            status_html += 'label-success';
+            status_icon = 'play';
+            buttons += '<span id="restartService" class="btn btn-sm btn-default"><i class="fa fa-refresh fa-fw"></i></span> ';
+            buttons += '<span id="stopService" class="btn btn-sm btn-default"><i class="fa fa-stop fa-fw"></span>';
+        } else if (data['status'] == "stopped") {
+            status_html += 'label-danger';
+            status_icon = 'stop';
+            buttons += '<span id="startService" class="btn btn-sm btn-default"><i class="fa fa-play fa-fw"></i></span>';
+        } else {
+            status_html += 'hidden';
+        }
 
       if (data['status'] == 'running' || data['status'].includes('is running...')) {
         status_html += 'label-success';
@@ -203,24 +198,17 @@ function updateServiceControlUI(serviceName) {
       console.log(status_html, buttons);
       $('#service_status_container').html(status_html + ' ' + buttons);
 
-      var commands = ['start', 'restart', 'stop'];
-      commands.forEach(function(command) {
-        $('#' + command + 'Service').click(function() {
-          $('#OPNsenseStdWaitDialog').modal('show');
-          ajaxCall(
-            (url = '/api/' + serviceName + '/service/' + command),
-            (sendData = {}),
-            (callback = function(data, status) {
-              $('#OPNsenseStdWaitDialog').modal('hide');
-              ajaxCall(
-                (url = '/api/' + serviceName + '/service/status'),
-                (sendData = {}),
-                (callback = function(data, status) {
-                  updateServiceControlUI(serviceName);
-                })
-              );
-            })
-          );
+        var commands = ["start", "restart", "stop"];
+        commands.forEach(function(command) {
+            $("#" + command + "Service").click(function(){
+                $('#OPNsenseStdWaitDialog').modal('show');
+                ajaxCall("/api/" + serviceName + "/service/" + command, {},function(data,status) {
+                    $('#OPNsenseStdWaitDialog').modal('hide');
+                    ajaxCall("/api/" + serviceName + "/service/status", {}, function(data,status) {
+                        updateServiceControlUI(serviceName);
+                    });
+                });
+            });
         });
       });
     })
@@ -231,70 +219,69 @@ function updateServiceControlUI(serviceName) {
  * reformat all tokenizers on this document
  */
 function formatTokenizersUI() {
-  $('select.tokenize').each(function() {
-    var sender = $(this);
-    if (!sender.hasClass('tokenize2_init_done')) {
-      // only init tokenize2 when not bound yet
-      var hint = $(this).data('hint');
-      var width = $(this).data('width');
-      if (sender.data('size') != undefined) {
-        var number_of_items = $(this).data('size');
-      } else {
-        var number_of_items = 10;
-      }
-      var allownew = $(this).data('allownew');
-      sender.tokenize2({
-        tokensAllowCustom: allownew,
-        placeholder: hint,
-        dropdownMaxItems: number_of_items,
-      });
-      sender
-        .parent()
-        .find('ul.tokens-container')
-        .css('width', width);
+    $('select.tokenize').each(function () {
+        var sender = $(this);
+        if (!sender.hasClass('tokenize2_init_done')) {
+            // only init tokenize2 when not bound yet
+            var hint = $(this).data("hint");
+            var width = $(this).data("width");
+            if (sender.data("size") != undefined) {
+                var number_of_items = $(this).data("size");
+            } else {
+                var number_of_items = 10;
+            }
+            var allownew = $(this).data("allownew");
+            sender.tokenize2({
+                'tokensAllowCustom': allownew,
+                'placeholder': hint,
+                'dropdownMaxItems': number_of_items
+            });
+            sender.parent().find('ul.tokens-container').css("width", width);
 
-      // dropdown on focus (previous displayDropdownOnFocus)
-      sender.on('tokenize:select', function(container) {
-        $(this)
-          .tokenize2()
-          .trigger('tokenize:search', [
-            $(this)
-              .tokenize2()
-              .input.val(),
-          ]);
-      });
-      // bind add / remove events
-      sender.on('tokenize:tokens:add', function(e, value) {
-        sender.trigger('tokenize:tokens:change');
-      });
-      sender.on('tokenize:tokens:remove', function(e, value) {
-        sender.trigger('tokenize:tokens:change');
-      });
+            // dropdown on focus (previous displayDropdownOnFocus)
+            sender.on('tokenize:select', function(container){
+                $(this).tokenize2().trigger('tokenize:search', [$(this).tokenize2().input.val()]);
+            });
+            // bind add / remove events
+            sender.on('tokenize:tokens:add', function(e, value){
+                sender.trigger("tokenize:tokens:change");
+            });
+            sender.on('tokenize:tokens:remove', function(e, value){
+                sender.trigger("tokenize:tokens:change");
+            });
 
-      // hook keydown -> tab to blur event
-      sender.on('tokenize:deselect', function() {
-        var e = $.Event('keydown');
-        e.keyCode = 9;
-        sender.tokenize2().trigger('tokenize:keydown', [e]);
-      });
+            // hook keydown -> tab to blur event
+            sender.on('tokenize:deselect', function(){
+                var e = $.Event("keydown");
+                e.keyCode = 9;
+                sender.tokenize2().trigger('tokenize:keydown', [e]);
+            });
 
-      sender.addClass('tokenize2_init_done');
-    } else {
-      // unbind change event while loading initial content
-      sender.unbind('tokenize:tokens:change');
+            sender.addClass('tokenize2_init_done');
+        } else {
+            // unbind change event while loading initial content
+            sender.unbind('tokenize:tokens:change');
 
-      // re-init tokenizer items
-      var items = $(this).val();
-      sender.tokenize2().trigger('tokenize:clear');
-      $.each(items, function(key, item) {
-        sender.tokenize2().trigger('tokenize:tokens:add', item);
-      });
-      sender.tokenize2().trigger('tokenize:select');
-    }
+            // selected items
+            var items = [];
+            sender.find('option:selected').each(function () {
+                items.push([$(this).val(), $(this).text()]);
+            });
 
-    // propagate token changes to parent change()
-    sender.on('tokenize:tokens:change', function(e, value) {
-      sender.change();
+            // re-init tokenizer items
+            sender.tokenize2().trigger('tokenize:clear');
+            for (let i=0 ; i < items.length ; ++i) {
+              sender.tokenize2().trigger('tokenize:tokens:add', items[i]);
+            }
+            sender.tokenize2().trigger('tokenize:select');
+            sender.tokenize2().trigger('tokenize:dropdown:hide');
+        }
+
+        // propagate token changes to parent change()
+        sender.on('tokenize:tokens:change', function(e, value){
+            sender.change();
+        });
+
     });
   });
 }
@@ -303,46 +290,42 @@ function formatTokenizersUI() {
  * clear multiselect boxes on click event, works on standard and tokenized versions
  */
 function addMultiSelectClearUI() {
-  $('[id*="clear-options"]').each(function() {
-    $(this).click(function() {
-      var id = $(this)
-        .attr('id')
-        .replace(/_*clear-options_*/, '');
-      BootstrapDialog.confirm({
-        title: 'Deselect or remove all items ?',
-        message: 'Deselect or remove all items ?',
-        type: BootstrapDialog.TYPE_DANGER,
-        closable: true,
-        draggable: true,
-        btnCancelLabel: 'Cancel',
-        btnOKLabel: 'Yes',
-        btnOKClass: 'btn-primary',
-        callback: function(result) {
-          if (result) {
-            if ($('select[id="' + id + '"]').hasClass('tokenize')) {
-              // trigger close on all Tokens
-              $('select[id="' + id + '"]')
-                .tokenize2()
-                .trigger('tokenize:clear');
-              $('select[id="' + id + '"]').change();
-            } else {
-              // remove options from selection
-              $('select[id="' + id + '"]')
-                .find('option')
-                .prop('selected', false);
-              if ($('select[id="' + id + '"]').hasClass('selectpicker')) {
-                $('select[id="' + id + '"]').selectpicker('refresh');
-              }
-            }
-          }
-          // In case this modal was triggered from another modal, fix focus issues
-          $('.modal').on('hidden.bs.modal', function(e) {
-            if ($('.modal:visible').length) {
-              $('body').addClass('modal-open');
-            }
-          });
-        },
-      });
+    $('[id*="clear-options"]').each(function() {
+        $(this).click(function() {
+            var id = $(this).attr("id").replace(/_*clear-options_*/, '');
+            BootstrapDialog.confirm({
+                title: 'Deselect or remove all items ?',
+                message: 'Deselect or remove all items ?',
+                type: BootstrapDialog.TYPE_DANGER,
+                closable: true,
+                draggable: true,
+                btnCancelLabel: 'Cancel',
+                btnOKLabel: 'Yes',
+                btnOKClass: 'btn-primary',
+                callback: function(result) {
+                    if(result) {
+                        if ($('select[id="' + id + '"]').hasClass("tokenize")) {
+                            // trigger close on all Tokens
+                            $('select[id="' + id + '"]').tokenize2().trigger('tokenize:clear');
+                            $('select[id="' + id + '"]').change();
+                        } else {
+                            // remove options from selection
+                            $('select[id="' + id + '"]').find('option').prop('selected',false);
+                            if ($('select[id="' + id + '"]').hasClass('selectpicker')) {
+                               $('select[id="' + id + '"]').selectpicker('refresh');
+                            }
+                        }
+                    }
+                    // In case this modal was triggered from another modal, fix focus issues
+                    $('.modal').on("hidden.bs.modal", function (e) {
+                        if($('.modal:visible').length)
+                        {
+                            $('body').addClass('modal-open');
+                        }
+                    });
+                }
+            });
+        });
     });
   });
 }
@@ -351,11 +334,11 @@ function addMultiSelectClearUI() {
  * setup form help buttons
  */
 function initFormHelpUI() {
-  // handle help messages show/hide
-  $('a.showhelp').click(function(event) {
-    $("*[data-for='" + $(this).attr('id') + "']").toggleClass('hidden show');
-    event.preventDefault();
-  });
+    // handle help messages show/hide
+    $("a.showhelp").click(function (event) {
+        $("*[data-for='" + $(this).attr('id') + "']").toggleClass("hidden show");
+        event.preventDefault();
+    });
 
   // handle all help messages show/hide
   $('[id*="show_all_help"]').click(function(event) {

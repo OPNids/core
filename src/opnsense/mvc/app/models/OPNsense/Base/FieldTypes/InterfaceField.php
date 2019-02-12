@@ -77,7 +77,7 @@ class InterfaceField extends BaseField
 
     /**
      *  collect parents for lagg interfaces
-     *  @return named array containing device and lagg interface
+     *  @return array named array containing device and lagg interface
      */
     private function getConfigLaggInterfaces()
     {
@@ -100,7 +100,7 @@ class InterfaceField extends BaseField
 
     /**
      *  collect parents for vlan interfaces
-     *  @return named array containing device and vlan interfaces
+     *  @return array named array containing device and vlan interfaces
      */
     private function getConfigVLANInterfaces()
     {
@@ -131,6 +131,9 @@ class InterfaceField extends BaseField
             // Iterate over all interfaces configuration and collect data
             if (isset($configObj->interfaces) && $configObj->interfaces->count() > 0) {
                 foreach ($configObj->interfaces->children() as $key => $value) {
+                    if (!empty($value->internal_dynamic)) {
+                        continue;
+                    }
                     $allInterfaces[$key] = $value;
                     if (!empty($value->if)) {
                         $allInterfacesDevices[(string)$value->if] = $key;

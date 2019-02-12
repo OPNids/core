@@ -1,40 +1,40 @@
 <?php
 
 /*
-    Copyright (C) 2014-2016 Deciso B.V.
-    Copyright (C) 2007 Scott Dale
-    Copyright (C) 2004-2005 T. Lechat <dev@lechat.org>
-    Copyright (C) 2004-2005 Manuel Kasper <mk@neon1.net>
-    Copyright (C) 2004-2005 Jonathan Watt <jwatt@jwatt.org>
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    1. Redistributions of source code must retain the above copyright notice,
-       this list of conditions and the following disclaimer.
-
-    2. Redistributions in binary form must reproduce the above copyright
-       notice, this list of conditions and the following disclaimer in the
-       documentation and/or other materials provided with the distribution.
-
-    THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
-    INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
-    AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
-    AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
-    OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-    POSSIBILITY OF SUCH DAMAGE.
-*/
+ * Copyright (C) 2014-2016 Deciso B.V.
+ * Copyright (C) 2007 Scott Dale
+ * Copyright (C) 2004-2005 T. Lechat <dev@lechat.org>
+ * Copyright (C) 2004-2005 Manuel Kasper <mk@neon1.net>
+ * Copyright (C) 2004-2005 Jonathan Watt <jwatt@jwatt.org>
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+ * AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
+ * OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
 
 require_once("guiconfig.inc");
 require_once("system.inc");
 
 ?>
-<script src="/ui/js/moment-with-locales.min.js"></script>
+<script src="<?= cache_safe('/ui/js/moment-with-locales.min.js') ?>"></script>
 <script>
   var system_information_widget_cpu_data = []; // reference to measures
   var system_information_widget_cpu_chart = null; // reference to chart object
@@ -52,8 +52,8 @@ require_once("system.inc");
       } else if (system_information_widget_cpu_data.length == 1) {
           system_information_widget_cpu_data.push(parseInt(data['cpu']['used']));
       }
-      chart_data = [];
-      count = 0;
+      let chart_data = [];
+      let count = 0;
       system_information_widget_cpu_data.map(function(item){
           chart_data.push([count, item]);
           count++;
@@ -84,12 +84,12 @@ require_once("system.inc");
 
       var states_perc = parseInt((parseInt(data['kernel']['pf']['states']) / parseInt(data['kernel']['pf']['maxstates']))*100);
       $("#system_information_widget_states .progress-bar").css("width",  states_perc + "%").attr("aria-valuenow", states_perc + "%");
-      var states_text = states_perc + " % " + "( " + data['kernel']['pf']['states'] + "/" + data['kernel']['pf']['maxstates'] + " )"
+      var states_text = states_perc + " % " + "( " + data['kernel']['pf']['states'] + "/" + data['kernel']['pf']['maxstates'] + " )";
       $("#system_information_widget_states .state_text").html(states_text);
 
       var mbuf_perc = parseInt((parseInt(data['kernel']['mbuf']['total']) / parseInt(data['kernel']['mbuf']['max']))*100);
       $("#system_information_widget_mbuf .progress-bar").css("width",  mbuf_perc + "%").attr("aria-valuenow", mbuf_perc + "%");
-      var mbuf_text = mbuf_perc + " % " + "( " + data['kernel']['mbuf']['total'] + "/" + data['kernel']['mbuf']['max'] + " )"
+      var mbuf_text = mbuf_perc + " % " + "( " + data['kernel']['mbuf']['total'] + "/" + data['kernel']['mbuf']['max'] + " )";
       $("#system_information_widget_mbuf .state_text").html(mbuf_text);
 
       $("#system_information_widget_load").html(data['cpu']['load'].join(','));
@@ -97,7 +97,7 @@ require_once("system.inc");
       var mem_perc = parseInt(data['kernel']['memory']['used'] / data['kernel']['memory']['total']*100);
       $("#system_information_widget_memory .progress-bar").css("width",  mem_perc + "%").attr("aria-valuenow", mem_perc + "%");
       var mem_text = mem_perc + " % " + "( " + parseInt(data['kernel']['memory']['used']/1024/1024) + "/";
-      mem_text += parseInt(data['kernel']['memory']['total']/1024/1024) + " MB )"
+      mem_text += parseInt(data['kernel']['memory']['total']/1024/1024) + " MB )";
       $("#system_information_widget_memory .state_text").html(mem_text);
 
 
@@ -106,7 +106,7 @@ require_once("system.inc");
           var swap_perc = parseInt(data['disk']['swap']['used'] / data['disk']['swap']['total']*100);
           $("#system_information_widget_swap .progress-bar").css("width",  swap_perc + "%").attr("aria-valuenow", swap_perc + "%");
           var swap_text = swap_perc + " % " + "( " + parseInt(data['disk']['swap']['used']/1024) + "/";
-          swap_text += parseInt(data['disk']['swap']['total']/1024) + " MB )"
+          swap_text += parseInt(data['disk']['swap']['total']/1024) + " MB )";
           $("#system_information_widget_swap .state_text").html(swap_text);
           $("#system_information_widget_swap").show();
       } else {
@@ -114,7 +114,7 @@ require_once("system.inc");
       }
 
       // disk usage
-      counter = 0;
+      let counter = 0;
       $("#system_information_widget_disk .disk_devices").html("");
       data['disk']['devices'].map(function(device) {
           var html = $("#system_information_widget_disk .disk_template").html();
@@ -165,7 +165,7 @@ require_once("system.inc");
     <tr>
       <td><?= gettext('Updates') ?></td>
       <td>
-        <a href='/ui/core/firmware/#checkupdate'><?= gettext('Click to check for updates.') ?></a>
+        <a href='/ui/core/firmware#checkupdate'><?= gettext('Click to check for updates.') ?></a>
       </td>
     </tr>
     <tr>

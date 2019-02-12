@@ -2,7 +2,7 @@
 
 /*
     Copyright (C) 2014-2016 Deciso B.V.
-    Copyright (C) 2003-2005 Manuel Kasper <mk@neon1.net>.
+    Copyright (C) 2003-2005 Manuel Kasper <mk@neon1.net>
     Copyright (C) 2008 Shrew Soft Inc. <mgrooms@shrew.net>
     All rights reserved.
 
@@ -183,28 +183,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 legacy_html_escape_form_data($a_phase1);
 legacy_html_escape_form_data($a_phase2);
 
-$service_hook = 'ipsec';
+$service_hook = 'strongswan';
 
 include("head.inc");
-$dhgroups = array(
-  0  => gettext('off'),
-  1  => '1 (768&nbsp;bits)',
-  2  => '2 (1024&nbsp;bits)',
-  5  => '5 (1536&nbsp;bits)',
-  14 => '14 (2048&nbsp;bits)',
-  15 => '15 (3072&nbsp;bits)',
-  16 => '16 (4096&nbsp;bits)',
-  17 => '17 (6144&nbsp;bits)',
-  18 => '18 (8192&nbsp;bits)',
-  19 => '19 (256&nbsp;bit&nbsp;elliptic&nbsp;curve)',
-  20 => '20 (384&nbsp;bit&nbsp;elliptic&nbsp;curve)',
-  21 => '21 (521&nbsp;bit&nbsp;elliptic&nbsp;curve)',
-  22 => '22 (1024(sub 160)&nbsp;bits)',
-  23 => '23 (2048(sub 224)&nbsp;bits)',
-  24 => '24 (2048(sub 256)&nbsp;bits)'
-);
-?>
 
+$dhgroups = array(
+    0 => gettext('off'),
+    1 => '1 (768 bits)',
+    2 => '2 (1024 bits)',
+    5 => '5 (1536 bits)',
+    14 => '14 (2048 bits)',
+    15 => '15 (3072 bits)',
+    16 => '16 (4096 bits)',
+    17 => '17 (6144 bits)',
+    18 => '18 (8192 bits)',
+    19 => '19 (NIST EC 256 bits)',
+    20 => '20 (NIST EC 384 bits)',
+    21 => '21 (NIST EC 521 bits)',
+    22 => '22 (1024(sub 160) bits)',
+    23 => '23 (2048(sub 224) bits)',
+    24 => '24 (2048(sub 256) bits)',
+    28 => '28 (Brainpool EC 256 bits)',
+    29 => '29 (Brainpool EC 384 bits)',
+    30 => '30 (Brainpool EC 512 bits)',
+);
+
+?>
 <body>
 <script>
 $( document ).ready(function() {
@@ -363,7 +367,8 @@ $( document ).ready(function() {
                       </td>
                       <td class="hidden-xs">
                           <?=empty($ph1ent['protocol']) || $ph1ent['protocol'] == "inet" ? "IPv4" : "IPv6"; ?>
-                          <?=empty($ph1ent['iketype']) || $ph1ent['iketype'] == "ikev1" ? "IKE" : "IKEv2"; ?>
+                          <?php $ph1ent_type=array("ikev1" => "IKE", "ikev2" => "IKEv2", "ike" => "auto"); ?>
+                          <?=!empty($ph1ent['iketype']) &&  isset($ph1ent_type[$ph1ent['iketype']]) ? $ph1ent_type[$ph1ent['iketype']] :"" ;?>
                       </td>
                       <td>
 <?php
@@ -382,7 +387,7 @@ $( document ).ready(function() {
 
                             $grouplist = return_gateway_groups_array();
                             foreach ($grouplist as $name => $group) {
-                                if ($group[0]['vip'] <> "") {
+                                if ($group[0]['vip'] != '') {
                                     $vipif = $group[0]['vip'];
                                 } else {
                                     $vipif = $group[0]['int'];
@@ -414,8 +419,10 @@ $( document ).ready(function() {
                             }
                         }?> +
 
-                        <?=strtoupper($ph1ent['hash-algorithm']);?> +
-                          <?=gettext("DH Group"); ?>&nbsp;<?=$dhgroups[$ph1ent['dhgroup']];?>
+                        <?=strtoupper($ph1ent['hash-algorithm']);?>
+<?php if (!empty($ph1ent['dhgroup'])): ?>
+                          + <?=gettext("DH Group"); ?>&nbsp;<?= $ph1ent['dhgroup'] ?>
+<?php endif ?>
                       </td>
                       <td class="hidden-xs">
                           <?= html_safe($p1_authentication_methods[$ph1ent['authentication_method']]['name']) ?>
@@ -425,7 +432,7 @@ $( document ).ready(function() {
                       </td>
                       <td class="text-nowrap">
                         <button data-id="<?=$i; ?>" data-act="movep1" type="submit" class="act_move btn btn-default btn-xs"
-                          title="<?=gettext("move selected entries before this");?>" data-toggle="tooltip">
+                          title="<?=gettext("Move selected entries before this");?>" data-toggle="tooltip">
                           <i class="fa fa-arrow-left fa-fw"></i>
                         </button>
                         <a href="vpn_ipsec_phase1.php?p1index=<?=$i; ?>" class="btn btn-default btn-xs"
@@ -551,7 +558,7 @@ $( document ).ready(function() {
                                 endif; ?>
                                 <td class="text-nowrap">
                                   <button data-id="<?=$j; ?>" data-act="movep2" type="submit" class="act_move btn btn-default btn-xs"
-                                    title="<?=gettext("move selected entries before this");?>" data-toggle="tooltip">
+                                    title="<?=gettext("Move selected entries before this");?>" data-toggle="tooltip">
                                     <i class="fa fa-arrow-left fa-fw"></i>
                                   </button>
                                   <a href="vpn_ipsec_phase2.php?p2index=<?=$ph2ent['uniqid']; ?>"
@@ -580,7 +587,7 @@ $( document ).ready(function() {
                                 if ($j > 0) :?>
 
                                   <button data-id="<?=$j+1; ?>" data-act="movep2" type="submit" class="act_move btn btn-default btn-xs"
-                                    title="<?=gettext("move selected phase 2 entries to end");?>" data-toggle="tooltip">
+                                    title="<?=gettext("Move selected phase 2 entries to end");?>" data-toggle="tooltip">
                                     <i class="fa fa-arrow-down fa-fw"></i>
                                   </button>
                                   <button data-id="x" type="submit" title="<?=gettext("delete selected phase 2 entries");?>" data-toggle="tooltip"
@@ -611,7 +618,7 @@ $( document ).ready(function() {
                           type="submit"
                           data-id="<?=$i;?>"
                           data-act="movep1"
-                          title="<?=gettext("move selected phase 1 entries to end");?>"
+                          title="<?=gettext("Move selected phase 1 entries to end");?>"
                           data-toggle="tooltip"
                           class="act_move btn btn-default btn-xs">
                           <i class="fa fa-arrow-down fa-fw"></i>
@@ -637,7 +644,7 @@ $( document ).ready(function() {
                     </tr>
                     <tr>
                       <td colspan=9>
-                        <input type="submit" name="save" class="btn btn-primary" value="<?=gettext("Save"); ?>" />
+                        <input type="submit" name="save" class="btn btn-primary" value="<?=html_safe(gettext('Save')); ?>" />
                       </td>
                     </tr>
                 </tbody>

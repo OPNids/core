@@ -1,31 +1,30 @@
 <?php
-/**
- *    Copyright (C) 2018 Deciso B.V.
- *    Copyright (C) 2018 Fabian Franz
+
+/*
+ * Copyright (C) 2018 Deciso B.V.
+ * Copyright (C) 2018 Fabian Franz
+ * All rights reserved.
  *
- *    All rights reserved.
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
  *
- *    Redistribution and use in source and binary forms, with or without
- *    modification, are permitted provided that the following conditions are met:
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
  *
- *    1. Redistributions of source code must retain the above copyright notice,
- *       this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
  *
- *    2. Redistributions in binary form must reproduce the above copyright
- *       notice, this list of conditions and the following disclaimer in the
- *       documentation and/or other materials provided with the distribution.
- *
- *    THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
- *    INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
- *    AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
- *    AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
- *    OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- *    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- *    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
- *    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- *    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- *    POSSIBILITY OF SUCH DAMAGE.
- *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+ * AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
+ * OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 namespace OPNsense\Backup;
@@ -39,7 +38,6 @@ use OPNsense\Backup\NextcloudSettings;
  */
 class Nextcloud extends Base implements IBackupProvider
 {
-
     /**
      * get required (user interface) fields for backup connector
      * @return array configuration fields, types and description
@@ -75,6 +73,13 @@ class Nextcloud extends Base implements IBackupProvider
                 "value" => null
             ),
             array(
+                "name" => "password_encryption",
+                "type" => "password",
+                "label" => gettext("Encryption Password (Optional)"),
+                "help" => gettext("A password to encrypt your configuration"),
+                "value" => null
+            ),
+            array(
                 "name" => "backupdir",
                 "type" => "text",
                 "label" => gettext("Directory Name"),
@@ -101,6 +106,7 @@ class Nextcloud extends Base implements IBackupProvider
      * validate and set configuration
      * @param array $conf configuration array
      * @return array of validation errors when not saved
+     * @throws \OPNsense\Base\ModelException
      */
     public function setConfiguration($conf)
     {
@@ -117,8 +123,9 @@ class Nextcloud extends Base implements IBackupProvider
     /**
      * perform backup
      * @return array filelist
+     * @throws \OPNsense\Base\ModelException
      */
-    function backup()
+    public function backup()
     {
         $cnf = Config::getInstance();
         $nextcloud = new NextcloudSettings();
@@ -128,13 +135,14 @@ class Nextcloud extends Base implements IBackupProvider
             $username = (string)$nextcloud->user;
             $password = (string)$nextcloud->password;
             $backupdir = (string)$nextcloud->backupdir;
+            $crypto_password = (string)$nextcloud->password_encryption;
             $hostname = $config->system->hostname . '.' .$config->system->domain;
-            $configname = 'config-' . $hostname . '-' .  date("Y-m-d_h:m:s") . '.xml';
+            $configname = 'config-' . $hostname . '-' .  date("Y-m-d_H:i:s") . '.xml';
             // backup source data to local strings (plain/encrypted)
             $confdata = file_get_contents('/conf/config.xml');
-            $confdata_enc = chunk_split(
-                $this->encrypt($confdata, (string)$nextcloud->password)
-            );
+            if (!empty($crypto_password)) {
+                $confdata = $this->encrypt($confdata, $crypto_password);
+            }
             try {
                 $directories = $this->listFiles($url, $username, $password, '/');
                 if (!in_array("/$backupdir/", $directories)) {
@@ -146,7 +154,7 @@ class Nextcloud extends Base implements IBackupProvider
                     $password,
                     $backupdir,
                     $configname,
-                    $confdata_enc
+                    $confdata
                 );
                 // do not list directories
                 return array_filter(

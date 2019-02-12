@@ -131,7 +131,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             /* Disallow a range that includes the virtualip */
             if (!empty($config['virtualip']['vip'])) {
                 foreach($config['virtualip']['vip'] as $vip) {
-                    if($vip['interface'] == $if) {
+                    if ($vip['interface'] == $if) {
                         if (!empty($vip['subnetv6']) && is_inrange_v6($vip['subnetv6'], $pconfig['range_from'], $pconfig['range_to'])) {
                             $input_errors[] = sprintf(gettext("The subnet range cannot overlap with virtual IPv6 address %s."),$vip['subnetv6']);
                         }
@@ -188,8 +188,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 
         if (count($input_errors) == 0) {
             /* make sure the range lies within the current subnet */
-            $ifcfgip = get_interface_ipv6($if);
-            $ifcfgsn = get_interface_subnetv6($if);
+            list ($ifcfgip, $ifcfgsn) = explode('/', find_interface_networkv6(get_real_interface($if, 'inet6'), false));
             $subnet_start = gen_subnetv6($ifcfgip, $ifcfgsn);
             $subnet_end = gen_subnetv6_max($ifcfgip, $ifcfgsn);
 
@@ -329,10 +328,9 @@ legacy_html_escape_form_data($pconfig);
 
 include("head.inc");
 
-$wifcfgip = get_interface_ipv6($if);
-$wifcfgsn = get_interface_subnetv6($if);
+list ($wifcfgip, $wifcfgsn) = explode('/', find_interface_networkv6(get_real_interface($if, 'inet6'), false));
 
-if ($config['interfaces'][$if]['ipaddrv6'] == 'track6') {
+if (isset($config['interfaces'][$if]['dhcpd6track6allowoverride'])) {
     $prefix_array = array();
     $prefix_array = explode(':', $wifcfgip);
     $prefix_array[4] = '0';
@@ -340,6 +338,7 @@ if ($config['interfaces'][$if]['ipaddrv6'] == 'track6') {
     $prefix_array[6] = '0';
     $prefix_array[7] = '0';
     $wifprefix = Net_IPv6::compress(implode(':', $prefix_array));
+    $pdlen = calculate_ipv6_delegation_length($config['interfaces'][$if]['track6-interface']) - 1;
 }
 
 ?>
@@ -451,25 +450,23 @@ if ($config['interfaces'][$if]['ipaddrv6'] == 'track6') {
                     </tr>
                     <tr>
                       <td><i class="fa fa-info-circle text-muted"></i> <?=gettext("Subnet");?></td>
-<?php if (isset($config['interfaces'][$if]['dhcpd6track6allowoverride'])): ?>
-                      <td><?= gettext('Prefix Delegation') ?></td>
-<?php else: ?>
                       <td><?= gen_subnetv6($wifcfgip, $wifcfgsn) ?></td>
-<?php endif ?>
                     </tr>
                     <tr>
                       <td><i class="fa fa-info-circle text-muted"></i> <?=gettext("Subnet mask");?></td>
-<?php if (isset($config['interfaces'][$if]['dhcpd6track6allowoverride'])): ?>
-                      <td><?= gettext('Prefix Delegation') ?></td>
-<?php else: ?>
                       <td><?= htmlspecialchars($wifcfgsn) ?> <?= gettext('bits') ?></td>
-<?php endif ?>
                     </tr>
-<?php if(isset($config['interfaces'][$if]['dhcpd6track6allowoverride'])): ?>
+<?php if (isset($config['interfaces'][$if]['dhcpd6track6allowoverride'])): ?>
                      <tr>
                       <td><i class="fa fa-info-circle text-muted"></i> <?=gettext("Current LAN IPv6 prefix");?></td>
                       <td><?= htmlspecialchars($wifprefix) ?></td>
                     </tr>
+<?php if ($pdlen >= 0): ?>
+                     <tr>
+                      <td><i class="fa fa-info-circle text-muted"></i> <?=gettext("Available prefix delegation size");?></td>
+                      <td><?= 64 - $pdlen ?></td>
+                    </tr>
+<?php endif ?>
 <?php endif ?>
                     <tr>
                       <td><i class="fa fa-info-circle text-muted"></i> <?=gettext("Available range");?></td>
@@ -480,7 +477,8 @@ if ($config['interfaces'][$if]['ipaddrv6'] == 'track6') {
                         $range_to = gen_subnetv6_max($wifcfgip, $wifcfgsn);?>
                         <?=$range_from;?> - <?=$range_to;?>
 <?php if (isset($config['interfaces'][$if]['dhcpd6track6allowoverride'])): ?>
-                        <?= gettext('Prefix delegation subnet will be prefixed to the available range.') ?>
+                        <br/>
+                        <?= gettext('Prefix subnet will be prefixed to the available range.') ?>
 <?php endif ?>
                       </td>
                     </tr>
@@ -540,6 +538,14 @@ if ($config['interfaces'][$if]['ipaddrv6'] == 'track6') {
                         <div class="hidden" data-for="help_for_prefixrange">
                           <?= gettext("You can define a Prefix range here for DHCP Prefix Delegation. This allows for assigning networks to subrouters. " .
                           "The start and end of the range must end on boundaries of the prefix delegation size."); ?>
+                           <?= gettext("Ensure that any prefix delegation range does not overlap the LAN prefix range."); ?>
+                          <br/><br/>
+                          <?= gettext('The system does not check the validity of your emtry against the selected mask - please refer to an online net ' .
+                            'calculator to ensure you have entered a correct range if the dhcpd6 server fails to start.') ?>
+<?php if (isset($config['interfaces'][$if]['dhcpd6track6allowoverride'])): ?>
+                          <br/><br/>
+                          <?= gettext('When using a tracked interface then please only enter the range itself. i.e. ::xx. For example, for a /60 subnet from ::20 to ::40.') ?>
+<?php endif ?>
                         </div>
                       </td>
                     </tr>
@@ -549,7 +555,7 @@ if ($config['interfaces'][$if]['ipaddrv6'] == 'track6') {
                         <input name="dns1" type="text" id="dns1" value="<?=$pconfig['dns1'];?>" /><br />
                         <input name="dns2" type="text" id="dns2" value="<?=$pconfig['dns2'];?>" />
                         <div class="hidden" data-for="help_for_dns">
-                          <?=gettext("Leave blank to use the system default DNS servers - this interface's IP if DNS forwarder is enabled, otherwise the servers configured on the General page.");?>
+                          <?= gettext('Leave blank to use the system default DNS servers: This interface IP address if a DNS service is enabled or the configured global DNS servers.') ?>
                         </div>
                       </td>
                     </tr>
@@ -567,7 +573,7 @@ if ($config['interfaces'][$if]['ipaddrv6'] == 'track6') {
                       <td>
                         <input name="domainsearchlist" type="text" id="domainsearchlist" value="<?=$pconfig['domainsearchlist'];?>" />
                         <div class="hidden" data-for="help_for_domainsearchlist">
-                          <?=gettext("The DHCP server can optionally provide a domain search list. Use the semicolon character as separator");?>
+                          <?=gettext("The DHCP server can optionally provide a domain search list. Use the semicolon character as separator.");?>
                         </div>
                       </td>
                     </tr>
@@ -610,7 +616,7 @@ if ($config['interfaces'][$if]['ipaddrv6'] == 'track6') {
                           <input type="button" onclick="show_ddns_config()" value="<?=gettext("Advanced");?>" class="btn btn-xs btn-default"/> - <?=gettext("Show Dynamic DNS");?>
                         </div>
                         <div id="showddns" style="display:none">
-                          <input type="checkbox" value="yes" name="ddnsupdate" id="ddnsupdate" <?php if($pconfig['ddnsupdate']) echo " checked=\"checked\""; ?> />&nbsp;
+                          <input type="checkbox" value="yes" name="ddnsupdate" id="ddnsupdate" <?php if ($pconfig['ddnsupdate']) echo " checked=\"checked\""; ?> />&nbsp;
                           <b><?=gettext("Enable registration of DHCP client names in DNS.");?></b><br />
                           <?=gettext("Note: Leave blank to disable dynamic DNS registration.");?><br />
                           <?=gettext("Enter the dynamic DNS domain which will be used to register client names in the DNS server.");?>
@@ -678,7 +684,7 @@ if ($config['interfaces'][$if]['ipaddrv6'] == 'track6') {
                             foreach($numberoptions as $item):?>
                               <tr>
                                 <td>
-                                  <div style="cursor:pointer;" class="act-removerow btn btn-default btn-xs" alt="remove"><i class="fa fa-minus fa-fw"></i></div>
+                                  <div style="cursor:pointer;" class="act-removerow btn btn-default btn-xs"><i class="fa fa-minus fa-fw"></i></div>
                                 </td>
                                 <td>
                                   <input name="numberoptions_number[]" type="text" value="<?=$item['number'];?>" />
@@ -725,7 +731,7 @@ if ($config['interfaces'][$if]['ipaddrv6'] == 'track6') {
                             <tfoot>
                               <tr>
                                 <td colspan="4">
-                                  <div id="addNew" style="cursor:pointer;" class="btn btn-default btn-xs" alt="add"><i class="fa fa-plus fa-fw"></i></div>
+                                  <div id="addNew" style="cursor:pointer;" class="btn btn-default btn-xs"><i class="fa fa-plus fa-fw"></i></div>
                                 </td>
                               </tr>
                             </tfoot>
@@ -740,7 +746,7 @@ if ($config['interfaces'][$if]['ipaddrv6'] == 'track6') {
                       <td>&nbsp;</td>
                       <td>
                         <input name="if" type="hidden" value="<?=$if;?>" />
-                        <input name="submit" type="submit" class="formbtn btn btn-primary" value="<?=gettext("Save");?>"/>
+                        <input name="submit" type="submit" class="formbtn btn btn-primary" value="<?=html_safe(gettext('Save'));?>"/>
                       </td>
                     </tr>
                   </table>
@@ -752,7 +758,7 @@ if ($config['interfaces'][$if]['ipaddrv6'] == 'track6') {
           <section class="col-xs-12">
             <div class="tab-content content-box col-xs-12">
                 <div class="table-responsive">
-                  <table class="tabcont table table-striped" style="width:100%; border:0; cellpadding:0; cellspacing:0">
+                  <table class="tabcont table table-striped" style="width:100%; border:0;">
                     <tr>
                       <th colspan="5"><?= gettext('DHCPv6 Static Mappings for this interface.') ?></th>
                     </tr>
@@ -766,7 +772,7 @@ if ($config['interfaces'][$if]['ipaddrv6'] == 'track6') {
                       </td>
                     </tr>
 <?php
-                    if(!empty($config['dhcpdv6'][$if]['staticmap'])):
+                    if (!empty($config['dhcpdv6'][$if]['staticmap'])):
                       $i = 0;
                       foreach ($config['dhcpdv6'][$if]['staticmap'] as $mapent): ?>
                     <tr>

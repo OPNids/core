@@ -1,32 +1,31 @@
 <?php
 
-/**
- *    Copyright (C) 2017 Deciso B.V.
+/*
+ * Copyright (C) 2017 Deciso B.V.
+ * All rights reserved.
  *
- *    All rights reserved.
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
  *
- *    Redistribution and use in source and binary forms, with or without
- *    modification, are permitted provided that the following conditions are met:
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
  *
- *    1. Redistributions of source code must retain the above copyright notice,
- *       this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
  *
- *    2. Redistributions in binary form must reproduce the above copyright
- *       notice, this list of conditions and the following disclaimer in the
- *       documentation and/or other materials provided with the distribution.
- *
- *    THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
- *    INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
- *    AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
- *    AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
- *    OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- *    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- *    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
- *    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- *    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- *    POSSIBILITY OF SUCH DAMAGE.
- *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+ * AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
+ * OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
+
 namespace OPNsense\Firewall;
 
 /**
@@ -60,7 +59,7 @@ class DNatRule extends Rule
             'interface' => 'parseInterface',
             'ipprotocol' => 'parsePlain',
             'protocol' => 'parseReplaceSimple,tcp/udp:{tcp udp},proto ',
-            'interface.from' => 'parseInterface, from ,:network',
+            'interface.from' => 'parseInterface, from (,:network)',
             'from' => 'parsePlainCurly,to ',
             'interface.to' => 'parseInterface, -> ',
             'staticnatport' => 'parseBool,  static-port , port 1024:65535 ',
@@ -71,7 +70,7 @@ class DNatRule extends Rule
     /**
      * search interfaces without a gateway other then the one provided
      * @param $interface
-     * @return list of interfaces
+     * @return array list of interfaces
      */
     private function reflectionInterfaces($interface)
     {
@@ -89,6 +88,7 @@ class DNatRule extends Rule
      * preprocess internal rule data to detail level of actual ruleset
      * handles shortcuts, like inet46 and multiple interfaces
      * @return array
+     * @throws \OPNsense\Base\ModelException
      */
     private function parseNatRules()
     {
@@ -102,6 +102,7 @@ class DNatRule extends Rule
                     $rule['external'] = "\${$rule['external']}";
                 } elseif (!Util::isIpAddress($rule['external']) && !Util::isSubnet($rule['external'])) {
                     $rule['disabled'] = true;
+                    $this->log("Invalid address {$rule['external']}");
                 } elseif (strpos($rule['external'], '/') === false && strpos($rule['from'], '/') !== false) {
                     $rule['external'] .= "/".explode('/', $rule['from'])[1];
                 }
@@ -113,9 +114,14 @@ class DNatRule extends Rule
             $reflinterf = $this->reflectionInterfaces($interface);
             if (!$rule['disabled'] && $rule['natreflection'] == "enable") {
                 foreach ($reflinterf as $interf) {
-                    $rule['rule_type'] = "nat_rdr";
-                    $rule['interface'] = $interf;
-                    yield $rule;
+                    $is_ipv4 = $this->isIpV4($rule);
+                    if (($is_ipv4 && !empty($this->interfaceMapping[$interf]['ifconfig']['ipv4'])) ||
+                        (!$is_ipv4 && !empty($this->interfaceMapping[$interf]['ifconfig']['ipv6']))
+                    ) {
+                        $rule['rule_type'] = "nat_rdr";
+                        $rule['interface'] = $interf;
+                        yield $rule;
+                    }
                 }
             }
 
@@ -144,6 +150,7 @@ class DNatRule extends Rule
     /**
      * output rule as string
      * @return string ruleset
+     * @throws \OPNsense\Base\ModelException
      */
     public function __toString()
     {

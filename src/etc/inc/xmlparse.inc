@@ -1,7 +1,7 @@
 <?php
 
 /*
-    Copyright (C) 2003-2004 Manuel Kasper <mk@neon1.net>.
+    Copyright (C) 2003-2004 Manuel Kasper <mk@neon1.net>
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -107,7 +107,7 @@ function endElement($parser, $name)
 
 function cData($parser, $data)
 {
-    global $depth, $curpath, $parsedcfg, $havedata;
+    global $curpath, $parsedcfg, $havedata;
 
     $data = trim($data, "\t\n\r");
 
@@ -129,7 +129,7 @@ function cData($parser, $data)
 
 function parse_xml_config_raw($cffile, $rootobj, $isstring = "false")
 {
-    global $depth, $curpath, $parsedcfg, $havedata, $listtags;
+    global $depth, $curpath, $parsedcfg, $havedata;
     $parsedcfg = array();
     $curpath = array();
     $depth = 0;

@@ -1,30 +1,30 @@
 <?php
 
 /*
-    Copyright (C) 2018 Deciso B.V.
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    1. Redistributions of source code must retain the above copyright notice,
-       this list of conditions and the following disclaimer.
-
-    2. Redistributions in binary form must reproduce the above copyright
-       notice, this list of conditions and the following disclaimer in the
-       documentation and/or other materials provided with the distribution.
-
-    THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
-    INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
-    AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
-    AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
-    OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-    POSSIBILITY OF SUCH DAMAGE.
-*/
+ * Copyright (C) 2018 Deciso B.V.
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+ * AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
+ * OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
 
 function core_services()
 {
@@ -82,14 +82,25 @@ function core_services()
         $services[] = $pconfig;
     }
 
-    if (is_apinger_enabled()) {
-        $pconfig = array();
-        $pconfig['name'] = "apinger";
-        $pconfig['description'] = gettext("Gateway Monitoring Daemon");
-        $pconfig['php']['restart'] = array('setup_gateways_monitor');
-        $pconfig['php']['start'] = array('setup_gateways_monitor');
-        $pconfig['pidfile'] = '/var/run/apinger.pid';
-        $services[] = $pconfig;
+    if (is_dpinger_enabled()) {
+        $gateways_arr_all = return_gateways_array(true);
+
+        foreach ($gateways_arr_all as $name => $gateway) {
+            if (isset($gateway['monitor_disable'])) {
+                continue;
+            }
+
+            $pconfig = array();
+            $pconfig['description'] = sprintf(gettext('Gateway Monitor (%s)'), $gateway['name']);
+            $pconfig['php']['restart'] = array('setup_gateways_monitor');
+            $pconfig['php']['start'] = array('setup_gateways_monitor');
+            $pconfig['pidfile'] = "/var/run/dpinger_{$name}.pid";
+            $pconfig['php']['args'] = array('verbose', 'id');
+            $pconfig['name'] = 'dpinger';
+            $pconfig['verbose'] = false;
+            $pconfig['id'] = $name;
+            $services[] = $pconfig;
+        }
     }
 
     if (is_dpinger_enabled()) {
@@ -186,7 +197,7 @@ function core_cron()
 
     $jobs[]['autocron'] = array('/usr/local/sbin/ping_hosts.sh', '*/4');
 
-    if (!empty($config['system']['rrdbackup'])) {
+    if (!empty($config['system']['rrdbackup']) && $config['system']['rrdbackup'] > 0) {
         $jobs[]['autocron'] = array(
             '/usr/local/etc/rc.syshook.d/backup/20-rrd',
             '0',
@@ -194,7 +205,7 @@ function core_cron()
         );
     }
 
-    if (!empty($config['system']['dhcpbackup'])) {
+    if (!empty($config['system']['dhcpbackup']) && $config['system']['dhcpbackup'] > 0) {
         $jobs[]['autocron'] = array(
             '/usr/local/etc/rc.syshook.d/backup/20-dhcpleases',
             '0',
@@ -202,7 +213,7 @@ function core_cron()
         );
     }
 
-    if (!empty($config['system']['netflowbackup'])) {
+    if (!empty($config['system']['netflowbackup']) && $config['system']['netflowbackup'] > 0) {
         $jobs[]['autocron'] = array(
             '/usr/local/etc/rc.syshook.d/backup/20-netflow',
             '0',
@@ -210,7 +221,7 @@ function core_cron()
         );
     }
 
-    if (!empty($config['system']['captiveportalbackup'])) {
+    if (!empty($config['system']['captiveportalbackup']) && $config['system']['captiveportalbackup'] > 0) {
         $jobs[]['autocron'] = array(
             '/usr/local/etc/rc.syshook.d/backup/20-captiveportal',
             '0',
@@ -232,7 +243,7 @@ function core_cron()
         }
     }
 
-    $jobs[]['autocron'] = array('/usr/local/opnsense/scripts/remote_backup.php', 0, 1);
+    $jobs[]['autocron'] = array('configctl system remote backup', 0, 1);
 
     return $jobs;
 }

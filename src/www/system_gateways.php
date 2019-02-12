@@ -117,7 +117,7 @@ foreach ($a_gateways as $gname => $gw) {
 }
 $a_gateways = $a_gateways_arr;
 
-$gateways_status = return_gateways_status(true);
+$gateways_status = return_gateways_status();
 
 // form processing
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -196,7 +196,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 legacy_html_escape_form_data($a_gateways);
 
-$service_hook = 'apinger';
+$service_hook = 'dpinger';
 
 include("head.inc");
 
@@ -297,9 +297,7 @@ $( document ).ready(function() {
                     <th class="hidden-xs hidden-sm hidden-md"><?=gettext("Gateway"); ?></th>
                     <th class="hidden-xs hidden-sm hidden-md"><?=gettext("Monitor IP"); ?></th>
                     <th class="text-nowrap hidden-xs"><?= gettext('RTT') ?></th>
-<?php if (isset($config['system']['prefer_dpinger'])) :?>
                     <th class="text-nowrap hidden-xs"><?= gettext('RTTd') ?></th>
-<?php endif ?>
                     <th class="text-nowrap hidden-xs"><?= gettext('Loss') ?></th>
                     <th><?=gettext("Status"); ?></th>
                     <th class="hidden-xs hidden-sm hidden-md"><?=gettext("Description"); ?></th>
@@ -356,7 +354,6 @@ $( document ).ready(function() {
                       <td class="text-nowrap hidden-xs">
                         <?= !empty($gateways_status[$gateway['gname']]) ? $gateways_status[$gateway['gname']]['stddev'] : gettext("Pending") ?>
                       </td>
-<?php endif ?>
                       <td class="text-nowrap hidden-xs">
                         <?= !empty($gateways_status[$gateway['gname']]) ? $gateways_status[$gateway['gname']]['loss'] : gettext("Pending") ?>
                       </td>
@@ -425,9 +422,7 @@ $( document ).ready(function() {
                       <td class="hidden-xs hidden-sm hidden-md"></td>
                       <td class="text-nowrap hidden-xs"></td>
                       <td class="text-nowrap hidden-xs"></td>
-<?php if (isset($config['system']['prefer_dpinger'])) :?>
                       <td class="text-nowrap hidden-xs"></td>
-<?php endif ?>
                       <td></td>
                       <td class="hidden-xs hidden-sm hidden-md"></td>
                       <td class="text-nowrap">

@@ -1,30 +1,30 @@
 <?php
-/**
- *    Copyright (C) 2018 Deciso B.V.
+
+/*
+ * Copyright (C) 2018 Deciso B.V.
+ * Copyright (C) 2018 Franco Fichtner <franco@opnsense.org>
+ * All rights reserved.
  *
- *    All rights reserved.
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
  *
- *    Redistribution and use in source and binary forms, with or without
- *    modification, are permitted provided that the following conditions are met:
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
  *
- *    1. Redistributions of source code must retain the above copyright notice,
- *       this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
  *
- *    2. Redistributions in binary form must reproduce the above copyright
- *       notice, this list of conditions and the following disclaimer in the
- *       documentation and/or other materials provided with the distribution.
- *
- *    THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
- *    INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
- *    AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
- *    AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
- *    OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- *    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- *    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
- *    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- *    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- *    POSSIBILITY OF SUCH DAMAGE.
- *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+ * AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
+ * OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 namespace OPNsense\Backup;
@@ -39,16 +39,17 @@ abstract class Base
      * encrypt+encode base64
      * @param string $data to encrypt
      * @param string $pass passphrase to use
+     * @param string $tag
      * @return string base64 encoded crypted data
      */
-    public function encrypt($data, $pass)
+    public function encrypt($data, $pass, $tag = 'config.xml')
     {
         $file = tempnam(sys_get_temp_dir(), 'php-encrypt');
-        @unlink($file);
+        @unlink("{$file}.enc");
 
         file_put_contents("{$file}.dec", $data);
         exec(sprintf(
-            '/usr/local/bin/openssl enc -e -aes-256-cbc -in %s -out %s -pass pass:%s',
+            '/usr/local/bin/openssl enc -e -aes-256-cbc -md md5 -in %s -out %s -pass pass:%s',
             escapeshellarg("{$file}.dec"),
             escapeshellarg("{$file}.enc"),
             escapeshellarg($pass)
@@ -56,11 +57,17 @@ abstract class Base
         @unlink("{$file}.dec");
 
         if (file_exists("{$file}.enc")) {
-            $result = file_get_contents("{$file}.enc");
+            $version = trim(shell_exec('opnsense-version -Nv'));
+            $result = "---- BEGIN {$tag} ----\n";
+            $result .= "Version: {$version}\n";
+            $result .= "Cipher: AES-256-CBC\n";
+            $result .= "Hash: MD5\n\n";
+            $result .= chunk_split(base64_encode(file_get_contents("{$file}.enc")), 76, "\n");
+            $result .= "---- END {$tag} ----\n";
             @unlink("{$file}.enc");
-            return base64_encode($result);
+            return $result;
         } else {
-            syslog(LOG_ERR, 'Failed to encrypt/decrypt data!');
+            syslog(LOG_ERR, 'Failed to encrypt data!');
             return null;
         }
     }
@@ -69,28 +76,48 @@ abstract class Base
      * decrypt base64 encoded data
      * @param string $data to decrypt
      * @param string $pass passphrase to use
+     * @param string $tag
      * @return string data
      */
-    public function decrypt($data, $pass)
+    public function decrypt($data, $pass, $tag = 'config.xml')
     {
         $file = tempnam(sys_get_temp_dir(), 'php-encrypt');
-        @unlink($file);
-
-        file_put_contents("{$file}.dec", base64_decode($data));
-        exec(sprintf(
-            '/usr/local/bin/openssl enc -d -aes-256-cbc -in %s -out %s -pass pass:%s',
-            escapeshellarg("{$file}.dec"),
-            escapeshellarg("{$file}.enc"),
-            escapeshellarg($pass)
-        ));
         @unlink("{$file}.dec");
 
-        if (file_exists("{$file}.enc")) {
-            $result = file_get_contents("{$file}.enc");
-            @unlink("{$file}.enc");
+        $data = explode("\n", $data);
+
+        foreach ($data as $key => $val) {
+            /* XXX remove helper lines for now */
+            if (strpos($val, ':') !== false) {
+                unset($data[$key]);
+            } elseif (strpos($val, "---- BEGIN {$tag} ----") !== false) {
+                unset($data[$key]);
+            } elseif (strpos($val, "---- END {$tag} ----") !== false) {
+                unset($data[$key]);
+            }
+        }
+
+        $data = implode("\n", $data);
+
+        file_put_contents("{$file}.enc", base64_decode($data));
+        exec(
+            sprintf(
+                '/usr/local/bin/openssl enc -d -aes-256-cbc -md md5 -in %s -out %s -pass pass:%s',
+                escapeshellarg("{$file}.enc"),
+                escapeshellarg("{$file}.dec"),
+                escapeshellarg($pass)
+            ),
+            $output,
+            $retval
+        );
+        @unlink("{$file}.enc");
+
+        if (file_exists("{$file}.dec") && !$retval) {
+            $result = file_get_contents("{$file}.dec");
+            @unlink("{$file}.dec");
             return $result;
         } else {
-            syslog(LOG_ERR, 'Failed to encrypt/decrypt data!');
+            syslog(LOG_ERR, 'Failed to decrypt data!');
             return null;
         }
     }

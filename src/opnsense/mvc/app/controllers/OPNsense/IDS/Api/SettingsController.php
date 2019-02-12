@@ -41,8 +41,8 @@ use \OPNsense\Base\UIModelGrid;
  */
 class SettingsController extends ApiMutableModelControllerBase
 {
-    static protected $internalModelName = 'ids';
-    static protected $internalModelClass = '\OPNsense\IDS\IDS';
+    protected static $internalModelName = 'ids';
+    protected static $internalModelClass = '\OPNsense\IDS\IDS';
 
     /**
      * Query non layered model items
@@ -292,7 +292,7 @@ class SettingsController extends ApiMutableModelControllerBase
         if ($data != null && isset($data["properties"])) {
             foreach ($data['properties'] as $key => $settings) {
                 $result['properties'][$key] = !empty($settings['default']) ? $settings['default'] : "";
-                foreach ($this->getModel()->fileTags->tag->__items as $tag) {
+                foreach ($this->getModel()->fileTags->tag->iterateItems() as $tag) {
                     if ((string)$tag->property == $key) {
                         $result['properties'][(string)$tag->property] = (string)$tag->value;
                     }
@@ -327,7 +327,7 @@ class SettingsController extends ApiMutableModelControllerBase
                         }
                         $result['fields'][] = $key;
                         $resultTag = null;
-                        foreach ($this->getModel()->fileTags->tag->__items as $tag) {
+                        foreach ($this->getModel()->fileTags->tag->iterateItems() as $tag) {
                             if ((string)$tag->property == $key) {
                                 $resultTag = $tag;
                                 break;

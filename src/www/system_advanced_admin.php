@@ -60,6 +60,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $pconfig['nohttpreferercheck'] = isset($config['system']['webgui']['nohttpreferercheck']);
     $pconfig['althostnames'] = $config['system']['webgui']['althostnames'];
     $pconfig['serialspeed'] = $config['system']['serialspeed'];
+    $pconfig['serialusb'] = isset($config['system']['serialusb']);
     $pconfig['primaryconsole'] = $config['system']['primaryconsole'];
     $pconfig['secondaryconsole'] = $config['system']['secondaryconsole'];
     $pconfig['enablesshd'] = $config['system']['ssh']['enabled'];
@@ -186,6 +187,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             $config['system']['serialspeed'] = $pconfig['serialspeed'];
         } elseif (isset($config['system']['serialspeed'])) {
             unset($config['system']['serialspeed']);
+        }
+
+        if (!empty($pconfig['serialusb'])) {
+            $config['system']['serialusb'] = true;
+        } elseif (isset($config['system']['serialusb'])) {
+            unset($config['system']['serialusb']);
         }
 
         if (!empty($pconfig['primaryconsole'])) {
@@ -711,7 +718,7 @@ $(document).ready(function() {
                 <td style="width:78%"></td>
               </tr>
               <tr>
-                <td><i class="fa fa-info-circle text-muted"></i></a> <?= gettext('Console driver') ?></td>
+                <td><i class="fa fa-info-circle text-muted"></i> <?= gettext('Console driver') ?></td>
                 <td>
                   <input name="usevirtualterminal" type="checkbox" value="yes" <?= empty($pconfig['usevirtualterminal']) ? '' : 'checked="checked"' ?>  />
                   <?= gettext('Use the virtual terminal driver (vt)') ?>
@@ -763,7 +770,14 @@ $(document).ready(function() {
                 </td>
               </tr>
               <tr>
-                <td><i class="fa fa-info-circle text-muted"></i></a> <?= gettext("Console menu") ?></td>
+                <td><i class="fa fa-info-circle text-muted"></i> <?= gettext('USB-based serial') ?></td>
+                <td>
+                  <input name="serialusb" type="checkbox" value="yes" <?= empty($pconfig['serialusb']) ? '' : 'checked="checked"' ?>  />
+                  <?= gettext('Use USB-based serial ports') ?>
+                </td>
+              </tr>
+              <tr>
+                <td><i class="fa fa-info-circle text-muted"></i> <?= gettext("Console menu") ?></td>
                 <td>
                   <input name="disableconsolemenu" type="checkbox" value="yes" <?= empty($pconfig['disableconsolemenu']) ? '' : 'checked="checked"' ?>  />
                   <?=gettext("Password protect the console menu"); ?>
@@ -825,7 +839,7 @@ $(document).ready(function() {
             <table class="table table-striped opnsense_standard_table_form">
               <tr>
                 <td style="width:22%"></td>
-                <td style="width:78%"><input name="Submit" type="submit" class="btn btn-primary" value="<?= gettext("Save") ?>" /></td>
+                <td style="width:78%"><input name="Submit" type="submit" class="btn btn-primary" value="<?= html_safe(gettext('Save')) ?>" /></td>
               </tr>
             </table>
           </div>

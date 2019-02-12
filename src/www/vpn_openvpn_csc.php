@@ -118,23 +118,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         header(url_safe('Location: /vpn_openvpn_csc.php'));
         exit;
     } else {
-        /* perform validations */
-        if ($result = openvpn_validate_cidr($pconfig['tunnel_network'], 'IPv4 Tunnel Network', false, 'ipv4', true)) {
+        if ($result = openvpn_validate_cidr($pconfig['tunnel_network'], gettext('IPv4 Tunnel Network'), false, 'ipv4', true)) {
             $input_errors[] = $result;
         }
-        if ($result = openvpn_validate_cidr($pconfig['tunnel_networkv6'], 'IPv6 Tunnel Network', false, 'ipv6', true)) {
+        if ($result = openvpn_validate_cidr($pconfig['tunnel_networkv6'], gettext('IPv6 Tunnel Network'), false, 'ipv6', true)) {
             $input_errors[] = $result;
         }
-        if ($result = openvpn_validate_cidr($pconfig['local_network'], 'IPv4 Local Network', true, "ipv4")) {
+        if ($result = openvpn_validate_cidr($pconfig['local_network'], gettext('IPv4 Local Network'), true, 'ipv4')) {
             $input_errors[] = $result;
         }
-        if ($result = openvpn_validate_cidr($pconfig['local_networkv6'], 'IPv6 Local Network', true, "ipv6")) {
+        if ($result = openvpn_validate_cidr($pconfig['local_networkv6'], gettext('IPv6 Local Network'), true, 'ipv6')) {
             $input_errors[] = $result;
         }
-        if ($result = openvpn_validate_cidr($pconfig['remote_network'], 'IPv4 Remote Network', true, "ipv4")) {
+        if ($result = openvpn_validate_cidr($pconfig['remote_network'], gettext('IPv4 Remote Network'), true, 'ipv4')) {
             $input_errors[] = $result;
         }
-        if ($result = openvpn_validate_cidr($pconfig['remote_networkv6'], 'IPv6 Remote Network', true, "ipv6")) {
+        if ($result = openvpn_validate_cidr($pconfig['remote_networkv6'], gettext('IPv6 Remote Network'), true, 'ipv6')) {
             $input_errors[] = $result;
         }
 
@@ -665,7 +664,7 @@ if ($act!="new" && $act!="edit") {
                   <tr>
                     <td>&nbsp;</td>
                     <td>
-                      <input name="save" type="submit" class="btn btn-primary" value="<?=gettext("Save"); ?>" />
+                      <input name="save" type="submit" class="btn btn-primary" value="<?=html_safe(gettext('Save')); ?>" />
                       <input name="act" type="hidden" value="<?=$act;?>" />
 <?php
                       if (isset($id)) :?>
@@ -711,7 +710,7 @@ if ($act!="new" && $act!="edit") {
                           <?=htmlspecialchars($csc['description']);?>
                       </td>
                       <td class="text-nowrap">
-                        <a data-id="<?=$i;?>" data-toggle="tooltip" title="<?=gettext("move selected before this item");?>" class="act_move btn btn-default btn-xs">
+                        <a data-id="<?=$i;?>" data-toggle="tooltip" title="<?=gettext("Move selected before this item");?>" class="act_move btn btn-default btn-xs">
                           <span class="fa fa-arrow-left fa-fw"></span>
                         </a>
                         <a href="vpn_openvpn_csc.php?act=edit&amp;id=<?=$i;?>" class="btn btn-default btn-xs"><span class="fa fa-pencil fa-fw"></span></a>
@@ -729,7 +728,7 @@ if ($act!="new" && $act!="edit") {
                         <?=gettext("Additional OpenVPN client specific overrides can be added here.");?>
                       </td>
                       <td class="text-nowrap">
-                        <a data-id="<?=$i;?>" data-toggle="tooltip" title="<?=gettext("move selected items to end");?>" class="act_move btn btn-default btn-xs">
+                        <a data-id="<?=$i;?>" data-toggle="tooltip" title="<?=gettext("Move selected items to end");?>" class="act_move btn btn-default btn-xs">
                           <span class="fa fa-arrow-down fa-fw"></span>
                         </a>
                         <a data-id="x" title="<?=gettext("delete selected rules"); ?>" data-toggle="tooltip"  class="act_delete btn btn-default btn-xs">

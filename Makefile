@@ -1,4 +1,4 @@
-# Copyright (c) 2014-2018 Franco Fichtner <franco@opnsense.org>
+# Copyright (c) 2014-2019 Franco Fichtner <franco@opnsense.org>
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -29,14 +29,26 @@ all:
 .include "Mk/defaults.mk"
 
 CORE_COMMIT!=	${.CURDIR}/Scripts/version.sh
-CORE_VERSION=	${CORE_COMMIT:C/-.*$//1}
-CORE_HASH=	${CORE_COMMIT:C/^.*-//1}
 
-CORE_ABI?=	18.1
+CORE_VERSION?=	${CORE_COMMIT:[1]}
+CORE_REVISION?=	${CORE_COMMIT:[2]}
+CORE_HASH?=	${CORE_COMMIT:[3]}
+
+.if "${CORE_REVISION}" != "" && "${CORE_REVISION}" != "0"
+CORE_PKGVERSION=	${CORE_VERSION}_${CORE_REVISION}
+.else
+CORE_PKGVERSION=	${CORE_VERSION}
+.endif
+
+CORE_ABI?=	19.1
 CORE_ARCH?=	${ARCH}
+CORE_FLAVOUR=	${FLAVOUR}
 CORE_OPENVPN?=	# empty
 CORE_PHP?=	71
-CORE_PYTHON?=	27
+CORE_PYTHON2?=	27
+CORE_PYTHON3?=	36
+CORE_RADVD?=	1
+CORE_SQUID?=	# empty
 CORE_SURICATA?=	# empty
 
 _FLAVOUR!=	if [ -f ${OPENSSL} ]; then ${OPENSSL} version; fi
@@ -59,6 +71,10 @@ CORE_PACKAGESITE?=	http://pkg.us.opnids.org
 CORE_ORIGIN?=		opnsense/${CORE_NAME}
 CORE_COMMENT?=		OPNids ${CORE_TYPE} package
 CORE_WWW?=		https://opnids.io/
+
+CORE_COPYRIGHT_HOLDER?=	Deciso B.V.
+CORE_COPYRIGHT_WWW?=	https://www.deciso.com/
+CORE_COPYRIGHT_YEARS?=	2014-2019
 
 CORE_DEPENDS_amd64?=	beep bsdinstaller
 CORE_DEPENDS_i386?=	${CORE_DEPENDS_amd64}
@@ -117,20 +133,20 @@ CORE_DEPENDS?=		${CORE_DEPENDS_${CORE_ARCH}} \
 			php${CORE_PHP}-sqlite3 \
 			php${CORE_PHP}-xml \
 			php${CORE_PHP}-zlib \
-			py${CORE_PYTHON}-Jinja2 \
-			py${CORE_PYTHON}-dnspython \
-			py${CORE_PYTHON}-ipaddress \
-			py${CORE_PYTHON}-netaddr \
-			py${CORE_PYTHON}-requests \
-			py${CORE_PYTHON}-sqlite3 \
-			py${CORE_PYTHON}-ujson \
-			radvd \
+			py${CORE_PYTHON2}-Jinja2 \
+			py${CORE_PYTHON2}-dnspython \
+			py${CORE_PYTHON2}-ipaddress \
+			py${CORE_PYTHON2}-netaddr \
+			py${CORE_PYTHON2}-requests \
+			py${CORE_PYTHON2}-sqlite3 \
+			py${CORE_PYTHON2}-ujson \
+			radvd${CORE_RADVD} \
 			rate \
 			redis \
 			redis-ml \
 			rrdtool \
 			samplicator \
-			squid \
+			squid${CORE_SQUID} \
 			sshlockout_pf \
 			strongswan \
 			sudo \
@@ -145,9 +161,10 @@ CORE_DEPENDS?=		${CORE_DEPENDS_${CORE_ARCH}} \
 WRKDIR?=${.CURDIR}/work
 WRKSRC?=${WRKDIR}/src
 PKGDIR?=${WRKDIR}/pkg
+MFCDIR?=${WRKDIR}/mfc
 
 WANTS=		p5-File-Slurp php${CORE_PHP}-pear-PHP_CodeSniffer \
-		phpunit6-php${CORE_PHP} py${CORE_PYTHON}-pycodestyle
+		phpunit7-php${CORE_PHP} py${CORE_PYTHON2}-pycodestyle
 
 .for WANT in ${WANTS}
 want-${WANT}:
@@ -157,8 +174,8 @@ want-${WANT}:
 mount:
 	@if [ ! -f ${WRKDIR}/.mount_done ]; then \
 	    echo -n "Enabling core.git live mount..."; \
-	    echo "${CORE_COMMIT}" > \
-	        ${.CURDIR}/src/opnsense/version/opnsense; \
+	    sed ${SED_REPLACE} ${.CURDIR}/src/opnsense/version/core.in > \
+	        ${.CURDIR}/src/opnsense/version/core; \
 	    mount_unionfs ${.CURDIR}/src ${LOCALBASE}; \
 	    touch ${WRKDIR}/.mount_done; \
 	    echo "done"; \
@@ -169,7 +186,6 @@ umount:
 	@if [ -f ${WRKDIR}/.mount_done ]; then \
 	    echo -n "Disabling core.git live mount..."; \
 	    umount -f "<above>:${.CURDIR}/src"; \
-	    rm ${.CURDIR}/src/opnsense/version/opnsense; \
 	    rm ${WRKDIR}/.mount_done; \
 	    echo "done"; \
 	    service configd restart; \
@@ -177,7 +193,7 @@ umount:
 
 manifest:
 	@echo "name: \"${CORE_NAME}\""
-	@echo "version: \"${CORE_VERSION}\""
+	@echo "version: \"${CORE_PKGVERSION}\""
 	@echo "origin: \"${CORE_ORIGIN}\""
 	@echo "comment: \"${CORE_COMMENT}\""
 	@echo "desc: \"${CORE_HASH}\""
@@ -211,21 +227,14 @@ PKG_SCRIPTS=	+PRE_INSTALL +POST_INSTALL \
 
 scripts:
 .for PKG_SCRIPT in ${PKG_SCRIPTS}
-	@if [ -e ${.CURDIR}/${PKG_SCRIPT} ]; then \
-		cp -v -- ${.CURDIR}/${PKG_SCRIPT} ${DESTDIR}/; \
-		sed -i '' -e "s/%%CORE_COMMIT%%/${CORE_COMMIT}/g" \
-		    -e "s/%%CORE_NAME%%/${CORE_NAME}/g" \
-		    -e "s/%%CORE_ABI%%/${CORE_ABI}/g" \
-		    ${DESTDIR}/${PKG_SCRIPT}; \
+	@if [ -f ${.CURDIR}/${PKG_SCRIPT} ]; then \
+		cp -- ${.CURDIR}/${PKG_SCRIPT} ${DESTDIR}/; \
 	fi
 .endfor
 
 install:
 	@${MAKE} -C ${.CURDIR}/contrib install DESTDIR=${DESTDIR}
-	@${MAKE} -C ${.CURDIR}/src install DESTDIR=${DESTDIR} \
-	    CORE_NAME=${CORE_NAME} CORE_ABI=${CORE_ABI} \
-	    CORE_PACKAGESITE=${CORE_PACKAGESITE} \
-	    CORE_REPOSITORY=${CORE_REPOSITORY}
+	@${MAKE} -C ${.CURDIR}/src install DESTDIR=${DESTDIR} ${MAKE_REPLACE}
 
 collect:
 	@(cd ${.CURDIR}/src; find * -type f) | while read FILE; do \
@@ -237,9 +246,7 @@ collect:
 
 bootstrap:
 	@${MAKE} -C ${.CURDIR}/src install-bootstrap DESTDIR=${DESTDIR} \
-	    NO_SAMPLE=please CORE_PACKAGESITE=${CORE_PACKAGESITE} \
-	    CORE_NAME=${CORE_NAME} CORE_ABI=${CORE_ABI} \
-	    CORE_REPOSITORY=${CORE_REPOSITORY}
+	    NO_SAMPLE=please ${MAKE_REPLACE}
 
 plist:
 	@(${MAKE} -C ${.CURDIR}/contrib plist && \
@@ -249,6 +256,7 @@ plist-fix:
 	@${MAKE} DESTDIR=${DESTDIR} plist > ${.CURDIR}/plist
 
 plist-check:
+	@mkdir -p ${WRKDIR}
 	@${MAKE} DESTDIR=${DESTDIR} plist > ${WRKDIR}/plist.new
 	@cat ${.CURDIR}/plist > ${WRKDIR}/plist.old
 	@if ! diff -uq ${WRKDIR}/plist.old ${WRKDIR}/plist.new > /dev/null ; then \
@@ -271,12 +279,17 @@ package-check:
 		exit 1; \
 	fi
 
-package: package-check clean-work
+package: plist-check package-check clean-wrksrc
 .for CORE_DEPEND in ${CORE_DEPENDS}
 	@if ! ${PKG} info ${CORE_DEPEND} > /dev/null; then ${PKG} install -yfA ${CORE_DEPEND}; fi
 .endfor
+	@echo -n ">>> Generating metadata for ${CORE_NAME}-${CORE_PKGVERSION}..."
 	@${MAKE} DESTDIR=${WRKSRC} FLAVOUR=${FLAVOUR} metadata
+	@echo " done"
+	@echo -n ">>> Staging files for ${CORE_NAME}-${CORE_PKGVERSION}..."
 	@${MAKE} DESTDIR=${WRKSRC} FLAVOUR=${FLAVOUR} install
+	@echo " done"
+	@echo ">>> Packaging files for ${CORE_NAME}-${CORE_PKGVERSION}:"
 	@PORTSDIR=${.CURDIR} ${PKG} create -v -m ${WRKSRC} -r ${WRKSRC} \
 	    -p ${WRKSRC}/plist -o ${PKGDIR}
 
@@ -286,23 +299,41 @@ upgrade-check:
 		exit 1; \
 	fi
 
-upgrade: plist-check upgrade-check clean-package package
+upgrade: upgrade-check clean-pkgdir package
 	@${PKG} delete -fy ${CORE_NAME} || true
 	@${PKG} add ${PKGDIR}/*.txz
 	@${LOCALBASE}/etc/rc.restart_webgui
 
-lint: plist-check
-	find ${.CURDIR}/src ${.CURDIR}/Scripts \
+lint-shell:
+	@find ${.CURDIR}/src ${.CURDIR}/Scripts \
 	    -name "*.sh" -type f -print0 | xargs -0 -n1 sh -n
-	find ${.CURDIR}/src ${.CURDIR}/Scripts \
+
+lint-xml:
+	@find ${.CURDIR}/src ${.CURDIR}/Scripts \
 	    -name "*.xml*" -type f -print0 | xargs -0 -n1 xmllint --noout
-	find ${.CURDIR}/src \
+
+SCRIPTDIRS!=	find ${.CURDIR}/src/opnsense/scripts -type d -depth 1
+
+lint-exec:
+.for DIR in ${.CURDIR}/src/etc/rc.d ${SCRIPTDIRS}
+.if exists(${DIR})
+	@find ${DIR} -path '**/htdocs_default' -prune -o -type f \
+	    ! -name "*.xml" ! -name "*.csv" ! -name "*.sql" -print0 | \
+	    xargs -0 -t -n1 test -x || \
+	    (echo "Missing executable permission in ${DIR}"; exit 1)
+.endif
+.endfor
+
+lint-php:
+	@find ${.CURDIR}/src \
 	    ! -name "*.xml" ! -name "*.xml.sample" ! -name "*.eot" \
 	    ! -name "*.svg" ! -name "*.woff" ! -name "*.woff2" \
 	    ! -name "*.otf" ! -name "*.png" ! -name "*.js" \
 	    ! -name "*.scss" ! -name "*.py" ! -name "*.ttf" \
-	    ! -name "*.tgz" ! -name "*.xml.dist" \
+	    ! -name "*.tgz" ! -name "*.xml.dist" ! -name "*.tgb" \
 	    -type f -print0 | xargs -0 -n1 php -l
+
+lint: plist-check lint-shell lint-xml lint-exec lint-php
 
 sweep:
 	find ${.CURDIR}/src -type f -name "*.map" -print0 | \
@@ -321,7 +352,10 @@ sweep:
 
 STYLEDIRS?=	src/etc/inc/plugins.inc.d src/opnsense
 
-style: want-php${CORE_PHP}-pear-PHP_CodeSniffer
+style-python: want-py${CORE_PYTHON2}-pycodestyle
+	@pycodestyle --ignore=E501 ${.CURDIR}/src || true
+
+style-php: want-php${CORE_PHP}-pear-PHP_CodeSniffer
 	@: > ${WRKDIR}/style.out
 .for STYLEDIR in ${STYLEDIRS}
 	@(phpcs --standard=ruleset.xml ${.CURDIR}/${STYLEDIR} \
@@ -339,8 +373,7 @@ style-fix: want-php${CORE_PHP}-pear-PHP_CodeSniffer
 	phpcbf --standard=ruleset.xml ${.CURDIR}/${STYLEDIR} || true
 .endfor
 
-style-python: want-py${CORE_PYTHON}-pycodestyle
-	@pycodestyle --ignore=E501 ${.CURDIR}/src || true
+style: style-python style-php
 
 license: want-p5-File-Slurp
 	@${.CURDIR}/Scripts/license > ${.CURDIR}/LICENSE
@@ -351,10 +384,7 @@ dhparam:
 	    ${.CURDIR}/src/etc/dh-parameters.${BITS}.sample ${BITS}
 .endfor
 
-diff:
-	@git diff --stat -p stable/${CORE_ABI}
-
-ARGS=	mfc
+ARGS=	diff mfc
 
 # handle argument expansion for required targets
 .for TARGET in ${.TARGETS}
@@ -370,32 +400,52 @@ ${_TARGET}_ARG=		${${_TARGET}_ARGS:[0]}
 .endif
 .endfor
 
-mfc:
-	@git checkout stable/${CORE_ABI}
-.for MFC in ${mfc_ARGS}
-	@git cherry-pick -x ${MFC}
-.endfor
-	@git checkout master
+diff:
+	@git diff --stat -p stable/${CORE_ABI} ${.CURDIR}/${diff_ARGS:[1]}
 
-test: want-phpunit6-php${CORE_PHP}
-	@if [ "$$(${PKG} query %n-%v ${CORE_NAME})" != "${CORE_NAME}-${CORE_VERSION}" ]; then \
-		echo "Installed version does not match, expected ${CORE_NAME}-${CORE_VERSION}"; \
+mfc: clean-mfcdir
+.for MFC in ${mfc_ARGS}
+.if exists(${MFC})
+	@cp -r ${MFC} ${MFCDIR}
+	@git checkout stable/${CORE_ABI}
+	@rm -r ${MFC}
+	@mv ${MFCDIR}/$$(basename ${MFC}) ${MFC}
+	@git add .
+	@if ! git diff --quiet HEAD; then \
+		git commit -m "${MFC}: sync with master"; \
+	fi
+.else
+	@git checkout stable/${CORE_ABI}
+	@git cherry-pick -x ${MFC}
+.endif
+	@git checkout master
+.endfor
+
+test: want-phpunit7-php${CORE_PHP}
+	@if [ "$$(${PKG} query %n-%v ${CORE_NAME})" != "${CORE_NAME}-${CORE_PKGVERSION}" ]; then \
+		echo "Installed version does not match, expected ${CORE_NAME}-${CORE_PKGVERSION}"; \
 		exit 1; \
 	fi
 	@cd ${.CURDIR}/src/opnsense/mvc/tests && \
 	    phpunit --configuration PHPunit.xml
 
-clean-package:
-	@rm -rf ${PKGDIR}
-
-clean-src:
+checkout:
 	@${GIT} reset -q ${.CURDIR}/src && \
 	    ${GIT} checkout -f ${.CURDIR}/src && \
 	    ${GIT} clean -xdqf ${.CURDIR}/src
 
-clean-work:
-	@rm -rf ${WRKSRC}
+clean-pkgdir:
+	@rm -rf ${PKGDIR}
+	@mkdir -p ${PKGDIR}
 
-clean: clean-package clean-src clean-work
+clean-mfcdir:
+	@rm -rf ${MFCDIR}
+	@mkdir -p ${MFCDIR}
+
+clean-wrksrc:
+	@rm -rf ${WRKSRC}
+	@mkdir -p ${WRKSRC}
+
+clean: clean-pkgdir clean-wrksrc clean-mfcdir
 
 .PHONY: license plist

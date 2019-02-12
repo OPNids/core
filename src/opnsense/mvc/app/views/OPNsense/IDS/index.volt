@@ -63,7 +63,7 @@ POSSIBILITY OF SUCH DAMAGE.
          * list all known classtypes and add to selection box
          */
         function updateRuleClassTypes() {
-            ajaxGet(url="/api/ids/settings/listRuleClasstypes",sendData={}, callback=function(data, status) {
+            ajaxGet("/api/ids/settings/listRuleClasstypes", {}, function(data, status) {
                 if (status == "success") {
                     $('#ruleclass').html('<option value="">ALL</option>');
                     $.each(data['items'], function(key, value) {
@@ -88,7 +88,7 @@ POSSIBILITY OF SUCH DAMAGE.
          * update list of available alert logs
          */
         function updateAlertLogs() {
-            ajaxGet(url="/api/ids/service/getAlertLogs",sendData={}, callback=function(data, status) {
+            ajaxGet("/api/ids/service/getAlertLogs", {}, function(data, status) {
                 if (status == "success") {
                     $('#alert-logfile').html("");
                     $.each(data, function(key, value) {
@@ -166,8 +166,8 @@ POSSIBILITY OF SUCH DAMAGE.
          */
         function actionReconfigure(callback_funct) {
             var result_status = false;
-            saveFormToEndpoint(url="/api/ids/settings/set",formid='frm_GeneralSettings',callback_ok=function(){
-                ajaxCall(url="/api/ids/service/reconfigure", sendData={}, callback=function(data,status) {
+            saveFormToEndpoint("/api/ids/settings/set", 'frm_GeneralSettings', function(){
+                ajaxCall("/api/ids/service/reconfigure", {}, function(data,status) {
                     if (status == "success" || data['status'].toLowerCase().trim() == "ok") {
                         result_status = true;
                     }
@@ -182,11 +182,12 @@ POSSIBILITY OF SUCH DAMAGE.
          * @param gridId: grid id to to use
          * @param url: ajax action to call
          * @param state: 0/1/undefined
-         * @param combine: number of keys to combine (seperate with ,)
+         * @param combine: number of keys to combine (separate with ,)
          *                 try to avoid too much items per call (results in too long url's)
          */
         function actionToggleSelected(gridId, url, state, combine) {
-            var rows =$("#"+gridId).bootgrid('getSelectedRows');
+            var defer_toggle = $.Deferred();
+            var rows = $("#"+gridId).bootgrid('getSelectedRows');
             if (rows != undefined){
                 var deferreds = [];
                 if (state != undefined) {
@@ -194,26 +195,31 @@ POSSIBILITY OF SUCH DAMAGE.
                 } else {
                     var url_suffix = "";
                 }
-
+                var base = $.when({});
                 var keyset = [];
-                $.each(rows, function(key,uuid){
+                $.each(rows, function(key, uuid){
                     keyset.push(uuid);
-                    if ( combine == undefined || keyset.length > combine) {
-                        deferreds.push(ajaxCall(url + keyset.join(',') +'/'+url_suffix, sendData={},null));
+                    if ( combine === undefined || keyset.length > combine || rows[rows.length - 1] === uuid) {
+                        var call_url = url + keyset.join(',') +'/'+url_suffix;
+                        base = base.then(function() {
+                            var defer = $.Deferred();
+                            ajaxCall(call_url, {}, function(){
+                                defer.resolve();
+                            });
+                            return defer.promise();
+                        });
                         keyset = [];
                     }
                 });
-
-                // flush remaining items
-                if (keyset.length > 0) {
-                    deferreds.push(ajaxCall(url + keyset.join(',') +'/'+url_suffix, sendData={},null));
-                }
-
-                // refresh when all toggles are executed
-                $.when.apply(null, deferreds).done(function(){
+                // last action in the list, reload grid and release this promise
+                base.then(function(){
                     $("#"+gridId).bootgrid("reload");
+                    defer_toggle.resolve();
                 });
+            } else {
+                defer_toggle.resolve();
             }
+            return defer_toggle.promise();
         }
 
         /*************************************************************************************************************
@@ -267,7 +273,7 @@ POSSIBILITY OF SUCH DAMAGE.
                     }
                 });
                 // display file settings (if available)
-                ajaxGet(url="/api/ids/settings/getRulesetproperties", sendData={}, callback=function(data, status) {
+                ajaxGet("/api/ids/settings/getRulesetproperties", {}, function(data, status) {
                     if (status == "success") {
                         var rows = [];
                         // generate rows with field references
@@ -369,10 +375,9 @@ POSSIBILITY OF SUCH DAMAGE.
                 grid_alerts.on("loaded.rs.jquery.bootgrid", function(){
                     grid_alerts.find(".command-alertinfo").on("click", function(e) {
                         var uuid=$(this).data("row-id");
-                        ajaxGet(url='/api/ids/service/getAlertInfo/' + uuid,
-                            sendData={}, callback=function(data, status) {
+                        ajaxGet('/api/ids/service/getAlertInfo/' + uuid, {}, function(data, status) {
                                 if (status == 'success') {
-                                    ajaxGet(url="/api/ids/settings/getRuleInfo/"+data['alert_sid'],sendData={}, callback=function(rule_data, rule_status) {
+                                    ajaxGet("/api/ids/settings/getRuleInfo/"+data['alert_sid'], {}, function(rule_data, rule_status) {
                                         var tbl = $('<table class="table table-condensed table-hover ids-alert-info"/>');
                                         var tbl_tbody = $("<tbody/>");
                                         var alert_fields = {};
@@ -425,7 +430,7 @@ POSSIBILITY OF SUCH DAMAGE.
                                                 alert_enabled.prop('checked', true);
                                             }
                                             $.each(rule_data.action, function(key, value){
-                                                var opt = $('<option/>').attr("value", key).text(value.value)
+                                                var opt = $('<option/>').attr("value", key).text(value.value);
                                                 if (value.selected == 1) {
                                                     opt.attr('selected', 'selected');
                                                 }
@@ -446,7 +451,7 @@ POSSIBILITY OF SUCH DAMAGE.
                                                 } else {
                                                     rule_params['enabled'] = 0;
                                                 }
-                                                ajaxCall(url="/api/ids/settings/setRule/"+data['alert_sid'], sendData=rule_params, callback=function() {
+                                                ajaxCall("/api/ids/settings/setRule/"+data['alert_sid'], rule_params, function() {
                                                     $("#alert_sid_action > small").remove();
                                                     $("#alert_sid_action").append($('<small/>').html("{{ lang._('Changes will be active after apply (rules tab)') }}"));
                                                 });
@@ -488,7 +493,7 @@ POSSIBILITY OF SUCH DAMAGE.
                     }
                 );
             }
-        })
+        });
 
 
 
@@ -522,7 +527,7 @@ POSSIBILITY OF SUCH DAMAGE.
             $(".rulesetprop").each(function(){
                 settings[$(this).data('id')] = $(this).val();
             });
-            ajaxCall(url="/api/ids/settings/setRulesetproperties", sendData={'properties': settings}, callback=function(data,status) {
+            ajaxCall("/api/ids/settings/setRulesetproperties", {'properties': settings}, function(data,status) {
                 $("#updateSettings_progress").removeClass("fa fa-spinner fa-pulse");
             });
         });
@@ -532,7 +537,7 @@ POSSIBILITY OF SUCH DAMAGE.
          */
         $(".act_update").click(function(){
             $(".act_update_progress").addClass("fa fa-spinner fa-pulse");
-            ajaxCall(url="/api/ids/service/reloadRules", sendData={}, callback=function(data,status) {
+            ajaxCall("/api/ids/service/reloadRules", {}, function(data,status) {
                 // when done, disable progress animation.
                 $(".act_update_progress").removeClass("fa fa-spinner fa-pulse");
             });
@@ -543,7 +548,7 @@ POSSIBILITY OF SUCH DAMAGE.
          */
         $("#updateRulesAct").click(function(){
             $("#updateRulesAct_progress").addClass("fa fa-spinner fa-pulse");
-            ajaxCall(url="/api/ids/service/updateRules", sendData={}, callback=function(data,status) {
+            ajaxCall("/api/ids/service/updateRules", {}, function(data,status) {
                 // when done, disable progress animation and reload grid.
                 $('#grid-rule-files').bootgrid('reload');
                 updateStatus();
@@ -572,19 +577,30 @@ POSSIBILITY OF SUCH DAMAGE.
         /**
          * disable selected rules
          */
-        $("#disableSelectedRules").click(function(){
+        $("#disableSelectedRules").click(function(event){
+            event.preventDefault();
             var gridId = 'grid-installedrules';
             var url = '/api/ids/settings/toggleRule/';
-            actionToggleSelected(gridId, url, 0, 100);
+            $("#disableSelectedRules > span").removeClass("fa-square-o");
+            $("#disableSelectedRules > span").addClass("fa-spinner fa-pulse");
+            actionToggleSelected(gridId, url, 0, 100).done(function(){
+                $("#disableSelectedRules > span").removeClass("fa-spinner fa-pulse");
+                $("#disableSelectedRules > span").addClass("fa-square-o");
+            });
         });
 
         /**
          * enable selected rules
          */
-        $("#enableSelectedRules").click(function(){
+        $("#enableSelectedRules").unbind('click').click(function(){
             var gridId = 'grid-installedrules';
             var url = '/api/ids/settings/toggleRule/';
-            actionToggleSelected(gridId, url, 1, 100);
+            $("#enableSelectedRules > span").removeClass("fa-check-square-o");
+            $("#enableSelectedRules > span").addClass("fa-spinner fa-pulse");
+            actionToggleSelected(gridId, url, 1, 100).done(function(){
+                $("#enableSelectedRules > span").removeClass("fa-spinner fa-pulse");
+                $("#enableSelectedRules > span").addClass("fa-check-square-o");
+            });
         });
 
         /**
@@ -615,7 +631,7 @@ POSSIBILITY OF SUCH DAMAGE.
          * Initialize
          */
         // fetch interface mappings on load
-        ajaxGet(url='/api/diagnostics/interface/getInterfaceNames', {}, callback=function(data, status) {
+        ajaxGet('/api/diagnostics/interface/getInterfaceNames', {}, function(data, status) {
             interface_descriptions = data;
         });
 
@@ -644,10 +660,9 @@ POSSIBILITY OF SUCH DAMAGE.
                     label: '{{ lang._('Yes') }}',
                     cssClass: 'btn-primary',
                     action: function(dlg){
-                        ajaxCall(url="/api/ids/service/dropAlertLog/",sendData={filename: selected_log.data('filename')},
-                                callback=function(data,status){
-                                    updateAlertLogs();
-                                });
+                        ajaxCall("/api/ids/service/dropAlertLog/", {filename: selected_log.data('filename')}, function(data,status){
+                            updateAlertLogs();
+                        });
                         dlg.close();
                     }
                 }, {
@@ -699,8 +714,8 @@ POSSIBILITY OF SUCH DAMAGE.
                       <td>
                         <div class="row">
                           <div class="col-xs-9">
-                            <button data-toggle="tooltip" id="enableSelectedRuleSets" type="button" class="btn btn-xs btn-default btn-primary">{{ lang._('Enable selected') }}</span></button>
-                            <button data-toggle="tooltip" id="disableSelectedRuleSets" type="button" class="btn btn-xs btn-default btn-primary">{{ lang._('Disable selected') }}</span></button>
+                            <button data-toggle="tooltip" id="enableSelectedRuleSets" type="button" class="btn btn-xs btn-default btn-primary">{{ lang._('Enable selected') }}</button>
+                            <button data-toggle="tooltip" id="disableSelectedRuleSets" type="button" class="btn btn-xs btn-default btn-primary">{{ lang._('Disable selected') }}</button>
                           </div>
                           <div class="col-xs-3" style="padding-top:0px;">
                             <input type="text" placeholder="{{ lang._('Search') }}" id="grid-rule-files-search" value=""/>
@@ -784,8 +799,8 @@ POSSIBILITY OF SUCH DAMAGE.
             <tfoot>
             <tr>
                 <td>
-                    <button title="{{ lang._('Disable selected') }}" id="disableSelectedRules" type="button" class="btn btn-xs btn-default"><span class="fa fa-square-o command-toggle"></span></button>
-                    <button title="{{ lang._('Enable selected') }}" id="enableSelectedRules" type="button" class="btn btn-xs btn-default"><span class="fa fa-check-square-o command-toggle"></span></button>
+                    <button title="{{ lang._('Disable selected') }}" id="disableSelectedRules" type="button" class="btn btn-xs btn-default"><span class="fa fa-square-o"></span></button>
+                    <button title="{{ lang._('Enable selected') }}" id="enableSelectedRules" type="button" class="btn btn-xs btn-default"><span class="fa fa-check-square-o"></span></button>
                 </td>
                 <td></td>
             </tr>

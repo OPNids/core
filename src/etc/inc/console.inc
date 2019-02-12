@@ -57,7 +57,7 @@ function is_interface_mismatch()
             /* Do not mismatch if any lock was issued */
             $mismatch = false;
             break;
-        } elseif (preg_match("/^enc|^cua|^tun|^tap|^l2tp|^pptp|^ppp|^ovpn|^tinc|^gif|^gre|^lagg|^bridge|vlan|_wlan/i", $ifcfg['if'])) {
+        } elseif (preg_match('/^enc|^cua|^tun|^tap|^l2tp|^pptp|^ppp|^ovpn|^ocvpn|^tinc|^wg|^zt|^ue|^gif|^gre|^lagg|^bridge|vlan|_wlan|_stf/i', $ifcfg['if'])) {
             /* Do not check these interfaces */
             continue;
         } elseif (does_interface_exist($ifcfg['if']) == false) {
@@ -221,7 +221,7 @@ EOD;
         }
     } while (!$lanif);
 
-    $done = !$lanif;    /* only if lan was set */
+    $done = false;
     while (!$done) {
         /* optional interfaces */
         $optif = array();
@@ -237,7 +237,7 @@ EOD;
                 printf("\nOptional interface %s description found: %s", $io, $config['interfaces']['opt' . $io]['descr']);
             }
 
-            printf("\nEnter the Optional %s interface name or 'a' for auto-detection\n" .
+            printf("\nEnter the Optional interface %s name or 'a' for auto-detection\n" .
                 "(or nothing if finished): ", $io);
 
             if ($interactive) {

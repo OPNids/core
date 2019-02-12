@@ -41,8 +41,8 @@ use \OPNsense\Cron\Cron;
 class SettingsController extends ApiMutableModelControllerBase
 {
 
-    static protected $internalModelName = 'job';
-    static protected $internalModelClass = '\OPNsense\Cron\Cron';
+    protected static $internalModelName = 'job';
+    protected static $internalModelClass = '\OPNsense\Cron\Cron';
 
     /**
      * retrieve job settings or return defaults
@@ -159,8 +159,7 @@ class SettingsController extends ApiMutableModelControllerBase
     {
         return $this->searchBase(
             "jobs.job",
-            array("enabled", "minutes","hours", "days", "months", "weekdays", "description", "command", "origin",
-                  "cronPermissions"),
+            array("enabled", "minutes","hours", "days", "months", "weekdays", "description", "command", "origin"),
             "description"
         );
     }

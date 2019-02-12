@@ -110,7 +110,7 @@ abstract class BaseModel
 
     /**
      * fetch reflection class (cached by field type)
-     * @param $classname classname to construct
+     * @param string $classname classname to construct
      * @return BaseField type class
      * @throws ModelException when unable to parse field type
      * @throws \ReflectionException when unable to create class
@@ -149,6 +149,7 @@ abstract class BaseModel
      * @param SimpleXMLElement $config_data (current) config data
      * @param BaseField $internal_data output structure using FieldTypes,rootnode is internalData
      * @throws ModelException parse error
+     * @throws \ReflectionException
      */
     private function parseXml(&$xml, &$config_data, &$internal_data)
     {
@@ -223,7 +224,7 @@ abstract class BaseModel
 
                 if ($fieldObject instanceof ArrayField) {
                     // handle Array types, recurring items
-                    if ($config_section_data != null) {
+                    if ($config_section_data != null && !empty((string)$config_section_data)) {
                         foreach ($config_section_data as $conf_section) {
                             // Array items are identified by a UUID, read from attribute or create a new one
                             if (isset($conf_section->attributes()->uuid)) {
@@ -263,6 +264,7 @@ abstract class BaseModel
     /**
      * Construct new model type, using it's own xml template
      * @throws ModelException if the model xml is not found or invalid
+     * @throws \ReflectionException
      */
     public function __construct()
     {
@@ -360,10 +362,20 @@ abstract class BaseModel
      * structured setter for model
      * @param array|$data named array
      * @return array
+     * @throws \Exception
      */
     public function setNodes($data)
     {
         return $this->internalData->setNodes($data);
+    }
+
+    /**
+     * iterate (non virtual) child nodes
+     * @return mixed
+     */
+    public function iterateItems()
+    {
+        return $this->internalData->iterateItems();
     }
 
     /**
@@ -578,11 +590,14 @@ abstract class BaseModel
      * The BaseModelMigration class should be named with the corresponding version
      * prefixed with an M and . replaced by _ for example : M1_0_1 equals version 1.0.1
      *
+     * @return bool status (true-->success, false-->failed)
+     * @throws \ReflectionException
      */
     public function runMigrations()
     {
         if (version_compare($this->internal_current_model_version, $this->internal_model_version, '<')) {
             $upgradePerfomed = false;
+            $migObjects = array();
             $logger = new Syslog("config", array('option' => LOG_PID, 'facility' => LOG_LOCAL4));
             $class_info = new \ReflectionClass($this);
             // fetch version migrations
@@ -614,6 +629,7 @@ abstract class BaseModel
                         $migobj = $mig_class->newInstance();
                         try {
                             $migobj->run($this);
+                            $migObjects[] = $migobj;
                             $upgradePerfomed = true;
                         } catch (\Exception $e) {
                             $logger->error("failed migrating from version " .
@@ -631,10 +647,16 @@ abstract class BaseModel
             if ($upgradePerfomed) {
                 try {
                     $this->serializeToConfig();
+                    foreach ($migObjects as $migobj) {
+                        $migobj->post($this);
+                    }
                 } catch (\Exception $e) {
                     $logger->error("Model ".$class_info->getName() ." can't be saved, skip ( " .$e . " )");
+                    return false;
                 }
             }
+
+            return true;
         }
     }
 

@@ -2,7 +2,7 @@
 
 /*
     Copyright (C) 2014-2016 Deciso B.V.
-    Copyright (C) 2003-2004 Justin Ellison <justin@techadvise.com>.
+    Copyright (C) 2003-2004 Justin Ellison <justin@techadvise.com>
     Copyright (C) 2010  Ermal Luçi
     Copyright (C) 2010  Seth Mos <seth.mos@dds.nl>
     All rights reserved.
@@ -173,7 +173,7 @@ include("head.inc");
                     <tr>
                       <td></td>
                       <td>
-                        <input name="Submit" type="submit" class="btn btn-primary" value="<?=gettext("Save");?>" />
+                        <input name="Submit" type="submit" class="btn btn-primary" value="<?=html_safe(gettext('Save'));?>" />
                       </td>
                     </tr>
                   </table>

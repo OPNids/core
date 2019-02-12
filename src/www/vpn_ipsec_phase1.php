@@ -1,33 +1,33 @@
 <?php
 
 /*
-    Copyright (C) 2014-2015 Deciso B.V.
-    Copyright (C) 2008 Shrew Soft Inc. <mgrooms@shrew.net>
-    Copyright (C) 2003-2005 Manuel Kasper <mk@neon1.net>
-    Copyright (C) 2014 Ermal Luçi
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    1. Redistributions of source code must retain the above copyright notice,
-       this list of conditions and the following disclaimer.
-
-    2. Redistributions in binary form must reproduce the above copyright
-       notice, this list of conditions and the following disclaimer in the
-       documentation and/or other materials provided with the distribution.
-
-    THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
-    INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
-    AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
-    AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
-    OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-    POSSIBILITY OF SUCH DAMAGE.
-*/
+ * Copyright (C) 2014-2015 Deciso B.V.
+ * Copyright (C) 2008 Shrew Soft Inc. <mgrooms@shrew.net>
+ * Copyright (C) 2003-2005 Manuel Kasper <mk@neon1.net>
+ * Copyright (C) 2014 Ermal Luçi
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+ * AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
+ * OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
 
 require_once("guiconfig.inc");
 require_once("system.inc");
@@ -78,7 +78,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $pconfig['interface'] = "tap";
     $pconfig['iketype'] = "ikev1";
     $phase1_fields = "mode,protocol,myid_type,myid_data,peerid_type,peerid_data
-    ,encryption-algorithm,hash-algorithm,dhgroup,lifetime,authentication_method,descr,nat_traversal
+    ,encryption-algorithm,lifetime,authentication_method,descr,nat_traversal
     ,interface,iketype,dpd_delay,dpd_maxfail,remote-gateway,pre-shared-key,certref
     ,caref,reauth_enable,rekey_enable,auto,tunnel_isolation,authservers,mobike";
     if (isset($p1index) && isset($config['ipsec']['phase1'][$p1index])) {
@@ -100,11 +100,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         }
         $pconfig['disabled'] = isset($config['ipsec']['phase1'][$p1index]['disabled']);
 
-        if (!empty($config['ipsec']['phase1'][$p1index]['authservers'])) {
-          $pconfig['authservers'] = explode(',', $config['ipsec']['phase1'][$p1index]['authservers']);
-        } else {
-          $pconfig['authservers'] = array();
+        foreach (array('authservers', 'dhgroup', 'hash-algorithm') as $fieldname) {
+            if (!empty($config['ipsec']['phase1'][$p1index][$fieldname])) {
+                $pconfig[$fieldname] = explode(',', $config['ipsec']['phase1'][$p1index][$fieldname]);
+            } else {
+                $pconfig[$fieldname] = array();
+            }
         }
+
         $pconfig['remotebits'] = null;
         $pconfig['remotenet'] = null ;
         if (isset($a_phase1[$p1index]['remote-subnet']) && strpos($config['ipsec']['phase1'][$p1index]['remote-subnet'],'/') !== false) {
@@ -126,12 +129,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         $pconfig['myid_type'] = "myaddress";
         $pconfig['peerid_type'] = "peeraddress";
         $pconfig['authentication_method'] = "pre_shared_key";
-        $pconfig['encryption-algorithm'] = array("name" => "3des") ;
-        $pconfig['hash-algorithm'] = "sha1";
-        $pconfig['dhgroup'] = "24";
+        $pconfig['encryption-algorithm'] = array("name" => "aes", "keylen" => "128");
+        $pconfig['hash-algorithm'] = array('sha256');
+        $pconfig['dhgroup'] = array('14');
         $pconfig['lifetime'] = "28800";
         $pconfig['nat_traversal'] = "on";
-        $pconfig['iketype'] = "ikev1";
         $pconfig['authservers'] = array();
 
         /* mobile client */
@@ -177,10 +179,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     // For RSA methods, require the CA/Cert.
     switch ($method) {
         case "eap-tls":
+        case "psk_eap-tls":
         case "eap-mschapv2":
         case "rsa_eap-mschapv2":
         case "eap-radius":
-          if ($pconfig['iketype'] != 'ikev2') {
+          if (!in_array($pconfig['iketype'], array('ikev2', 'ike'))) {
               $input_errors[] = sprintf(gettext("%s can only be used with IKEv2 type VPNs."), strtoupper($method));
           }
           if ($method == 'eap-radius' && empty($pconfig['authservers'])) {
@@ -198,6 +201,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             $reqdfieldsn = array(gettext("Pre-Shared Key"));
             break;
         case "hybrid_rsa_server":
+            $reqdfields = explode(' ', 'certref');
+            $reqdfieldsn = array(gettext("Certificate"));
+            break;
         case "xauth_rsa_server":
         case "rsasig":
             $reqdfields = explode(" ", "caref certref");
@@ -230,27 +236,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         (empty($pconfig['iketype']) || $pconfig['iketype'] == "ikev1")) {
         $t = 0;
         foreach ($a_phase1 as $ph1tmp) {
-            if ($p1index <> $t) {
+            if ($p1index != $t) {
                 if (isset($ph1tmp['remote-gateway']) && $ph1tmp['remote-gateway'] == $pconfig['remote-gateway'] && !isset($ph1tmp['disabled'])) {
                     $input_errors[] = sprintf(gettext('The remote gateway "%s" is already used by phase1 "%s".'), $pconfig['remote-gateway'], $ph1tmp['descr']);
                 }
             }
             $t++;
-        }
-    }
-
-    if (!empty($config['ipsec']['phase2'])) {
-        foreach ($config['ipsec']['phase2'] as $phase2) {
-            if ($phase2['ikeid'] == $pconfig['ikeid']) {
-                if (($pconfig['protocol'] == "inet") && ($phase2['mode'] == "tunnel6")) {
-                    $input_errors[] = gettext("There is a Phase 2 using IPv6, you cannot use IPv4.");
-                    break;
-                }
-                if (($pconfig['protocol'] == "inet6") && ($phase2['mode'] == "tunnel")) {
-                    $input_errors[] = gettext("There is a Phase 2 using IPv4, you cannot use IPv6.");
-                    break;
-                }
-            }
         }
     }
 
@@ -325,7 +316,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         }
     }
 
-    if (!empty($pconfig['iketype']) && $pconfig['iketype'] != "ikev1" && $pconfig['iketype'] != "ikev2") {
+    if (!empty($pconfig['iketype']) && !in_array($pconfig['iketype'], array("ike", "ikev1", "ikev2"))) {
         $input_errors[] = gettext('Invalid argument for key exchange protocol version.');
     }
 
@@ -338,6 +329,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         $pconfig['encryption-algorithm']['keylen'] = $pconfig['ealgo_keylen'];
     }
 
+    if (empty($pconfig['hash-algorithm'])) {
+        $input_errors[] = gettext("At least one hashing algorithm needs to be selected.");
+        $pconfig['hash-algorithm'] = array();
+    }
+
+    if (empty($pconfig['dhgroup'])) {
+        $pconfig['dhgroup'] = array();
+    }
+
     foreach ($p1_ealgos as $algo => $algodata) {
         if (!empty($pconfig['iketype']) && !empty($pconfig['encryption-algorithm']['name']) && !empty($algodata['iketype'])
           && $pconfig['iketype'] != $algodata['iketype'] && $pconfig['encryption-algorithm']['name'] == $algo) {
@@ -347,7 +347,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 
     if (count($input_errors) == 0) {
         $copy_fields = "ikeid,iketype,interface,mode,protocol,myid_type,myid_data
-        ,peerid_type,peerid_data,encryption-algorithm,hash-algorithm,dhgroup
+        ,peerid_type,peerid_data,encryption-algorithm,
         ,lifetime,pre-shared-key,certref,caref,authentication_method,descr
         ,nat_traversal,auto,mobike";
 
@@ -357,8 +357,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                 $ph1ent[$fieldname] = $pconfig[$fieldname];
             }
         }
-        if (!empty($pconfig['authservers'])) {
-            $ph1ent['authservers'] = implode(',', $pconfig['authservers']);
+
+        foreach (array('authservers', 'dhgroup', 'hash-algorithm') as $fieldname) {
+            if (!empty($pconfig[$fieldname])) {
+                $ph1ent[$fieldname] = implode(',', $pconfig[$fieldname]);
+            }
         }
 
         $ph1ent['disabled'] = !empty($pconfig['disabled']) ? true : false;
@@ -424,7 +427,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     }
 }
 
-$service_hook = 'ipsec';
+$service_hook = 'strongswan';
 
 legacy_html_escape_form_data($pconfig);
 include("head.inc");
@@ -435,7 +438,7 @@ include("head.inc");
 <script>
     $( document ).ready(function() {
         $("#iketype").change(function(){
-            if ($(this).val() == 'ikev2') {
+            if (['ike', 'ikev2'].includes($(this).val())) {
                 $("#mode").prop( "disabled", true );
                 $("#mode_tr").hide();
             } else {
@@ -472,6 +475,7 @@ include("head.inc");
             $(".auth_opt :input").prop( "disabled", true );
             switch ($("#authentication_method").val()) {
                 case 'eap-tls':
+                case 'psk_eap-tls':
                 case 'eap-mschapv2':
                 case 'rsa_eap-mschapv2':
                     $(".auth_eap_tls").show();
@@ -490,6 +494,9 @@ include("head.inc");
                     }
                     break;
                 case 'hybrid_rsa_server':
+                    $('.auth_eap_tls').show();
+                    $('.auth_eap_tls :input').prop('disabled', false);
+                    break;
                 case 'xauth_rsa_server':
                 case 'rsasig':
                 case 'rsa_eap-mschapv2':
@@ -554,6 +561,7 @@ include("head.inc");
           <form method="post" name="iform" id="iform">
             <div class="table-responsive">
               <table class="table table-striped opnsense_standard_table_form">
+                <tbody>
                   <tr>
                     <td style="width:22%"><b><?=gettext("General information"); ?></b></td>
                     <td style="width:78%; text-align:right">
@@ -605,7 +613,7 @@ include("head.inc");
 
                       <select name="iketype" id="iketype">
 <?php
-                      $keyexchange = array("ikev1" => "V1", "ikev2" => "V2");
+                      $keyexchange = array("ike" => "auto", "ikev1" => "V1", "ikev2" => "V2");
                       foreach ($keyexchange as $kidx => $name) :
                         ?>
                         <option value="<?=$kidx;?>" <?= $kidx == $pconfig['iketype'] ? "selected=\"selected\"" : "";?> >
@@ -656,7 +664,7 @@ include("head.inc");
 
                       $grouplist = return_gateway_groups_array();
                       foreach ($grouplist as $name => $group) {
-                          if ($group[0]['vip'] <> "") {
+                          if ($group[0]['vip'] != '') {
                               $vipif = $group[0]['vip'];
                           } else {
                               $vipif = $group[0]['int'];
@@ -916,7 +924,7 @@ endforeach; ?>
                   <tr>
                     <td><a id="help_for_halgo" href="#" class="showhelp"><i class="fa fa-info-circle"></i></a> <?=gettext("Hash algorithm"); ?></td>
                     <td>
-                      <select name="hash-algorithm">
+                      <select name="hash-algorithm[]" class="selectpicker" multiple="multiple">
                       <?php
                       $p1_halgos = array(
                         'md5' => 'MD5',
@@ -928,8 +936,8 @@ endforeach; ?>
                       );
                       foreach ($p1_halgos as $algo => $algoname) :
 ?>
-                        <option value="<?=$algo;?>" <?= $algo == $pconfig['hash-algorithm'] ? "selected=\"selected\"" : "";?>>
-                          <?=$algoname;?>
+                        <option value="<?= html_safe($algo) ?>" <?= in_array($algo, $pconfig['hash-algorithm']) ? 'selected="selected"' : '' ?>>
+                          <?= html_safe($algoname) ?>
                         </option>
 <?php                endforeach;
 ?>
@@ -942,29 +950,31 @@ endforeach; ?>
                   <tr>
                     <td><a id="help_for_dhgroup" href="#" class="showhelp"><i class="fa fa-info-circle"></i></a> <?=gettext("DH key group"); ?></td>
                     <td>
-                      <select name="dhgroup">
+                      <select name="dhgroup[]" class="selectpicker" multiple="multiple">
 <?php
                       $p1_dhgroups = array(
-                        0  => gettext('off'),
-                        1  => '1 (768 bit)',
-                        2  => '2 (1024 bit)',
-                        5  => '5 (1536 bit)',
-                        14 => '14 (2048 bit)',
-                        15 => '15 (3072 bit)',
-                        16 => '16 (4096 bit)',
-                        17 => '17 (6144 bit)',
-                        18 => '18 (8192 bit)',
-                        19 => '19 (256 bit elliptic curve)',
-                        20 => '20 (384 bit elliptic curve)',
-                        21 => '21 (521 bit elliptic curve)',
-                        22 => '22 (1024(sub 160) bit)',
-                        23 => '23 (2048(sub 224) bit)',
-                        24 => '24 (2048(sub 256) bit)'
+                           1 => '1 (768 bits)',
+                           2 => '2 (1024 bits)',
+                           5 => '5 (1536 bits)',
+                           14 => '14 (2048 bits)',
+                           15 => '15 (3072 bits)',
+                           16 => '16 (4096 bits)',
+                           17 => '17 (6144 bits)',
+                           18 => '18 (8192 bits)',
+                           19 => '19 (NIST EC 256 bits)',
+                           20 => '20 (NIST EC 384 bits)',
+                           21 => '21 (NIST EC 521 bits)',
+                           22 => '22 (1024(sub 160) bits)',
+                           23 => '23 (2048(sub 224) bits)',
+                           24 => '24 (2048(sub 256) bits)',
+                           28 => '28 (Brainpool EC 256 bits)',
+                           29 => '29 (Brainpool EC 384 bits)',
+                           30 => '30 (Brainpool EC 512 bits)',
                       );
-                      foreach ($p1_dhgroups as $keygroup => $keygroupname) :
+                      foreach ($p1_dhgroups as $keygroup => $keygroupname):
 ?>
-                        <option value="<?=$keygroup;?>" <?= $keygroup == $pconfig['dhgroup'] ? "selected=\"selected\"" : "";?>>
-                          <?=$keygroupname;?>
+                        <option value="<?= html_safe($keygroup) ?>" <?= in_array($keygroup, $pconfig['dhgroup']) ? 'selected="selected"' : '' ?>>
+                          <?= html_safe($keygroupname) ?>
                         </option>
 <?php                endforeach;
 ?>
@@ -1079,7 +1089,7 @@ endif; ?>
                       <?php
 endif; ?>
                       <input name="ikeid" type="hidden" value="<?=$pconfig['ikeid'];?>" />
-                      <input name="Submit" type="submit" class="btn btn-primary" value="<?=gettext("Save"); ?>" />
+                      <input name="Submit" type="submit" class="btn btn-primary" value="<?=html_safe(gettext('Save')); ?>" />
                     </td>
                   </tr>
                 </tbody>

@@ -65,14 +65,14 @@ function pf_cron()
     /* bogons fetch always set in default config.xml */
     switch ($config['system']['bogons']['interval']) {
         case 'daily':
-            $jobs[]['autocron'] = array('/usr/local/etc/rc.update_bogons cron', '1', '3', '*', '*', '*');
+            $jobs[]['autocron'] = array('configctl filter schedule bogons', '1', '3', '*', '*', '*');
             break;
         case 'weekly':
-            $jobs[]['autocron'] = array('/usr/local/etc/rc.update_bogons cron', '1', '3', '*', '*', '0');
+            $jobs[]['autocron'] = array('configctl filter schedule bogons', '1', '3', '*', '*', '0');
             break;
         case 'monthly':
         default:
-            $jobs[]['autocron'] = array('/usr/local/etc/rc.update_bogons cron', '1', '3', '1', '*', '*');
+            $jobs[]['autocron'] = array('configctl filter schedule bogons', '1', '3', '1', '*', '*');
             break;
     }
 
@@ -109,6 +109,7 @@ function pf_interfaces()
 
 /**
  * options we should probably remove from the system at some point, lets make them plugabble before removal
+ * @param $fw
  */
 function pf_firewall($fw)
 {
@@ -125,7 +126,7 @@ function pf_firewall($fw)
     if (isset($config['filter']['bypassstaticroutes']) && isset($config['staticroutes']['route']) &&
         count($config['staticroutes']['route'])) {
         $ifdetails = legacy_interfaces_details();
-        $intf = $fw->getInterfaceMapping();
+        $intf = iterator_to_array($fw->getInterfaceMapping());
         $GatewaysList = return_gateways_array(false, true) + return_gateway_groups_array();
 
         foreach (get_staticroutes() as $route) {
@@ -141,8 +142,8 @@ function pf_firewall($fw)
                 }
 
                 $networks = array();
-                $networks[] = array('from' => $intf[$friendly]['if'].":network", 'to' => $route['network']);
-                $networks[] = array('to' => $intf[$friendly]['if'].":network", 'from' => $route['network']);
+                $networks[] = array('from' => "({$intf[$friendly]['if']}:network)", 'to' => $route['network']);
+                $networks[] = array('to' => "({$intf[$friendly]['if']}:network)", 'from' => $route['network']);
                 $proto = strpos($route['network'], ":") !== false ? "inet6" : "inet";
                 foreach ($networks as $network) {
                     $fw->registerFilterRule(

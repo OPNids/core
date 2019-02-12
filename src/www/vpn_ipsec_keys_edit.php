@@ -111,7 +111,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     }
 }
 
-$service_hook = 'ipsec';
+$service_hook = 'strongswan';
 
 legacy_html_escape_form_data($pconfig);
 
@@ -161,7 +161,7 @@ include("head.inc");
                   <tr>
                     <td>&nbsp;</td>
                     <td>
-                      <input name="Submit" type="submit" class="btn btn-primary" value="<?=gettext("Save"); ?>" />
+                      <input name="Submit" type="submit" class="btn btn-primary" value="<?=html_safe(gettext('Save')); ?>" />
 <?php                 if (isset($id) && isset($config['ipsec']['mobilekey'][$id])) :
 ?>
                       <input name="id" type="hidden" value="<?=htmlspecialchars($id);?>" />

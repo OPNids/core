@@ -1,32 +1,31 @@
 <?php
 
-/**
- *    Copyright (C) 2017 Deciso B.V.
+/*
+ * Copyright (C) 2017 Deciso B.V.
+ * All rights reserved.
  *
- *    All rights reserved.
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
  *
- *    Redistribution and use in source and binary forms, with or without
- *    modification, are permitted provided that the following conditions are met:
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
  *
- *    1. Redistributions of source code must retain the above copyright notice,
- *       this list of conditions and the following disclaimer.
- *
- *    2. Redistributions in binary form must reproduce the above copyright
- *       notice, this list of conditions and the following disclaimer in the
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
  *       documentation and/or other materials provided with the distribution.
  *
- *    THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
- *    INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
- *    AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
- *    AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
- *    OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- *    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- *    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
- *    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- *    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- *    POSSIBILITY OF SUCH DAMAGE.
- *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+ * AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
+ * OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
+
 namespace OPNsense\Firewall;
 
 /**
@@ -40,6 +39,7 @@ class ForwardRule extends Rule
             'disabled' => 'parseIsComment',
             'nordr' => 'parseBool,no rdr,rdr',
             'pass' => 'parseBool,pass ',
+            'log' => 'parseBool,log ',
             'interface' => 'parseInterface',
             'ipprotocol' => 'parsePlain',
             'protocol' => 'parseReplaceSimple,tcp/udp:{tcp udp},proto ',
@@ -60,7 +60,7 @@ class ForwardRule extends Rule
             'interface' => 'parseInterface',
             'ipprotocol' => 'parsePlain',
             'protocol' => 'parseReplaceSimple,tcp/udp:{tcp udp},proto ',
-            'interface.from' => 'parseInterface, from ,:network',
+            'interface.from' => 'parseInterface, from (,:network)',
             'target.to' => 'parsePlainCurly,to ',
             'localport' => 'parsePlainCurly,port ',
             'interface.to' => 'parseInterface, -> ',
@@ -73,7 +73,7 @@ class ForwardRule extends Rule
     /**
      * search interfaces without a gateway other then the one provided
      * @param $interface
-     * @return list of interfaces
+     * @return array list of interfaces
      */
     private function reflectionInterfaces($interface)
     {
@@ -91,6 +91,7 @@ class ForwardRule extends Rule
      * preprocess internal rule data to detail level of actual ruleset
      * handles shortcuts, like inet46 and multiple interfaces
      * @return array
+     * @throws \OPNsense\Base\ModelException
      */
     private function parseRdrRules()
     {
@@ -106,6 +107,7 @@ class ForwardRule extends Rule
                     $tmp['target'] = "\${$tmp['target']}";
                 } elseif (!Util::isIpAddress($tmp['target']) && !Util::isSubnet($tmp['target'])) {
                     $tmp['disabled'] = true;
+                    $this->log("Invalid target");
                 }
             }
             // parse our local port
@@ -133,26 +135,33 @@ class ForwardRule extends Rule
                     }
                 } else {
                     $tmp['disabled'] = true;
+                    $this->log("invalid local-port");
                 }
             }
 
             // When reflection is enabled our ruleset should cover all
             $interflist = array($tmp['interface']);
             if (!$tmp['disabled'] && !$tmp['nordr'] && in_array($tmp['natreflection'], array("purenat", "enable"))) {
-                $interflist = array_merge($interflist, $this->reflectionInterfaces($tmp['interface']));
+                $is_ipv4 = $this->isIpV4($tmp);
+                $reflinterf = $this->reflectionInterfaces($tmp['interface']);
+                foreach ($reflinterf as $interf) {
+                    if (($is_ipv4 && !empty($this->interfaceMapping[$interf]['ifconfig']['ipv4'])) ||
+                        (!$is_ipv4 && !empty($this->interfaceMapping[$interf]['ifconfig']['ipv6']))
+                    ) {
+                        $interflist[] = $interf;
+                    }
+                }
             }
             foreach ($interflist as $interf) {
                 $rule = $tmp;
                 // automatically generate nat rule when enablenatreflectionhelper is set
                 if (!$rule['disabled'] && empty($rule['nordr']) && !empty($rule['enablenatreflectionhelper'])) {
-                    // Only add nat rules when the selected interface has an address configured
-                    if (!empty($this->interfaceMapping[$interf])) {
-                        if (($this->isIpV4($rule) && !empty($this->interfaceMapping[$interf]['ifconfig']['ipv4'])) ||
-                            (!$this->isIpV4($rule) && !empty($this->interfaceMapping[$interf]['ifconfig']['ipv6']))
-                        ) {
-                            $rule['rule_types'][] = "rdr_nat";
-                            $rule['staticnatport'] = !empty($rule['staticnatport']);
-                        }
+                    if (!empty($this->interfaceMapping[$rule['interface']]) && (
+                        !empty($this->interfaceMapping[$rule['interface']]['ifconfig']['ipv4']) ||
+                        !empty($this->interfaceMapping[$rule['interface']]['ifconfig']['ipv6'])
+                    )) {
+                        $rule['rule_types'][] = "rdr_nat";
+                        $rule['staticnatport'] = !empty($rule['staticnatport']);
                     }
                 }
                 $rule['interface'] = $interf;
@@ -164,6 +173,7 @@ class ForwardRule extends Rule
     /**
      * output rule as string
      * @return string ruleset
+     * @throws \OPNsense\Base\ModelException
      */
     public function __toString()
     {

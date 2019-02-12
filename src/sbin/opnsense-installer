@@ -51,6 +51,20 @@ daemon -f lua50c51 /usr/local/share/dfuibe_lua/main.lua \
     /usr/local/share/dfuibe_lua/conf/FreeBSD.lua \
     /usr/local/share/dfuibe_lua/conf/Product.lua
 
+######################################
+# FOLLOWING IS FROM OPNSENSE NEED TO DECIDE ON IT, IN MEANTIME STICK WITH PREVIOUS
+#CONFIGDIR=/usr/local/share/dfuibe_lua
+#CONFIGS=${CONFIGDIR}/main.lua
+#
+#for CONFIG in BSDInstaller FreeBSD Product; do
+#	if [ -f /usr/local/share/dfuibe_lua/conf/${CONFIG}.lua ]; then
+#		CONFIGS="${CONFIGS} ${CONFIGDIR}/conf/${CONFIG}.lua"
+#	fi
+#done
+#
+#daemon -f lua50c51 ${CONFIGS}
+######################################
+
 conscontrol mute on > /dev/null
 
 dfuife_curses -b /usr/local/share/dfuife_curses/hourglass.txt

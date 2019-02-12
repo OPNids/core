@@ -108,11 +108,12 @@ function step3_submitphpaction()
         return;
     }
 
+    $authcfg = auth_get_authserver($_POST['name']);
     if (empty($_POST['name']) || empty($_POST['ip']) ||empty($_POST['transport']) ||
          empty($_POST['scope']) || empty($_POST['basedn']) || empty($_POST['authscope']) || empty($_POST['nameattr'])) {
         $input_errors[] = gettext('Please enter all information for authentication server.');
         $stepid--;
-    } elseif (count(($authcfg = auth_get_authserver($_POST['name']))) > 0) {
+    } elseif ($authcfg !== false && count($authcfg) > 0) {
         $input_errors[] = gettext('Please choose a different name because an authentication ' .
             'server with this name already exists.');
         $stepid--;
@@ -173,10 +174,11 @@ function step5_submitphpaction()
         return;
     }
 
+    $authcfg = auth_get_authserver($_POST['name']);
     if (empty($_POST['name']) || empty($_POST['ip']) || empty($_POST['secret'])) {
         $input_errors[] = gettext('Please enter all information for authentication server.');
         $stepid--;
-    } elseif (count(($authcfg = auth_get_authserver($_POST['name']))) > 0) {
+    } elseif ($authcfg !== false && count($authcfg) > 0) {
         $input_errors[] = gettext('Please choose a different name because an authentication ' .
             'server with this name already exists.');
         $stepid--;
@@ -409,31 +411,31 @@ function step10_submitphpaction()
         $config['wizardtemp']['step10']['localport'] = $_POST['localport'] = openvpn_port_next($_POST['protocol']);
     }
 
-    if ($result = openvpn_validate_port($_POST['localport'], 'Local port')) {
+    if ($result = openvpn_validate_port($_POST['localport'], gettext('Local port'))) {
         $input_errors[] = $result;
     }
 
-    if ($result = openvpn_validate_cidr($_POST['tunnelnet'], 'IPv4 Tunnel Network', false, 'ipv4')) {
+    if ($result = openvpn_validate_cidr($_POST['tunnelnet'], gettext('IPv4 Tunnel Network'), false, 'ipv4')) {
         $input_errors[] = $result;
     }
 
-    if ($result = openvpn_validate_cidr($_POST['tunnelnetv6'], 'IPv6 Tunnel Network', false, 'ipv6')) {
+    if ($result = openvpn_validate_cidr($_POST['tunnelnetv6'], gettext('IPv6 Tunnel Network'), false, 'ipv6')) {
         $input_errors[] = $result;
     }
 
-    if ($result = openvpn_validate_cidr($_POST['localnet'], 'IPv4 Local Network', true, 'ipv4')) {
+    if ($result = openvpn_validate_cidr($_POST['localnet'], gettext('IPv4 Local Network'), true, 'ipv4')) {
         $input_errors[] = $result;
     }
 
-    if ($result = openvpn_validate_cidr($_POST['localnetv6'], 'IPv6 Local Network', true, 'ipv6')) {
+    if ($result = openvpn_validate_cidr($_POST['localnetv6'], gettext('IPv6 Local Network'), true, 'ipv6')) {
         $input_errors[] = $result;
     }
 
-    if ($result = openvpn_validate_cidr($_POST['remotenet'], 'IPv4 Remote Network', true, 'ipv4')) {
+    if ($result = openvpn_validate_cidr($_POST['remotenet'], gettext('IPv4 Remote Network'), true, 'ipv4')) {
         $input_errors[] = $result;
     }
 
-    if ($result = openvpn_validate_cidr($_POST['remotenetv6'], 'IPv6 Remote Network', true, 'ipv6')) {
+    if ($result = openvpn_validate_cidr($_POST['remotenetv6'], gettext('IPv6 Remote Network'), true, 'ipv6')) {
         $input_errors[] = $result;
     }
 

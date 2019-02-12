@@ -91,7 +91,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                 $config['system']['dnsserver'][] = $v4_server[0];
                 $config['system']['dnsserver'][] = $v4_server[1];
             }
-            $config['system']['dnsallowoverride'] = false;
+            if (isset($config['system']['dnsallowoverride'])) {
+                unset($config['system']['dnsallowoverride']);
+            }
         } else {
             $config['system']['dnsserver'] = array();
             $config['system']['dnsserver'][] = '';
@@ -210,8 +212,8 @@ include 'head.inc';
                 <tr>
                   <td>&nbsp;</td>
                   <td>
-                    <input name="submit" type="submit" class="btn btn-primary" value="<?=gettext('Save');?>" />
-                    <input name="test" type="submit" class="btn btn-primary" value="<?=gettext('Test/Update');?>" />
+                    <input name="submit" type="submit" class="btn btn-primary" value="<?=html_safe(gettext('Save'));?>" />
+                    <input name="test" type="submit" class="btn btn-primary" value="<?=html_safe(gettext('Test/Update'));?>" />
                   </td>
                 </tr>
               </tbody>

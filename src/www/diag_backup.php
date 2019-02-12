@@ -1,33 +1,34 @@
 <?php
 
 /*
-    Copyright (C) 2014 Deciso B.V.
-    Copyright (C) 2004-2009 Scott Ullrich <sullrich@gmail.com>
-    Copyright (C) 2008 Shrew Soft Inc. <mgrooms@shrew.net>
-    Copyright (C) 2003-2004 Manuel Kasper <mk@neon1.net>
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    1. Redistributions of source code must retain the above copyright notice,
-       this list of conditions and the following disclaimer.
-
-    2. Redistributions in binary form must reproduce the above copyright
-       notice, this list of conditions and the following disclaimer in the
-       documentation and/or other materials provided with the distribution.
-
-    THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
-    INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
-    AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
-    AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
-    OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-    POSSIBILITY OF SUCH DAMAGE.
-*/
+ * Copyright (C) 2015-2018 Franco Fichtner <franco@opnsense.org>
+ * Copyright (C) 2014 Deciso B.V.
+ * Copyright (C) 2004-2009 Scott Ullrich <sullrich@gmail.com>
+ * Copyright (C) 2008 Shrew Soft Inc. <mgrooms@shrew.net>
+ * Copyright (C) 2003-2004 Manuel Kasper <mk@neon1.net>
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+ * AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
+ * OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
 
 require_once("guiconfig.inc");
 require_once("interfaces.inc");
@@ -36,87 +37,7 @@ require_once("services.inc");
 require_once("rrd.inc");
 require_once("system.inc");
 
-
-function _crypt_data($val, $pass, $opt)
-{
-    $result = '';
-
-    $file = tempnam('/tmp', 'php-encrypt');
-    file_put_contents("{$file}.dec", $val);
-
-    exec(sprintf(
-      '/usr/local/bin/openssl enc %s -aes-256-cbc -in %s.dec -out %s.enc -k %s',
-      escapeshellarg($opt),
-      escapeshellarg($file),
-      escapeshellarg($file),
-      escapeshellarg($pass)
-    ));
-
-    if (file_exists("{$file}.enc")) {
-        $result = file_get_contents("{$file}.enc");
-    } else {
-        log_error('Failed to encrypt/decrypt data!');
-    }
-
-    @unlink($file);
-    @unlink("{$file}.dec");
-    @unlink("{$file}.enc");
-
-    return $result;
-}
-
-function encrypt_data(&$data, $pass)
-{
-    return base64_encode(_crypt_data($data, $pass, '-e'));
-}
-
-function decrypt_data(&$data, $pass)
-{
-    return _crypt_data(base64_decode($data), $pass, '-d');
-}
-
-function tagfile_reformat($in, &$out, $tag)
-{
-    $out = "---- BEGIN {$tag} ----\n";
-
-    $size = 80;
-    $oset = 0;
-    while ($size >= 64) {
-        $line = substr($in, $oset, 64);
-        $out .= $line . "\n";
-        $size = strlen($line);
-        $oset += $size;
-    }
-
-    $out .= "---- END {$tag} ----\n";
-
-    return true;
-}
-
-function tagfile_deformat($in, &$out, $tag)
-{
-    $btag_val = "---- BEGIN {$tag} ----";
-    $etag_val = "---- END {$tag} ----";
-
-    $btag_len = strlen($btag_val);
-    $etag_len = strlen($etag_val);
-
-    $btag_pos = stripos($in, $btag_val);
-    $etag_pos = stripos($in, $etag_val);
-
-    if (($btag_pos === false) || ($etag_pos === false)) {
-        return false;
-    }
-
-    $body_pos = $btag_pos + $btag_len;
-    $body_len = strlen($in);
-    $body_len -= $btag_len;
-    $body_len -= $etag_len + 1;
-
-    $out = substr($in, $body_pos, $body_len);
-
-    return true;
-}
+use OPNsense\Backup\Local;
 
 /**
  * restore config section
@@ -150,7 +71,6 @@ function restore_config_section($section_name, $new_contents)
 
 $areas = array(
     'OPNsense' => gettext('OPNsense Additions'),	/* XXX need specifics */
-    'aliases' => gettext('Aliases'),
     'bridges' => gettext('Bridge Devices'),
     'ca' => gettext('SSL Certificate Authorities'),
     'cert' => gettext('SSL Certificates'),
@@ -226,7 +146,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         if (!empty($_POST['encrypt']) && (empty($_POST['encrypt_password']) || empty($_POST['encrypt_passconf']))) {
             $input_errors[] = gettext("You must supply and confirm the password for encryption.");
         } elseif (!empty($_POST['encrypt']) && $_POST['encrypt_password'] != $_POST['encrypt_passconf']) {
-            $input_errors[] = gettext("The supplied 'Password' and 'Confirm' field values must match.");
+            $input_errors[] = gettext('The passwords do not match.');
         }
         if (count($input_errors) == 0) {
             $host = "{$config['system']['hostname']}.{$config['system']['domain']}";
@@ -244,8 +164,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             }
 
             if (!empty($_POST['encrypt'])) {
-                $data = encrypt_data($data, $_POST['encrypt_password']);
-                tagfile_reformat($data, $data, "config.xml");
+                $crypter = new Local();
+                /* XXX this *could* fail, not handled */
+                $data = $crypter->encrypt($data, $_POST['encrypt_password']);
             }
 
             $size = strlen($data);
@@ -265,10 +186,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     } elseif ($mode == "restore") {
         // unpack data and perform validation
         $data = null;
-        if (!empty($_POST['decrypt']) && (empty($_POST['decrypt_password']) || empty($_POST['decrypt_passconf']))) {
-            $input_errors[] = gettext("You must supply and confirm the password for decryption.");
-        } elseif (!empty($_POST['decrypt']) && $_POST['decrypt_password'] != $_POST['decrypt_passconf']) {
-            $input_errors[] = gettext("The supplied 'Password' and 'Confirm' field values must match.");
+        if (!empty($_POST['decrypt']) && empty($_POST['decrypt_password'])) {
+            $input_errors[] = gettext('You must supply the password for decryption.');
+        }
+        $user = getUserEntry($_SESSION['Username']);
+        if (userHasPrivilege($user, 'user-config-readonly')) {
+            $input_errors[] = gettext('You do not have the permission to perform this action.');
         }
         /* read the file contents */
         if (is_uploaded_file($_FILES['conffile']['tmp_name'])) {
@@ -282,10 +205,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         }
 
         if (!empty($_POST['decrypt'])) {
-            if (!tagfile_deformat($data, $data, "config.xml")) {
-                $input_errors[] = gettext("The uploaded file does not appear to contain an encrypted OPNsense configuration.");
+            $crypter = new Local();
+            $data = $crypter->decrypt($data, $_POST['decrypt_password']);
+            if (empty($data)) {
+                $input_errors[] = gettext('The uploaded file could not be decrypted.');
             }
-            $data = decrypt_data($data, $_POST['decrypt_password']);
         }
 
         if(!empty($_POST['restorearea']) && !stristr($data, "<" . $_POST['restorearea'] . ">")) {
@@ -366,7 +290,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                 }
 
                 if (count($filesInBackup) == 0) {
-                    $input_errors[] = gettext("communication failure");
+                    $input_errors[] = gettext('Saved settings, but remote backup failed.');
                 } else {
                     $input_messages = gettext("Backup successful, current file list:") . "<br>";
                     foreach ($filesInBackup as $filename) {
@@ -380,6 +304,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 }
 
 include("head.inc");
+legacy_html_escape_form_data($pconfig);
 ?>
 
 <body>
@@ -433,12 +358,12 @@ $( document ).ready(function() {
                     <div class="hidden table-responsive __mt" id="encrypt_opts">
                       <table class="table table-condensed">
                         <tr>
-                          <td><?=gettext("Password:"); ?></td>
-                          <td><input name="encrypt_password" type="password" value="" /></td>
+                          <td><?= gettext('Password') ?></td>
+                          <td><input name="encrypt_password" type="password"/></td>
                         </tr>
                         <tr>
-                          <td><?=gettext("confirm:"); ?></td>
-                          <td><input name="encrypt_passconf" type="password" value="" /> </td>
+                          <td><?= gettext('Confirmation') ?></td>
+                          <td><input name="encrypt_passconf" type="password"/> </td>
                         </tr>
                       </table>
                     </div>
@@ -464,14 +389,16 @@ $( document ).ready(function() {
                 <tr>
                   <td>
                     <?=gettext("Restore area:"); ?>
-                    <select name="restorearea" id="restorearea" class="selectpicker">
-                      <option value=""><?=gettext("ALL");?></option>
+                    <div>
+                      <select name="restorearea" id="restorearea" class="selectpicker">
+                        <option value=""><?=gettext("ALL");?></option>
 <?php
-                    foreach($areas as $area => $areaname):?>
-                      <option value="<?=$area;?>"><?=$areaname;?></option>
+                      foreach($areas as $area => $areaname):?>
+                        <option value="<?=$area;?>"><?=$areaname;?></option>
 <?php
-                    endforeach;?>
-                    </select><br/>
+                      endforeach;?>
+                      </select>
+                    </div>
                     <input name="conffile" type="file" id="conffile" /><br/>
                     <input name="rebootafterrestore" type="checkbox" id="rebootafterrestore" checked="checked" />
                     <?=gettext("Reboot after a successful restore."); ?><br/>
@@ -480,12 +407,8 @@ $( document ).ready(function() {
                     <div class="hidden table-responsive __mt" id="decrypt_opts">
                       <table class="table table-condensed">
                         <tr>
-                          <td><?=gettext("Password:"); ?></td>
-                          <td><input name="decrypt_password" type="password" value="" /></td>
-                        </tr>
-                        <tr>
-                          <td><?=gettext("confirm:"); ?></td>
-                          <td><input name="decrypt_passconf" type="password" value="" /> </td>
+                          <td><?= gettext('Password') ?></td>
+                          <td><input name="decrypt_password" type="password"/></td>
                         </tr>
                       </table>
                     </div>
@@ -516,8 +439,12 @@ $( document ).ready(function() {
                     $fieldId = $providerId . "_" .$field['name'];?>
                     <tr>
                         <td style="width:22%">
-                            <a id="help_for_<?=$fieldId;?>" href="#" class="showhelp">
-                                <i class="fa fa-info-circle <?=empty($field['help']) ? "text-muted" : "";?>"></i></a> <?=$field['label'];?>
+<?php if (!empty($field['help'])): ?>
+                            <a id="help_for_<?=$fieldId;?>" href="#" class="showhelp"><i class="fa fa-info-circle"></i></a>
+<?php else: ?>
+                            <i class="fa fa-info-circle text-muted"></i>
+<?php endif ?>
+                           <?=$field['label'];?>
                         </td>
                         <td style="width:78%">
 <?php
@@ -534,6 +461,9 @@ $( document ).ready(function() {
                         elseif ($field['type'] == 'password'):?>
 
                         <input name="<?=$fieldId;?>" type="password" value="<?=$field['value'];?>" />
+<?php
+                        elseif ($field['type'] == 'textarea'):?>
+                        <textarea name="<?=$fieldId;?>" rows="10"><?=$pconfig[$fieldId];?></textarea>
 <?php
                         endif;?>
                         <div class="hidden" data-for="help_for_<?=$fieldId;?>">
@@ -567,5 +497,5 @@ $( document ).ready(function() {
 include("foot.inc");
 
 if ($do_reboot) {
-    system_reboot();
+    configd_run('system reboot', true);
 }

@@ -183,7 +183,13 @@ class ACL
      */
     private function urlMatch($url, $urlmask)
     {
-        $match =  str_replace(array(".", "*","?"), array("\.", ".*","\?"), $urlmask);
+        /* "." and "?" have no effect on match, but "*" is a wildcard */
+        $match = str_replace(array('.', '*','?'), array('\.', '.*','\?'), $urlmask);
+        /* if pattern ends with special markers also match flat URL mask */
+        $match = preg_replace('@([/&?])\.\*$@', '($1.*)?', $match);
+        /* remove client side pattern from given URL */
+        $url = preg_replace('@#.*$@', '', $url);
+
         $result = preg_match("@^/{$match}$@", "{$url}");
         if ($result) {
             return true;
@@ -246,8 +252,8 @@ class ACL
      */
     public function isPageAccessible($username, $url)
     {
-        if ($url == '/index.php?logout') {
-            // always allow logout, could use better structuring...
+        if ($url == '/index.php?logout' || strpos($url, 'api/core/menu/') !== false) {
+            // always allow logout and menu, could use better structuring...
             return true;
         } elseif (!empty($_SESSION['user_shouldChangePassword'])) {
             // when a password change is enforced, lock all other endpoints
@@ -265,6 +271,7 @@ class ACL
     /**
      * get user preferred landing page
      * @param string $username user name
+     * @return bool|null|string|string[]
      */
     public function getLandingPage($username)
     {
@@ -285,7 +292,8 @@ class ACL
                 if ($pattern == "*") {
                     return "index.php";
                 } elseif (!empty($pattern)) {
-                    return str_replace('*', '', $pattern);
+                    /* remove wildcard and optional trailing slashes or query symbols */
+                    return preg_replace('@[/&?]?\*$@', '', $pattern);
                 }
                 break;
             }

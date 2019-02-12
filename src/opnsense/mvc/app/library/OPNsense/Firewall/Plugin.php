@@ -1,32 +1,31 @@
 <?php
 
-/**
- *    Copyright (C) 2016 Deciso B.V.
+/*
+ * Copyright (C) 2016 Deciso B.V.
+ * All rights reserved.
  *
- *    All rights reserved.
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
  *
- *    Redistribution and use in source and binary forms, with or without
- *    modification, are permitted provided that the following conditions are met:
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
  *
- *    1. Redistributions of source code must retain the above copyright notice,
- *       this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
  *
- *    2. Redistributions in binary form must reproduce the above copyright
- *       notice, this list of conditions and the following disclaimer in the
- *       documentation and/or other materials provided with the distribution.
- *
- *    THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
- *    INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
- *    AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
- *    AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
- *    OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- *    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- *    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
- *    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- *    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- *    POSSIBILITY OF SUCH DAMAGE.
- *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+ * AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
+ * OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
+
 namespace OPNsense\Firewall;
 
 use \OPNsense\Core\Config;
@@ -78,6 +77,21 @@ class Plugin
         $this->interfaceMapping = array();
         $this->interfaceMapping['loopback'] = array('if' => 'lo0', 'descr' => 'loopback');
         $this->interfaceMapping = array_merge($this->interfaceMapping, $mapping);
+        // generate virtual IPv6 interfaces
+        foreach ($this->interfaceMapping as $key => &$intf) {
+            if (!empty($intf['ipaddrv6']) && ($intf['ipaddrv6'] == '6rd' || $intf['ipaddrv6'] == '6to4')) {
+                $realif = "{$intf['if']}_stf";
+                // create new interface
+                $this->interfaceMapping[$realif] = array();
+                $this->interfaceMapping[$realif]['ifconfig']['ipv6'] = $intf['ifconfig']['ipv6'];
+                $this->interfaceMapping[$realif]['gatewayv6'] = $intf['gatewayv6'];
+                $this->interfaceMapping[$realif]['is_IPv6_override'] = true;
+                $this->interfaceMapping[$realif]['descr'] = $intf['descr'];
+                $this->interfaceMapping[$realif]['if'] = $realif;
+                // link original interface
+                $intf['IPv6_override'] = $realif;
+            }
+        }
     }
 
     /**
@@ -167,7 +181,12 @@ class Plugin
      */
     public function getInterfaceMapping()
     {
-        return $this->interfaceMapping;
+        foreach ($this->interfaceMapping as $intfkey => $intf) {
+            // suppress virtual ipv6 interfaces
+            if (empty($intf['is_IPv6_override'])) {
+                yield $intfkey => $intf;
+            }
+        }
     }
 
     /**
@@ -187,7 +206,7 @@ class Plugin
 
     /**
      * fetch anchors as text (pf ruleset part)
-     * @param string $types anchor types (fw for filter, other options are nat,rdr,binat. comma seperated)
+     * @param string $types anchor types (fw for filter, other options are nat,rdr,binat. comma-separated)
      * @param string $placement placement head,tail
      * @return string
      */

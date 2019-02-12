@@ -37,7 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!empty($_POST['if']) && !empty($_POST['submit'])) {
         $interface = $_POST['if'];
         if ($_POST['submit'] == 'remote') {
-            configd_run(exec_safe('interface reconfigure %s', array($interface)));
+            configdp_run('interface reconfigure', array($interface));
         } elseif (!empty($_POST['status']) && $_POST['status'] == 'up') {
             interface_bring_down($interface);
         } else {
@@ -66,16 +66,16 @@ include("head.inc");
         <div class="row">
           <section class="col-xs-12">
 <?php
-            $mac_man = json_decode(configd_run("interface list macdb json"), true);
-            $pfctl_counters = json_decode(configd_run("filter list counters json"), true);
-            $vmstat_interupts = json_decode(configd_run("system list interrupts json"), true);
+            $mac_man = json_decode(configd_run('interface list macdb json'), true);
+            $pfctl_counters = json_decode(configd_run('filter list counters json'), true);
+            $vmstat_interupts = json_decode(configd_run('system list interrupts json'), true);
             $ifsinfo = get_interfaces_info();
-            foreach (get_configured_interface_with_descr(false, true) as $ifdescr => $ifname):
+            foreach (legacy_config_get_interfaces(array('virtual' => false)) as $ifdescr => $ifcfg):
               $ifinfo = $ifsinfo[$ifdescr];
               $ifpfcounters = $pfctl_counters[$ifinfo['if']];
               legacy_html_escape_form_data($ifinfo);
               $ifdescr = htmlspecialchars($ifdescr);
-              $ifname = htmlspecialchars($ifname);
+              $ifname = htmlspecialchars($ifcfg['descr']);
 ?>
               <div class="tab-content content-box col-xs-12 __mb">
                 <div class="table-responsive">
@@ -330,14 +330,13 @@ include("head.inc");
                     </tr>
 <?php
                     endif;
-                    if ($ifdescr == 'tap' && file_exists('/etc/resolv.conf')): ?>
+                    $dnsall = get_nameservers($ifdescr);
+                    if (count($dnsall)): ?>
                     <tr>
                       <td><?= gettext("DNS servers") ?></td>
                       <td>
 <?php
-                        foreach(get_dns_servers() as $dns):
-                          echo "{$dns}<br />";
-                        endforeach; ?>
+                          echo implode('<br />', $dnsall); ?>
                       </td>
                     </tr>
 <?php

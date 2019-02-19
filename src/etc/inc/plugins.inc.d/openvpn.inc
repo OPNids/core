@@ -892,8 +892,8 @@ function openvpn_reconfigure($mode, $settings, $device_only = false)
         case 'server_tls':
         case 'server_tls_user':
         case 'server_user':
-            $ca = lookup_ca($settings['caref']);
-            openvpn_add_keyfile($ca['crt'], $conf, $mode_id, "ca");
+            $ca = base64_encode(ca_chain($settings));
+            openvpn_add_keyfile($ca, $conf, $mode_id, "ca");
 
             if (!empty($settings['certref'])) {
                 $cert = lookup_cert($settings['certref']);
@@ -1003,11 +1003,12 @@ function openvpn_restart($mode, $settings)
     }
 
     @unlink("/var/etc/openvpn/{$mode_id}.sock");
+    @unlink("/var/run/openvpn_{$mode_id}.pid");
 
     /* start the new process */
     $fpath = "/var/etc/openvpn/{$mode_id}.conf";
     openvpn_clear_route($mode, $settings);
-    mwexec_bg("/usr/local/sbin/openvpn --config " . escapeshellarg($fpath));
+    mwexecf('/usr/local/sbin/openvpn --config %s', $fpath);
 
     if (!file_exists("/var/run/booting")) {
         configd_run("filter reload");

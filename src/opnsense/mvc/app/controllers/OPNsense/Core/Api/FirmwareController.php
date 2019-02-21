@@ -1,7 +1,7 @@
 <?php
 
 /*
- * Copyright (c) 2015-2018 Franco Fichtner <franco@opnsense.org>
+ * Copyright (c) 2015-2019 Franco Fichtner <franco@opnsense.org>
  * Copyright (c) 2015-2018 Deciso B.V.
  * All rights reserved.
  *
@@ -46,15 +46,72 @@ class FirmwareController extends ApiControllerBase
      */
     protected function formatBytes($bytes)
     {
-        if ($bytes >= (1024 * 1024 * 1024)) {
-            return sprintf("%d GB", $bytes / (1024 * 1024 * 1024));
-        } elseif ($bytes >= 1024 * 1024) {
-            return sprintf("%d MB", $bytes / (1024 * 1024));
-        } elseif ($bytes >= 1024) {
-            return sprintf("%d KB", $bytes / 1024);
-        } else {
-            return sprintf("%d bytes", $bytes);
+        if (preg_match('/[^0-9]/', $bytes)) {
+            /* already processed */
+            return $bytes;
         }
+        if ($bytes >= (1024 * 1024 * 1024)) {
+            return sprintf('%.1F%s', $bytes / (1024 * 1024 * 1024), 'GiB');
+        } elseif ($bytes >= 1024 * 1024) {
+            return sprintf('%.1F%s', $bytes / (1024 * 1024), 'MiB');
+        } elseif ($bytes >= 1024) {
+            return sprintf('%.1F%s', $bytes / 1024, 'KiB');
+        } else {
+            return sprintf('%d%s', $bytes, 'B');
+        }
+    }
+
+    /**
+     * process plugins for config-bound cache (name only)
+     * @param string $name to process
+     * @param string $action taken
+     */
+    protected function processPlugin($name, $action)
+    {
+        if (strpos($name, 'os-') !== 0) {
+            /* not a plugin, don't care */
+            return;
+        }
+
+        $config = Config::getInstance()->object();
+
+        if (!isset($config->system->firmware)) {
+            $config->system->addChild('firmware');
+        }
+
+        $plugins = array();
+        if (!isset($config->system->firmware->plugins)) {
+            $config->system->firmware->addChild('plugins');
+        } else {
+            $plugins = explode(',', (string)$config->system->firmware->plugins);
+        }
+        $plugins = array_flip($plugins);
+
+        switch ($action) {
+            case 'install':
+            case 'reinstall':
+                $plugins[$name] = 'hello';
+                break;
+            case 'remove':
+                if (isset($plugins[$name])) {
+                    unset($plugins[$name]);
+                }
+                break;
+            default:
+                break;
+        }
+
+        $config->system->firmware->plugins = implode(',', array_keys($plugins));
+
+        if (empty($config->system->firmware->plugins)) {
+            unset($config->system->firmware->plugins);
+        }
+
+        if (!@count($config->system->firmware->children())) {
+            unset($config->system->firmware);
+        }
+
+        Config::getInstance()->save();
     }
 
     /**
@@ -196,6 +253,9 @@ class FirmwareController extends ApiControllerBase
                 $response['status'] = 'error';
             } elseif (array_key_exists('connection', $response) && $response['connection'] == 'timeout') {
                 $response['status_msg'] = gettext('Timeout while connecting to the selected mirror.');
+                $response['status'] = 'error';
+            } elseif (array_key_exists('connection', $response) && $response['connection'] == 'untrusted') {
+                $response['status_msg'] = gettext('Could not verify the repository fingerprint.');
                 $response['status'] = 'error';
             } elseif (array_key_exists('connection', $response) && $response['connection'] != 'ok') {
                 $response['status_msg'] = gettext('An error occurred while connecting to the selected mirror.');
@@ -451,6 +511,7 @@ class FirmwareController extends ApiControllerBase
             $pkg_name = $filter->sanitize($pkg_name, "pkgname");
             // execute action
             $response['msg_uuid'] = trim($backend->configdpRun("firmware reinstall", array($pkg_name), true));
+            $this->processPlugin($pkg_name, 'reinstall');
         } else {
             $response['status'] = 'failure';
         }
@@ -480,6 +541,7 @@ class FirmwareController extends ApiControllerBase
             $pkg_name = $filter->sanitize($pkg_name, "pkgname");
             // execute action
             $response['msg_uuid'] = trim($backend->configdpRun("firmware install", array($pkg_name), true));
+            $this->processPlugin($pkg_name, 'install');
         } else {
             $response['status'] = 'failure';
         }
@@ -509,6 +571,7 @@ class FirmwareController extends ApiControllerBase
             $pkg_name = $filter->sanitize($pkg_name, "pkgname");
             // execute action
             $response['msg_uuid'] = trim($backend->configdpRun("firmware remove", array($pkg_name), true));
+            $this->processPlugin($pkg_name, 'remove');
         } else {
             $response['status'] = 'failure';
         }
@@ -621,6 +684,7 @@ class FirmwareController extends ApiControllerBase
     /**
      * query package details
      * @return array
+     * @throws \Exception
      */
     public function detailsAction($package)
     {
@@ -657,8 +721,8 @@ class FirmwareController extends ApiControllerBase
         $response = array();
 
         /* allows us to select UI features based on product state */
-        $response['product_version'] = trim(file_get_contents('/usr/local/opnsense/version/opnsense'));
-        $response['product_name'] = trim(file_get_contents('/usr/local/opnsense/version/opnsense.name'));
+        list ($response['product_name'], $response['product_version']) =
+            explode(' ', trim(shell_exec('opnsense-version -nv')));
 
         $devel = explode('-', $response['product_name']);
         $devel = count($devel) == 2 ? $devel[1] == 'devel' : false;
@@ -683,15 +747,17 @@ class FirmwareController extends ApiControllerBase
                     $translated[$key] = $expanded[$index++];
                     if (empty($translated[$key])) {
                         $translated[$key] = gettext('N/A');
+                    } elseif ($key == 'flatsize') {
+                        $translated[$key] = $this->formatBytes($translated[$key]);
                     }
                 }
 
                 /* mark remote packages as "provided", local as "installed" */
-                $translated['provided'] = $type == 'remote' ? "1" : "0";
-                $translated['installed'] = $type == 'local' ? "1" : "0";
+                $translated['provided'] = $type == 'remote' ? '1' : '0';
+                $translated['installed'] = $type == 'local' ? '1' : '0';
                 if (isset($packages[$translated['name']])) {
                     /* local iteration, mark package provided */
-                    $translated['provided'] = "1";
+                    $translated['provided'] = '1';
                 }
                 $packages[$translated['name']] = $translated;
 
@@ -734,7 +800,16 @@ class FirmwareController extends ApiControllerBase
         if ($changelogs == null) {
             $changelogs = array();
         } else {
-            foreach ($changelogs as &$changelog) {
+            /* development strategy for changelog slightly differs from above */
+            $devel = preg_match('/^\d+\.\d+\.[a-z]/i', $response['product_version']) ? true : false;
+
+            foreach ($changelogs as $index => &$changelog) {
+                /* skip development items */
+                if (!$devel && preg_match('/^\d+\.\d+\.[a-z]/i', $changelog['version'])) {
+                    unset($changelogs[$index]);
+                    continue;
+                }
+
                 /* rewrite dates as ISO */
                 $date = date_parse($changelog['date']);
                 $changelog['date'] = sprintf('%04d-%02d-%02d', $date['year'], $date['month'], $date['day']);

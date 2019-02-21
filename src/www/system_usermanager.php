@@ -1,33 +1,33 @@
 <?php
 
 /*
-    Copyright (C) 2014-2016 Deciso B.V.
-    Copyright (C) 2008 Shrew Soft Inc. <mgrooms@shrew.net>
-    Copyright (C) 2005 Paul Taylor <paultaylor@winn-dixie.com>
-    Copyright (C) 2003-2005 Manuel Kasper <mk@neon1.net>
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    1. Redistributions of source code must retain the above copyright notice,
-       this list of conditions and the following disclaimer.
-
-    2. Redistributions in binary form must reproduce the above copyright
-       notice, this list of conditions and the following disclaimer in the
-       documentation and/or other materials provided with the distribution.
-
-    THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
-    INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
-    AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
-    AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
-    OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-    POSSIBILITY OF SUCH DAMAGE.
-*/
+ * Copyright (C) 2014-2016 Deciso B.V.
+ * Copyright (C) 2008 Shrew Soft Inc. <mgrooms@shrew.net>
+ * Copyright (C) 2005 Paul Taylor <paultaylor@winn-dixie.com>
+ * Copyright (C) 2003-2005 Manuel Kasper <mk@neon1.net>
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+ * AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
+ * OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
 
 require_once 'guiconfig.inc';
 require_once 'system.inc';
@@ -79,7 +79,6 @@ function get_user_privdesc(& $user)
 $a_user = &config_read_array('system', 'user');
 
 // reset errors and action
-$input_errors = array();
 $act = null;
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     // process get type actions
@@ -170,8 +169,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         $act = $_POST['act'];
     }
     $pconfig = $_POST;
+    $input_errors = array();
 
-    if ($act == "deluser" && isset($id)) {
+    $user = getUserEntry($_SESSION['Username']);
+    if (userHasPrivilege($user, 'user-config-readonly')) {
+        $input_errors[] = gettext('You do not have the permission to perform this action.');
+    } elseif ($act == "deluser" && isset($id)) {
         // drop user
         if ($_SESSION['Username'] === $a_user[$id]['name']) {
             $input_errors[] = gettext('You cannot delete yourself.');
@@ -220,8 +223,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         header(url_safe('Location: /system_usermanager.php?savemsg=%s&act=edit&userid=%d', array($savemsg, $id)));
         exit;
     } elseif (isset($pconfig['save']) || isset($pconfig['save_close'])) {
-        // save user
-        /* input validation */
         $reqdfields = explode(' ', 'usernamefld');
         $reqdfieldsn = array(gettext('Username'));
 
@@ -235,18 +236,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             $input_errors[] = gettext("The username is longer than 32 characters.");
         }
 
-        if ($pconfig['passwordfld1'] != $pconfig['passwordfld2']) {
-            $input_errors[] = gettext('The passwords do not match.');
-        } elseif (empty($pconfig['gen_new_password'])) {
-            // check against local password policy
-            $authenticator = get_authenticator();
-            $input_errors = array_merge(
-                $input_errors, $authenticator->checkPolicy($pconfig['usernamefld'], null, $pconfig['passwordfld1'])
-            );
-        }
-
-        if (!empty($pconfig['passwordfld1']) && !empty($pconfig['gen_new_password'])) {
-            $input_errors[] = gettext('Cannot set random password due to explicit input.');
+        if (!empty($pconfig['passwordfld1']) || !empty($pconfig['passwordfld2'])) {
+            if ($pconfig['passwordfld1'] != $pconfig['passwordfld2']) {
+                $input_errors[] = gettext('The passwords do not match.');
+            } elseif (empty($pconfig['gen_new_password'])) {
+                // check against local password policy
+                $authenticator = get_authenticator();
+                $input_errors = array_merge(
+                    $input_errors,
+                    $authenticator->checkPolicy($pconfig['usernamefld'], null, $pconfig['passwordfld1'])
+                );
+            } else {
+                $input_errors[] = gettext('Cannot set random password due to explicit input.');
+            }
         }
 
         if (!empty($pconfig['disabled']) && $_SESSION['Username'] === $a_user[$id]['name']) {
@@ -412,8 +414,8 @@ if (!isset($_GET['act'])) {
 }
 
 ?>
-<script src="/ui/js/jquery.qrcode.js"></script>
-<script src="/ui/js/qrcode.js"></script>
+<script src="<?= cache_safe('/ui/js/jquery.qrcode.js') ?>"></script>
+<script src="<?= cache_safe('/ui/js/qrcode.js') ?>"></script>
 
 <body>
 
@@ -479,8 +481,9 @@ $( document ).ready(function() {
     });
 
     // import ldap users
-    $("#import_ldap_users").click(function(){
-      url="system_usermanager_import_ldap.php";
+    $("#import_ldap_users").click(function(event){
+      event.preventDefault();
+      const url="system_usermanager_import_ldap.php";
       var oWin = window.open(url,"OPNsense","width=620,height=400,top=150,left=150,scrollbars=yes");
       if (oWin==null || typeof(oWin)=="undefined") {
         alert("<?= html_safe(gettext('Popup blocker detected. Action aborted.')) ?>");
@@ -494,7 +497,7 @@ $( document ).ready(function() {
         $.post(window.location, {act: 'newApiKey', userid: $("#userid").val() }, function(data) {
             if (data['key'] != undefined) {
                 // only generate a key file if there's data
-                output_data = 'key='+data['key'] +'\n' + 'secret='+data['secret'] +'\n';
+                const output_data = 'key='+data['key'] +'\n' + 'secret='+data['secret'] +'\n';
                 // create link, click and send to client
                 $('<a></a>')
                         .attr('id','downloadFile')
@@ -557,18 +560,11 @@ $( document ).ready(function() {
 });
 </script>
 
-
   <section class="page-content-main">
     <div class="container-fluid">
       <div class="row">
-<?php
-      if (isset($input_errors) && count($input_errors) > 0) {
-          print_input_errors($input_errors);
-      }
-      if (isset($savemsg)) {
-          print_info_box($savemsg);
-      }
-?>
+        <?php if (isset($input_errors) && count($input_errors)) print_input_errors($input_errors); ?>
+        <?php if (isset($savemsg)) print_info_box($savemsg); ?>
         <section class="col-xs-12">
             <div class="tab-content content-box col-xs-12 table-responsive">
 <?php
@@ -694,7 +690,7 @@ $( document ).ready(function() {
                   <tr>
                     <td><a id="help_for_groups" href="#" class="showhelp"><i class="fa fa-info-circle"></i></a> <?=gettext("Group Memberships");?></td>
                     <td>
-                      <table class="table" style="width:100%; border:0; cellpadding:0; cellspacing:0">
+                      <table class="table" style="width:100%; border:0;">
                         <thead>
                           <tr>
                             <th><?=gettext("Not Member Of"); ?></th>
@@ -940,7 +936,6 @@ $( document ).ready(function() {
                       <script>
                         $('#otp_qrcode').qrcode('<?= $otp_url ?>');
                       </script>
-                      </div>
                       <div class="hidden" data-for="help_for_otp_code">
                         <?= gettext('Scan this QR code for easy setup with external apps.') ?>
                       </div>
@@ -948,7 +943,6 @@ $( document ).ready(function() {
                   </tr>
 <?php
                         endif;?>
-                  <tr>
                   <tr>
                     <td><i class="fa fa-info-circle text-muted"></i> <?=gettext("Authorized keys");?></td>
                     <td>
@@ -993,8 +987,12 @@ $( document ).ready(function() {
                   </thead>
                   <tbody>
 <?php
-                  $i = 0;
-                  foreach ($a_user as $userent) :?>
+                  /* create a copy for sorting */
+                  $a_user_ro = $a_user;
+                  uasort($a_user_ro, function($a, $b) {
+                    return strnatcasecmp($a['name'], $b['name']);
+                  });
+                  foreach ($a_user_ro as $i => $userent): ?>
                     <tr>
                       <td>
 <?php
@@ -1011,24 +1009,19 @@ $( document ).ready(function() {
                       <td><?= implode(', ', local_user_get_groups($userent)) ?></td>
                       <td class="text-nowrap">
                         <a href="system_usermanager.php?act=edit&userid=<?=$i?>"
-                            class="btn btn-default btn-xs" data-toggle="tooltip" title="<?=gettext("edit user");?>">
+                            class="btn btn-default btn-xs" data-toggle="tooltip" title="<?= html_safe(gettext('Edit')) ?>">
                           <span class="fa fa-pencil fa-fw"></span>
                         </a>
-<?php
-                        if ($userent['scope'] != "system") :?>
+<?php if ($userent['scope'] != 'system'): ?>
                         <button type="button" class="btn btn-default btn-xs act-del-user"
                             data-username="<?=$userent['name'];?>"
-                            data-userid="<?=$i?>" title="<?=gettext("delete user");?>" data-toggle="tooltip">
+                            data-userid="<?=$i?>" title="<?= html_safe(gettext('Delete')) ?>" data-toggle="tooltip">
                           <span class="fa fa-trash fa-fw"></span>
                         </button>
-<?php
-                        endif;?>
+<?php endif ?>
                       </td>
                     </tr>
-<?php
-                  $i++;
-                  endforeach;
-?>
+<?php endforeach ?>
                     <tr>
                       <td colspan="3">
                         <table>
@@ -1047,16 +1040,26 @@ $( document ).ready(function() {
                       </td>
                       <td class="text-nowrap">
 <?php
-                        $authcfg_type = auth_get_authserver($config['system']['webgui']['authmode'])['type'];
-                        if ($authcfg_type == 'ldap') :?>
+                        $can_import = false;
+                        if (!empty($config['system']['webgui']['authmode'])) {
+                            $servers = explode(',', $config['system']['webgui']['authmode']);
+                            foreach ($servers as $server) {
+                                $authcfg_type = auth_get_authserver($server)['type'];
+                                if ($authcfg_type == 'ldap' || $authcfg_type == 'ldap-totp') {
+                                    $can_import = true;
+                                }
+                            }
+                        }
+?>
+<?php if ($can_import): ?>
                           <button type="submit" name="import"
                                   id="import_ldap_users"
-                                  class="btn btn-default btn-xs"
-                                  title="<?=gettext("import users")?>">
+                                  data-toggle="tooltip"
+                                  class="btn btn-primary btn-xs"
+                                  title="<?= html_safe(gettext('Import')) ?>">
                               <i class="fa fa-cloud-download fa-fw"></i>
                           </button>
-<?php
-                      endif;?>
+<?php endif ?>
                       </td>
                     </tr>
                   </tbody>

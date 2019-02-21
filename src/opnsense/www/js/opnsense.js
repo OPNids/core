@@ -52,7 +52,7 @@ function getFormData(parent) {
 
     var data = {};
     $( "#"+parent+"  input,#"+parent+" select,#"+parent+" textarea" ).each(function( index ) {
-        if ($(this).prop('id') == undefined) {
+        if ($(this).prop('id') === undefined || $(this).prop('id') === "") {
             // we need an id.
             return;
         }
@@ -92,6 +92,9 @@ function getFormData(parent) {
                     } else {
                         node[keypart] = "0";
                     }
+                } else if (sourceNode.hasClass("json-data")) {
+                    // deserialize the field content - used for JS maintained fields
+                    node[keypart] = sourceNode.data('data');
                 } else {
                     // regular input type
                     node[keypart] = sourceNode.val();
@@ -134,24 +137,23 @@ function setFormData(parent,data) {
                         // handle select boxes
                         targetNode.empty(); // flush
                         $.each(node[keypart],function(indxItem, keyItem){
+                            var opt = $("<option>").val(indxItem).text(keyItem["value"]);
                             if (keyItem["selected"] != "0") {
-                                targetNode.append("<option value='"+indxItem+"' selected>" + keyItem["value"] + " </option>");
-                            } else {
-                                targetNode.append("<option value='"+indxItem+"'>" + keyItem["value"] + " </option>");
+                                opt.attr('selected', 'selected');
                             }
+                            targetNode.append(opt);
                         });
                     } else if (targetNode.prop("type") == "checkbox") {
                         // checkbox type
-                        if (node[keypart] != 0) {
-                            targetNode.prop("checked",true);
-                        } else {
-                            targetNode.prop("checked",false);
-                        }
+                        targetNode.prop("checked", node[keypart] != 0);
                     } else if (targetNode.is("span")) {
                         if (node[keypart] != null) {
                             targetNode.text("");
                             targetNode.append(htmlDecode(node[keypart]));
                         }
+                    } else if (targetNode.hasClass('json-data')) {
+                        // if the input field is JSON data, serialize the data into the field
+                        targetNode.data('data', node[keypart]);
                     } else {
                         // regular input type
                         targetNode.val(htmlDecode(node[keypart]));
@@ -198,17 +200,17 @@ function clearFormValidation(parent) {
  */
 function ajaxCall(url, sendData, callback) {
     return $.ajax({
-        type: "POST",
+        type: 'POST',
         url: url,
-        dataType:"json",
-        contentType: "application/json",
+        dataType:'json',
+        contentType: 'application/json',
         complete: function(data, status) {
-            if ( callback == null ) {
-                null;
-            } else if ( "responseJSON" in data ) {
-                callback(data['responseJSON'],status);
-            } else {
-                callback(data,status);
+            if (callback != null) {
+                if ('responseJSON' in data) {
+                    callback(data['responseJSON'], status);
+                } else {
+                    callback(data, status);
+                }
             }
         },
         data: JSON.stringify(sendData)
@@ -224,17 +226,17 @@ function ajaxCall(url, sendData, callback) {
  */
 function ajaxGet(url,sendData,callback) {
     return $.ajax({
-        type: "GET",
+        type: 'GET',
         url: url,
-        dataType:"json",
-        contentType: "application/json",
+        dataType:'json',
+        contentType: 'application/json',
         complete: function(data,status) {
-            if ( callback == null ) {
-                null;
-            } else if ( "responseJSON" in data ) {
-                callback(data['responseJSON'],status);
-            } else {
-                callback({},status);
+            if (callback != null) {
+                if ('responseJSON' in data) {
+                    callback(data['responseJSON'], status);
+                } else {
+                    callback({}, status);
+                }
             }
         },
         data: sendData

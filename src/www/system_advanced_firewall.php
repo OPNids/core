@@ -1,33 +1,33 @@
 <?php
 
 /*
-    Copyright (C) 2014-2015 Deciso B.V.
-    Copyright (C) 2005-2007 Scott Ullrich <sullrich@gmail.com>
-    Copyright (C) 2008 Shrew Soft Inc. <mgrooms@shrew.net>
-    Copyright (C) 2003-2004 Manuel Kasper <mk@neon1.net>
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    1. Redistributions of source code must retain the above copyright notice,
-       this list of conditions and the following disclaimer.
-
-    2. Redistributions in binary form must reproduce the above copyright
-       notice, this list of conditions and the following disclaimer in the
-       documentation and/or other materials provided with the distribution.
-
-    THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
-    INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
-    AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
-    AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
-    OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-    POSSIBILITY OF SUCH DAMAGE.
-*/
+ * Copyright (C) 2014-2015 Deciso B.V.
+ * Copyright (C) 2005-2007 Scott Ullrich <sullrich@gmail.com>
+ * Copyright (C) 2008 Shrew Soft Inc. <mgrooms@shrew.net>
+ * Copyright (C) 2003-2004 Manuel Kasper <mk@neon1.net>
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+ * AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
+ * OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
 
 require_once("guiconfig.inc");
 require_once("filter.inc");
@@ -40,6 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $pconfig['ipv6allow'] = isset($config['system']['ipv6allow']);
     $pconfig['disablefilter'] = !empty($config['system']['disablefilter']);
     $pconfig['optimization'] = isset($config['system']['optimization']) ? $config['system']['optimization'] : "normal";
+    $pconfig['state-policy'] = isset($config['system']['state-policy']) ;
     $pconfig['rulesetoptimization'] = isset($config['system']['rulesetoptimization']) ? $config['system']['rulesetoptimization'] : "basic";
     $pconfig['maximumstates'] = isset($config['system']['maximumstates']) ? $config['system']['maximumstates'] : null;
     $pconfig['maximumfrags'] = isset($config['system']['maximumfrags']) ? $config['system']['maximumfrags'] : null;
@@ -54,7 +55,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $pconfig['schedule_states'] = isset($config['system']['schedule_states']);
     $pconfig['kill_states'] = isset($config['system']['kill_states']);
     $pconfig['skip_rules_gw_down'] = isset($config['system']['skip_rules_gw_down']);
-    $pconfig['gw_switch_default'] = isset($config['system']['gw_switch_default']);
     $pconfig['lb_use_sticky'] = isset($config['system']['lb_use_sticky']);
     $pconfig['pf_share_forward'] = isset($config['system']['pf_share_forward']);
     $pconfig['pf_disable_force_gw'] = isset($config['system']['pf_disable_force_gw']);
@@ -63,7 +63,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $pconfig['enablebinatreflection'] = !empty($config['system']['enablebinatreflection']);
     $pconfig['enablenatreflectionhelper'] = isset($config['system']['enablenatreflectionhelper']) ? $config['system']['enablenatreflectionhelper'] : null;
     $pconfig['bypassstaticroutes'] = isset($config['filter']['bypassstaticroutes']);
-    $pconfig['prefer_dpinger'] = isset($config['system']['prefer_dpinger']);
     $pconfig['ip_change_kill_states'] = isset($config['system']['ip_change_kill_states']);
 } elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $pconfig = $_POST;
@@ -176,6 +175,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             unset($config['system']['enablenatreflectionhelper']);
         }
 
+        if (!empty($pconfig['state-policy'])) {
+            $config['system']['state-policy'] = true;
+        } elseif (!empty($config['system']['state-policy'])) {
+            unset($config['system']['state-policy']);
+        }
+
         $config['system']['optimization'] = $pconfig['optimization'];
         $config['system']['rulesetoptimization'] = $pconfig['rulesetoptimization'];
         $config['system']['maximumstates'] = $pconfig['maximumstates'];
@@ -211,20 +216,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             unset($config['system']['skip_rules_gw_down']);
         }
 
-        if (!empty($pconfig['gw_switch_default'])) {
-            $config['system']['gw_switch_default'] = true;
-        } elseif (isset($config['system']['gw_switch_default'])) {
-            unset($config['system']['gw_switch_default']);
-        }
-
-        $old_pinger = isset($config['system']['prefer_dpinger']);
-
-        if (!empty($pconfig['prefer_dpinger'])) {
-            $config['system']['prefer_dpinger'] = true;
-        } elseif (isset($config['system']['prefer_dpinger'])) {
-            unset($config['system']['prefer_dpinger']);
-        }
-
         if (!empty($pconfig['ip_change_kill_states'])) {
             $config['system']['ip_change_kill_states'] = true;
         } elseif (isset($config['system']['ip_change_kill_states'])) {
@@ -237,12 +228,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 
         system_cron_configure();
         filter_configure();
-
-        if ($old_pinger != isset($config['system']['prefer_dpinger'])) {
-            mwexec('rm /var/db/rrd/*-quality.rrd');
-            setup_gateways_monitor();
-            rrd_configure();
-        }
     }
 }
 
@@ -383,28 +368,6 @@ include("head.inc");
                   </div>
                 </td>
               </tr>
-              <tr>
-                <td><a id="help_for_gw_switch_default" href="#" class="showhelp"><i class="fa fa-info-circle"></i></a> <?=gettext('Gateway switching') ?></td>
-                <td>
-                  <input name="gw_switch_default" type="checkbox" id="gw_switch_default" value="yes" <?= !empty($pconfig['gw_switch_default']) ? 'checked="checked"' : '' ?> />
-                  <?=gettext("Allow default gateway switching"); ?>
-                  <div class="hidden" data-for="help_for_gw_switch_default">
-                    <?= gettext('If the link where the default gateway resides fails switch the default gateway to another available one.') ?>
-                  </div>
-                </td>
-              </tr>
-              <tr>
-                <td><a id="help_for_prefer_dpinger" href="#" class="showhelp"><i class="fa fa-info-circle"></i></a> <?= gettext('Monitoring daemon') ?></td>
-                <td>
-                  <input name="prefer_dpinger" type="checkbox" id="prefer_dpinger" value="yes" <?= !empty($pconfig['prefer_dpinger']) ? 'checked="checked"' : '' ?> />
-                  <?= gettext('Prefer Dpinger over Apinger') ?>
-                  <div class="hidden" data-for="help_for_prefer_dpinger">
-                    <?=gettext("By default, the system will use Apinger for gateway monitoring. ".
-                                        "Switching from one to the other will result in the loss of " .
-                                        "any existing quality RRD data."); ?>
-                  </div>
-                </td>
-              </tr>
             </table>
           </div>
           <div class="content-box tab-content table-responsive __mb">
@@ -426,7 +389,12 @@ include("head.inc");
                                         "refer to this connection. Once the states expire, so will " .
                                         "the sticky connection. Further connections from that host " .
                                         "will be redirected to the next gateway in the round-robin."); ?>
-                  </div><br/>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td></td>
+                <td>
                   <input placeholder="<?=gettext("Source tracking timeout");?>" title="<?=gettext("Source tracking timeout");?>" name="srctrack" id="srctrack" type="text" value="<?= !empty($pconfig['srctrack']) ? $pconfig['srctrack'] : "";?>"/>
                   <div class="hidden" data-for="help_for_lb_use_sticky">
                     <?=gettext("Set the source tracking timeout for sticky connections in seconds. " .
@@ -560,6 +528,16 @@ include("head.inc");
                 </td>
               </tr>
               <tr>
+                <td><a id="help_for_state-policy" href="#" class="showhelp"><i class="fa fa-info-circle"></i></a> <?=gettext("Bind states to interface");?></td>
+                <td>
+                  <input name="state-policy" type="checkbox" <?= !empty($pconfig['state-policy']) ? "checked=\"checked\"" : "";?>/>
+                  <div class="hidden" data-for="help_for_state-policy">
+                    <?= gettext('Set behaviour for keeping states, by default states are floating, but when this option is set they should match the interface.') ?><br />
+                    <?= gettext('The default option (unchecked) matches states regardless of the interface, which is in most setups the best choice.') ?><br />
+                  </div>
+                </td>
+              </tr>
+              <tr>
                 <td><a id="help_for_disablefilter" href="#" class="showhelp"><i class="fa fa-info-circle"></i></a> <?=gettext("Disable Firewall");?></td>
                 <td>
                   <input name="disablefilter" type="checkbox" value="yes" <?= !empty($pconfig['disablefilter']) ? "checked=\"checked\"" : "";?>/>
@@ -674,8 +652,8 @@ include("head.inc");
                                 "rule set. Check this box to disable the automatically added rule, so access " .
                                 "is controlled only by the user-defined firewall rules. Ensure you have a firewall rule " .
                                 "in place that allows you in, or you will lock yourself out."),
-                                count($config['interfaces']) == 1 && !empty($config['interfaces']['tap']['if']) ?
-                                gettext('TAP') : gettext('MGT')) ?>
+                                count($config['interfaces']) == 1 && !empty($config['interfaces']['wan']['if']) ?
+                                gettext('WAN') : gettext('LAN')) ?>
                   </div>
                 </td>
               </tr>

@@ -29,6 +29,7 @@
 namespace OPNsense\Firewall;
 
 use \OPNsense\Core\Config;
+use \OPNsense\Firewall\Alias;
 
 /**
  * Class Util, common static firewall support functions
@@ -36,6 +37,16 @@ use \OPNsense\Core\Config;
  */
 class Util
 {
+    /**
+     * @var null|Alias reference to alias object
+     */
+    private static $aliasObject = null;
+
+    /**
+     * @var null|array cached alias descriptions
+     */
+    private static $aliasDescriptions = array();
+
     /**
      * is provided address an ip address.
      * @param string $network address
@@ -69,15 +80,37 @@ class Util
     }
 
     /**
+     * use provided alias object instead of creating one. When modifying multiple aliases referencing each other
+     * we need to use the same object for validations.
+     * @param Alias $alias object to link
+     */
+    public static function attachAliasObject($alias)
+    {
+        self::$aliasObject = $alias;
+    }
+
+    /**
      * check if name exists in alias config section
      * @param string $name name
+     * @param boolean $valid check if the alias can safely be used
      * @return boolean
+     * @throws \OPNsense\Base\ModelException
      */
-    public static function isAlias($name)
+    public static function isAlias($name, $valid = false)
     {
-        if (!empty($name) && !empty(Config::getInstance()->object()->aliases)) {
-            foreach (Config::getInstance()->object()->aliases->children() as $node) {
-                if ($node->name == $name) {
+        if (self::$aliasObject == null) {
+            // Cache the alias object to avoid object creation overhead.
+            self::$aliasObject = new Alias();
+        }
+        if (!empty($name)) {
+            foreach (self::$aliasObject->aliasIterator() as $alias) {
+                if ($alias['name'] == $name) {
+                    if ($valid) {
+                        // check validity for port type aliases
+                        if (preg_match("/port/i", $alias['type']) && trim($alias['content']) == "") {
+                            return false;
+                        }
+                    }
                     return true;
                 }
             }
@@ -86,30 +119,63 @@ class Util
     }
 
     /**
+     * return alias descriptions
+     * @param string $name name
+     * @return string
+     */
+    public static function aliasDescription($name)
+    {
+        if (empty(self::$aliasDescriptions)) {
+            // read all aliases at once, and cache descriptions.
+            foreach ((new Alias())->aliasIterator() as $alias) {
+                if (empty(self::$aliasDescriptions[$alias['name']])) {
+                    if (!empty($alias['descr'])) {
+                        self::$aliasDescriptions[$alias['name']] = $alias['descr'];
+                    } elseif (!empty($alias['description'])) {
+                        self::$aliasDescriptions[$alias['name']] = $alias['description'];
+                    } elseif (!empty($alias['content'])) {
+                        $tmp = array_slice(explode("\n", $alias['content']), 0, 10);
+                        asort($tmp);
+                        self::$aliasDescriptions[$alias['name']] = implode("<br/>", $tmp);
+                    }
+                }
+            }
+        }
+        if (!empty(self::$aliasDescriptions[$name])) {
+            return self::$aliasDescriptions[$name];
+        } else {
+            return null;
+        }
+    }
+
+    /**
      * Fetch port alias contents, other alias types are handled using tables so there usually no need
      * to know the contents within any of the scripts.
      * @param string $name name
-     * @param $aliases aliases already parsed (prevent deadlock)
+     * @param array $aliases aliases already parsed (prevent deadlock)
      * @return array containing all ports or addresses
+     * @throws \OPNsense\Base\ModelException when unable to create alias model
      */
     public static function getPortAlias($name, $aliases = array())
     {
+        if (self::$aliasObject == null) {
+            // Cache the alias object to avoid object creation overhead.
+            self::$aliasObject = new Alias();
+        }
         $result = array();
-        if (!empty($name) && !empty(Config::getInstance()->object()->aliases)) {
-            foreach (Config::getInstance()->object()->aliases->children() as $node) {
-                if ($node->name == $name && $node->type == 'port') {
-                    foreach (explode(" ", $node->address) as $address) {
-                        if (Util::isAlias($address)) {
-                            if (!in_array($address, $aliases)) {
-                                foreach (Util::getPortAlias($address, $aliases) as $port) {
-                                    if (!in_array($port, $result)) {
-                                        $result[] = $port;
-                                    }
+        foreach (self::$aliasObject->aliasIterator() as $node) {
+            if (!empty($name) && (string)$node['name'] == $name && $node['type'] == 'port') {
+                foreach (explode("\n", $node['content']) as $address) {
+                    if (Util::isAlias($address)) {
+                        if (!in_array($address, $aliases)) {
+                            foreach (Util::getPortAlias($address, $aliases) as $port) {
+                                if (!in_array($port, $result)) {
+                                    $result[] = $port;
                                 }
                             }
-                        } elseif (!in_array($address, $result)) {
-                            $result[] = $address;
                         }
+                    } elseif (!in_array($address, $result)) {
+                        $result[] = $address;
                     }
                 }
             }

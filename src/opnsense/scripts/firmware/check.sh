@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Copyright (C) 2015-2018 Franco Fichtner <franco@opnsense.org>
+# Copyright (C) 2015-2019 Franco Fichtner <franco@opnsense.org>
 # Copyright (C) 2014 Deciso B.V.
 # All rights reserved.
 #
@@ -26,7 +26,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 # This script generates a json structured file with the following content:
-# connection: error|timeout|unauthenticated|misconfigured|unresolved|busy|ok
+# connection: error|timeout|unauthenticated|untrusted|misconfigured|unresolved|busy|ok
 # repository: error|ok
 # last_ckeck: <date_time_stamp>
 # updates: <num_of_updates>
@@ -47,6 +47,7 @@ pkg_running=""
 packes_output=""
 last_check="unknown"
 packages_upgraded=""
+pkg_selected=${1}
 pkg_upgraded=""
 packages_downgraded=""
 packages_new=""
@@ -75,7 +76,7 @@ if [ "$pkg_running" == "" ]; then
       done
 
       if [ $timer -eq 0 ]; then
-        # We have an connection issue and could not
+        # We have a connection issue and could not
         # reach the pkg repository in timely fashion
         # Kill all running pkg instances
         pkg_running=`ps -x | grep "pkg " | grep -v "grep"`
@@ -97,6 +98,10 @@ if [ "$pkg_running" == "" ]; then
           # TLS or authentication error
           connection="unauthenticated"
           timer=0
+        elif grep -q 'No trusted public keys found' $tmp_pkg_update_file; then
+          # fingerprint mismatch
+          connection="untrusted"
+          timer=0
         fi
       fi
 
@@ -104,12 +109,12 @@ if [ "$pkg_running" == "" ]; then
         # connection is still ok
         connection="ok"
         # now check what happens when we would go ahead
-        if [ -z "${1}" ]; then
+        if [ -z "${pkg_selected}" ]; then
             pkg upgrade -n > $tmp_pkg_output_file &
         else
             # fetch before install lets us know more
-            pkg fetch -y "${1}" > $tmp_pkg_output_file &
-            pkg install -n "${1}" > $tmp_pkg_output_file &
+            pkg fetch -y "${pkg_selected}" > $tmp_pkg_output_file &
+            pkg install -n "${pkg_selected}" > $tmp_pkg_output_file &
 	fi
         timer=$timeout_upgrade
         pkg_running="started"
@@ -155,7 +160,7 @@ if [ "$pkg_running" == "" ]; then
                     else
                       i=`echo $i | tr -d :`
                       if [ -z "$packages_downgraded" ]; then
-                        packages_downgraded=$packages_downgraded"{\"name\":\"$i\"," # If it is the first item then we do not want a seperator
+                        packages_downgraded=$packages_downgraded"{\"name\":\"$i\"," # If it is the first item then we do not want a separator
                       else
                         packages_downgraded=$packages_downgraded", {\"name\":\"$i\","
                       fi
@@ -231,7 +236,7 @@ if [ "$pkg_running" == "" ]; then
                           # prevents leaking base / kernel advertising here
                           pkg_upgraded="yes"
                         fi
-                        packages_upgraded=$packages_upgraded"{\"name\":\"$i\"," # If it is the first item then we do not want a seperator
+                        packages_upgraded=$packages_upgraded"{\"name\":\"$i\"," # If it is the first item then we do not want a separator
                       else
                         packages_upgraded=$packages_upgraded", {\"name\":\"$i\","
                       fi
@@ -267,23 +272,22 @@ if [ "$pkg_running" == "" ]; then
             fi
 
             # the main update from package will provide this during upgrade
-            if [ -n "$pkg_upgraded" ]; then
+            if [ -n "${pkg_upgraded}${pkg_selected}" ]; then
               base_to_reboot=
             elif [ -z "$base_to_reboot" ]; then
               if opnsense-update -cbf; then
                   base_to_reboot="$(opnsense-update -v)"
+                  # XXX arch return is obsolete
                   base_to_reboot="${base_to_reboot%-*}"
               fi
             fi
 
             if [ -n "$base_to_reboot" ]; then
-              base_to_delete="$(opnsense-update -bv)"
-              base_to_delete="${base_to_delete%-*}"
-              base_is_size="$(opnsense-update -bfS)"
-              upgrade_needs_reboot="1"
+              base_to_delete="$(opnsense-version -v base)"
+              base_is_size="$(opnsense-update -bfSr $base_to_reboot)"
               if [ "$base_to_reboot" != "$base_to_delete" -a -n "$base_is_size" ]; then
                 if [ "$packages_upgraded" == "" ]; then
-                  packages_upgraded=$packages_upgraded"{\"name\":\"base\"," # If it is the first item then we do not want a seperator
+                  packages_upgraded=$packages_upgraded"{\"name\":\"base\"," # If it is the first item then we do not want a separator
                 else
                   packages_upgraded=$packages_upgraded", {\"name\":\"base\","
                 fi
@@ -291,27 +295,27 @@ if [ "$pkg_running" == "" ]; then
                 packages_upgraded=$packages_upgraded"\"current_version\":\"$base_to_delete\","
                 packages_upgraded=$packages_upgraded"\"new_version\":\"$base_to_reboot\"}"
                 updates=$(expr $updates + 1)
+                upgrade_needs_reboot="1"
               fi
             fi
 
             # the main update from package will provide this during upgrade
-            if [ -n "$pkg_upgraded" ]; then
+            if [ -n "${pkg_upgraded}${pkg_selected}" ]; then
               kernel_to_reboot=
             elif [ -z "$kernel_to_reboot" ]; then
               if opnsense-update -cfk; then
                   kernel_to_reboot="$(opnsense-update -v)"
+                  # XXX arch return is obsolete
                   kernel_to_reboot="${kernel_to_reboot%-*}"
               fi
             fi
 
             if [ -n "$kernel_to_reboot" ]; then
-              kernel_to_delete="$(opnsense-update -kv)"
-              kernel_to_delete="${kernel_to_delete%-*}"
-              kernel_is_size="$(opnsense-update -fkS)"
-              upgrade_needs_reboot="1"
+              kernel_to_delete="$(opnsense-version -v kernel)"
+              kernel_is_size="$(opnsense-update -fkSr $kernel_to_reboot)"
               if [ "$kernel_to_reboot" != "$kernel_to_delete" -a -n "$kernel_is_size" ]; then
                 if [ "$packages_upgraded" == "" ]; then
-                  packages_upgraded=$packages_upgraded"{\"name\":\"kernel\"," # If it is the first item then we do not want a seperator
+                  packages_upgraded=$packages_upgraded"{\"name\":\"kernel\"," # If it is the first item then we do not want a separator
                 else
                   packages_upgraded=$packages_upgraded", {\"name\":\"kernel\","
                 fi
@@ -319,11 +323,12 @@ if [ "$pkg_running" == "" ]; then
                 packages_upgraded=$packages_upgraded"\"current_version\":\"$kernel_to_delete\","
                 packages_upgraded=$packages_upgraded"\"new_version\":\"$kernel_to_reboot\"}"
                 updates=$(expr $updates + 1)
+                upgrade_needs_reboot="1"
               fi
             fi
           fi
         else
-          # We have an connection issue and could not reach the pkg repository in timely fashion
+          # We have a connection issue and could not reach the pkg repository in timely fashion
           # Kill all running pkg instances
           pkg_running=`ps -x | grep "pkg " | grep -v "grep"`
           if [ "$pkg_running" != "" ]; then
@@ -334,8 +339,8 @@ if [ "$pkg_running" == "" ]; then
 
       upgrade_major_message=$(cat /usr/local/opnsense/firmware-message 2> /dev/null | sed 's/"/\\&/g' | tr '\n' ' ')
       upgrade_major_version=$(cat /usr/local/opnsense/firmware-upgrade 2> /dev/null)
-      product_version=$(cat /usr/local/opnsense/version/opnsense)
-      product_name=$(cat /usr/local/opnsense/version/opnsense.name)
+      product_version=$(opnsense-version -v)
+      product_name=$(opnsense-version -n)
       os_version=$(uname -sr)
       last_check=$(date)
 else

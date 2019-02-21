@@ -39,7 +39,7 @@ runmode: workers
 # If set to auto, the variable is internally switch to 'router' in IPS mode
 # and 'sniffer-only' in IDS mode.
 # This feature is currently only used by the reject* keywords.
-host-mode: sniffer-only
+host-mode: auto
 
 # Run suricata as user and group.
 #run-as:
@@ -89,63 +89,39 @@ outputs:
   # Extensible Event Format (nicknamed EVE) event log in JSON format
   - eve-log:
       enabled: yes
-      type: regular
+      type: file #file|syslog|unix_dgram|unix_stream
       filename: eve.json
+      # the following are valid when type: syslog above
+      #identity: "suricata"
+      #facility: local5
+      #level: Info ## possible levels: Emergency, Alert, Critical,
+                   ## Error, Warning, Notice, Info, Debug
       types:
         - alert:
 {% if helpers.exists('OPNsense.IDS.general.LogPayload') and OPNsense.IDS.general.LogPayload|default('0') == '1' %}
-            payload: yes
-            payload-buffer-size: 100kb
-            payload-printable: yes
+             payload: yes
+             payload-buffer-size: 100kb
+             payload-printable: yes
 {% endif %}
+             http: yes
+             tls: yes
 
-            metadata: yes
-            tagged-packets: yes
-
-            xff:
-              enabled: no
-              mode: extra-data
-              deployment: reverse
-              header: X-Forwarded-For
-
-{% if OPNsense.IDS.general.eventTypes.http|default('0') %}
-        - http: 
-            extended: yes
-{% endif %}
-
-{% if OPNsense.IDS.general.eventTypes.tls|default('0') %}
-        - tls:
-            extended: yes
-{% endif %}
-
-{% if OPNsense.IDS.general.eventTypes.dns|default('0') %}
-        - dns: 
-            extended: yes
-            query: yes
-            answer: yes
-            version: {% if OPNsense.IDS.general.eventTypes.dnsVersion == 'one' %}1{% else %}2{% endif %}
-{% endif %}
-
-{% if OPNsense.IDS.general.eventTypes.flow|default('0') %}
-        - flow: 
-            extended: yes
-{% endif %}
-
-        - files:
-            force-magic: no
+#        - http:
+#            extended: yes     # enable this for extended logging information
+#            # custom allows additional http fields to be included in eve-log
+#            # the example below adds three additional fields when uncommented
+#            #custom: [Accept-Encoding, Accept-Language, Authorization]
+#        - dns
+#        - tls:
+#            extended: yes     # enable this for extended logging information
+#        - files:
+#            force-magic: no   # force logging magic on all logged files
+#            force-md5: no     # force logging of md5 checksums
         - drop:
-            alerts: yes
-            flows: all
-        - smtp:
-            extended: yes
-        - dnp3
-        - nfs
-        - ssh
-        - stats:
-            totals: yes
-            threads: no
-            deltas: no
-        - vars
+            alerts: yes      # log alerts that caused drops
+            flows: start     # start or all: 'start' logs only a single drop
+                             # per flow direction. All logs each dropped pkt.
+#        - ssh
 
   # alert output for use with Barnyard2
   - unified2-alert:
@@ -187,7 +163,7 @@ outputs:
 
   # a line based log of TLS handshake parameters (no alerts)
   - tls-log:
-      enabled: no
+      enabled: no  # Log TLS connections.
       filename: tls.log # File to store TLS logs.
       append: yes
       #filetype: regular # 'regular', 'unix_stream' or 'unix_dgram'
@@ -269,8 +245,8 @@ outputs:
       # suricata) will be used.
       #identity: "suricata"
       facility: local5
-      #level: Info ## possible levels: Emergency, Alert, Critical,
-                   ## Error, Warning, Notice, Info, Debug
+      level: Notice ## possible levels: Emergency, Alert, Critical,
+                    ## Error, Warning, Notice, Info, Debug
 
   # a line based information for dropped packets in IPS mode
   - drop:
@@ -350,7 +326,7 @@ nflog:
 netmap:
   - interface: default
     threads: auto
-    copy-mode: tap
+    copy-mode: ips
     disable-promisc: {% if helpers.exists('OPNsense.IDS.general.promisc') and OPNsense.IDS.general.promisc|default('0') == '0' %}yes{% else %}no{% endif %} #  promiscuous mode
     checksum-checks: auto
 
@@ -358,6 +334,9 @@ netmap:
     {% for intfName in OPNsense.IDS.general.interfaces.split(',') %}
 
   - interface: {{physical_interface(intfName)}}
+    copy-iface: {{physical_interface(intfName)}}+
+
+  - interface: {{physical_interface(intfName)}}+
     copy-iface: {{physical_interface(intfName)}}
     {% endfor %}
   {% endif %}
@@ -705,7 +684,7 @@ flow-timeouts:
 stream:
   memcap: 32mb
   checksum-validation: yes      # reject wrong csums
-  inline: no                    # auto will use inline mode in IPS mode, yes or no set it statically
+  inline: auto                  # auto will use inline mode in IPS mode, yes or no set it statically
   reassembly:
     memcap: 128mb
     depth: 1mb                  # reassemble 1mb into a stream

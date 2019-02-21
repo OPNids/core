@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
 <opnsense>
-  <theme>opnids</theme>
+  <trigger_initial_wizard/>
+  <theme>opnsense</theme>
   <sysctl>
     <item>
       <descr><![CDATA[Disable the pf ftp proxy handler.]]></descr>
@@ -37,7 +38,7 @@
         Source routing is another way for an attacker to try to reach non-routable addresses behind your box.
         It can also be used to probe for information about your internal networks. These functions come enabled
         as part of the standard FreeBSD core system.
-      ]]>      </descr>
+      ]]></descr>
       <tunable>net.inet.ip.sourceroute</tunable>
       <value>default</value>
     </item>
@@ -46,7 +47,7 @@
         Source routing is another way for an attacker to try to reach non-routable addresses behind your box.
         It can also be used to probe for information about your internal networks. These functions come enabled
         as part of the standard FreeBSD core system.
-      ]]>      </descr>
+      ]]></descr>
       <tunable>net.inet.ip.accept_sourceroute</tunable>
       <value>default</value>
     </item>
@@ -55,7 +56,7 @@
         Redirect attacks are the purposeful mass-issuing of ICMP type 5 packets. In a normal network, redirects
         to the end stations should not be required. This option enables the NIC to drop all inbound ICMP redirect
         packets without returning a response.
-      ]]>      </descr>
+      ]]></descr>
       <tunable>net.inet.icmp.drop_redirect</tunable>
       <value>default</value>
     </item>
@@ -63,7 +64,7 @@
       <descr><![CDATA[
         This option turns off the logging of redirect packets because there is no limit and this could fill
         up your logs consuming your whole hard drive.
-      ]]>      </descr>
+      ]]></descr>
       <tunable>net.inet.icmp.log_redirect</tunable>
       <value>default</value>
     </item>
@@ -192,12 +193,22 @@
       <tunable>hw.ibrs_disable</tunable>
       <value>default</value>
     </item>
+    <item>
+      <descr><![CDATA[Hide processes running as other groups]]></descr>
+      <tunable>security.bsd.see_other_gids</tunable>
+      <value>default</value>
+    </item>
+    <item>
+      <descr><![CDATA[Hide processes running as other users]]></descr>
+      <tunable>security.bsd.see_other_uids</tunable>
+      <value>default</value>
+    </item>
   </sysctl>
   <system>
     <optimization>normal</optimization>
-    <hostname>OPNids</hostname>
+    <hostname>OPNsense</hostname>
     <domain>localdomain</domain>
-    <dnsallowoverride>1</dnsallowoverride>
+    <dnsallowoverride/>
     <group>
       <name>admins</name>
       <description><![CDATA[System Administrators]]></description>
@@ -211,7 +222,7 @@
       <descr><![CDATA[System Administrator]]></descr>
       <scope>system</scope>
       <groupname>admins</groupname>
-      <password>$6$WJLVE/GJLqXt.6Oa$h1BkjUQpG.laX/i.bvLKPPUJ6BUm.O8gnYC.WSwk0vFjcJ0cc7yuBHuNKT7vPOQK9OMpEPg4dbW6rrZb2pRNQ/</password>
+      <password>$2y$10$YRVoF4SgskIsrXOvOQjGieB9XqHPRra9R7d80B3BZdbY/j21TwBfS</password>
       <uid>0</uid>
     </user>
     <nextuid>2000</nextuid>
@@ -224,6 +235,7 @@
     <disablenatreflection>yes</disablenatreflection>
     <usevirtualterminal>1</usevirtualterminal>
     <disableconsolemenu/>
+    <disablevlanhwfilter>2</disablevlanhwfilter>
     <disablechecksumoffloading>1</disablechecksumoffloading>
     <disablesegmentationoffloading>1</disablesegmentationoffloading>
     <disablelargereceiveoffloading>1</disablelargereceiveoffloading>
@@ -242,26 +254,24 @@
     <ssh>
       <group>admins</group>
     </ssh>
-    <disablevlanhwfilter>1</disablevlanhwfilter>
-    <prefer_ipv4>1</prefer_ipv4>
   </system>
   <interfaces>
-    <tap>
+    <wan>
       <enable>1</enable>
       <if>mismatch1</if>
+      <mtu/>
       <ipaddr>dhcp</ipaddr>
       <ipaddrv6>dhcp6</ipaddrv6>
-      <mtu/>
-      <spoofmac/>
       <subnet/>
       <gateway/>
-      <blockbogons/>
+      <blockpriv>1</blockpriv>
+      <blockbogons>1</blockbogons>
       <dhcphostname/>
       <media/>
       <mediaopt/>
       <dhcp6-ia-pd-len>0</dhcp6-ia-pd-len>
-    </tap>
-    <mgt>
+    </wan>
+    <lan>
       <enable>1</enable>
       <if>mismatch0</if>
       <ipaddr>192.168.1.1</ipaddr>
@@ -270,14 +280,18 @@
       <subnetv6>64</subnetv6>
       <media/>
       <mediaopt/>
-      <track6-interface>tap</track6-interface>
+      <track6-interface>wan</track6-interface>
       <track6-prefix-id>0</track6-prefix-id>
-    </mgt>
+    </lan>
   </interfaces>
   <dhcpd>
-    <mgt>
-      <enable>0</enable>
-    </mgt>
+    <lan>
+      <enable/>
+      <range>
+        <from>192.168.1.100</from>
+        <to>192.168.1.199</to>
+      </range>
+    </lan>
   </dhcpd>
   <unbound>
     <enable>1</enable>
@@ -299,10 +313,10 @@
     <rule>
       <type>pass</type>
       <ipprotocol>inet</ipprotocol>
-      <descr><![CDATA[Default allow MGT to any rule]]></descr>
-      <interface>mgt</interface>
+      <descr><![CDATA[Default allow LAN to any rule]]></descr>
+      <interface>lan</interface>
       <source>
-        <network>mgt</network>
+        <network>lan</network>
       </source>
       <destination>
         <any/>
@@ -311,10 +325,10 @@
     <rule>
       <type>pass</type>
       <ipprotocol>inet6</ipprotocol>
-      <descr><![CDATA[Default allow MGT IPv6 to any rule]]></descr>
-      <interface>mgt</interface>
+      <descr><![CDATA[Default allow LAN IPv6 to any rule]]></descr>
+      <interface>lan</interface>
       <source>
-        <network>mgt</network>
+        <network>lan</network>
       </source>
       <destination>
         <any/>
@@ -371,15 +385,7 @@
     <prefer>0.opnsense.pool.ntp.org</prefer>
   </ntpd>
   <widgets>
-    <sequence>system_information-container:00000000-col3:show,system_log-container:00000001-col3:show,services_status-container:00000002-col4:show,interface_list-container:00000003-col4:show,interface_statistics-container:00000004-col4:show</sequence>
+    <sequence>system_information-container:00000000-col3:show,services_status-container:00000001-col4:show,gateways-container:00000002-col4:show,interface_list-container:00000003-col4:show</sequence>
     <column_count>2</column_count>
-    <systemlogfiltercount>5</systemlogfiltercount>
   </widgets>
-  <OPNids>
-    <MLE>
-      <general>
-        <enabled>0</enabled>
-      </general>
-    </MLE>
-  </OPNids>
 </opnsense>

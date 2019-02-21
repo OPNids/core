@@ -3,7 +3,7 @@
 /*
     Copyright (C) 2014 Deciso B.V.
     Copyright (C) 2004 Scott Ullrich <sullrich@gmail.com>
-    Copyright (C) 2003-2004 Manuel Kasper <mk@neon1.net>.
+    Copyright (C) 2003-2004 Manuel Kasper <mk@neon1.net>
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -75,7 +75,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         mark_subsystem_dirty('natconf');
         header(url_safe('Location: /firewall_nat_out.php'));
         exit;
-    } elseif ( isset($pconfig['act']) && $pconfig['act'] == 'move' && isset($pconfig['rule']) && count($pconfig['rule']) > 0) {
+    } elseif (isset($pconfig['act']) && in_array($pconfig['act'], array('toggle_enable', 'toggle_disable')) && isset($pconfig['rule']) && count($pconfig['rule']) > 0) {
+        foreach ($pconfig['rule'] as $rulei) {
+            $a_out[$rulei]['disabled'] = $pconfig['act'] == 'toggle_disable';
+        }
+        write_config();
+        mark_subsystem_dirty('filter');
+        header(url_safe('Location: /firewall_nat_out.php'));
+        exit;
+    } elseif (isset($pconfig['act']) && $pconfig['act'] == 'move' && isset($pconfig['rule']) && count($pconfig['rule']) > 0) {
         // if rule not set/found, move to end
         if (!isset($id)) {
             $id = count($a_out);
@@ -122,7 +130,8 @@ include("head.inc");
   <script>
   $( document ).ready(function() {
     // link delete buttons
-    $(".act_delete").click(function(){
+    $(".act_delete").click(function(event){
+      event.preventDefault();
       var id = $(this).attr("id").split('_').pop(-1);
       if (id != 'x') {
         // delete single
@@ -140,7 +149,6 @@ include("head.inc");
                       $("#id").val(id);
                       $("#action").val("del");
                       $("#iform").submit()
-                      event.preventDefault();
                   }
                 }]
         });
@@ -160,11 +168,52 @@ include("head.inc");
                       $("#id").val("");
                       $("#action").val("del_x");
                       $("#iform").submit()
-                      event.preventDefault();
                   }
                 }]
         });
       }
+    });
+
+    // enable/disable selected
+    $(".act_toggle_enable").click(function(event){
+      event.preventDefault();
+      BootstrapDialog.show({
+        type:BootstrapDialog.TYPE_DANGER,
+        title: "<?= gettext("Rules");?>",
+        message: "<?=gettext("Enable selected rules?");?>",
+        buttons: [{
+                  label: "<?= gettext("No");?>",
+                  action: function(dialogRef) {
+                      dialogRef.close();
+                  }}, {
+                  label: "<?= gettext("Yes");?>",
+                  action: function(dialogRef) {
+                    $("#id").val("");
+                    $("#action").val("toggle_enable");
+                    $("#iform").submit()
+                }
+              }]
+      });
+    });
+    $(".act_toggle_disable").click(function(event){
+      event.preventDefault();
+      BootstrapDialog.show({
+        type:BootstrapDialog.TYPE_DANGER,
+        title: "<?= gettext("Rules");?>",
+        message: "<?=gettext("Disable selected rules?");?>",
+        buttons: [{
+                  label: "<?= gettext("No");?>",
+                  action: function(dialogRef) {
+                      dialogRef.close();
+                  }}, {
+                  label: "<?= gettext("Yes");?>",
+                  action: function(dialogRef) {
+                    $("#id").val("");
+                    $("#action").val("toggle_disable");
+                    $("#iform").submit()
+                }
+              }]
+      });
     });
 
     // link move buttons
@@ -330,13 +379,15 @@ include("head.inc");
                     <td class="hidden-xs hidden-sm">
                       <?= isset($natent['source']['not']) ? '!' : '' ?>
 <?php                 if (isset($natent['source']['network']) && is_alias($natent['source']['network'])): ?>
-                        <span title="<?=htmlspecialchars(get_alias_description($natent['source']['network']));?>" data-toggle="tooltip">
+                        <span title="<?=htmlspecialchars(get_alias_description($natent['source']['network']));?>" data-toggle="tooltip"  data-html="true">
                           <?=htmlspecialchars($natent['source']['network']);?>&nbsp;
                         </span>
-                        <a href="/firewall_aliases_edit.php?name=<?=htmlspecialchars($natent['source']['network']);?>"
+                        <a href="/ui/firewall/alias/index/<?=htmlspecialchars($natent['source']['network']);?>"
                             title="<?=gettext("edit alias");?>" data-toggle="tooltip">
                           <i class="fa fa-list"></i>
                         </a>
+<?php                 elseif (is_specialnet($natent['source']['network'])):?>
+                        <?=htmlspecialchars(get_specialnets()[$natent['source']['network']]); ?>
 <?php                 else: ?>
                         <?=$natent['source']['network'] == "(self)" ? gettext("This Firewall") : htmlspecialchars($natent['source']['network']); ?>&nbsp;
 <?php                 endif; ?>
@@ -348,10 +399,10 @@ include("head.inc");
                       *
 <?php
                       elseif (isset($natent['sourceport']) && is_alias($natent['sourceport'])):?>
-                      <span title="<?=htmlspecialchars(get_alias_description($natent['sourceport']));?>" data-toggle="tooltip">
+                      <span title="<?=htmlspecialchars(get_alias_description($natent['sourceport']));?>" data-toggle="tooltip"  data-html="true">
                         <?=htmlspecialchars(pprint_port($natent['sourceport'])); ?>&nbsp;
                       </span>
-                      <a href="/firewall_aliases_edit.php?name=<?=htmlspecialchars($natent['sourceport']);?>"
+                      <a href="/ui/firewall/alias/index/<?=htmlspecialchars($natent['sourceport']);?>"
                           title="<?=gettext("edit alias");?>" data-toggle="tooltip">
                         <i class="fa fa-list"></i>
                       </a>
@@ -364,13 +415,15 @@ include("head.inc");
                     <td class="hidden-xs hidden-sm">
                       <?= isset($natent['destination']['not']) ? '!' : '' ?>
 <?php                 if (isset($natent['destination']['address']) && is_alias($natent['destination']['address'])): ?>
-                        <span title="<?=htmlspecialchars(get_alias_description($natent['destination']['address']));?>" data-toggle="tooltip">
+                        <span title="<?=htmlspecialchars(get_alias_description($natent['destination']['address']));?>" data-toggle="tooltip"  data-html="true">
                           <?=htmlspecialchars($natent['destination']['address']);?>&nbsp;
                         </span>
-                        <a href="/firewall_aliases_edit.php?name=<?=htmlspecialchars($natent['destination']['address']);?>"
+                        <a href="/ui/firewall/alias/index/<?=htmlspecialchars($natent['destination']['address']);?>"
                             title="<?=gettext("edit alias");?>" data-toggle="tooltip">
                           <i class="fa fa-list"></i>
                         </a>
+<?php                 elseif (is_specialnet($natent['destination']['address'])):?>
+                        <?=htmlspecialchars(get_specialnets()[$natent['destination']['address']]); ?>
 <?php                 else: ?>
                         <?=isset($natent['destination']['any']) ? "*" : htmlspecialchars($natent['destination']['address']);?>
 <?php                 endif; ?>
@@ -382,10 +435,10 @@ include("head.inc");
                       *
 <?php
                       elseif (isset($natent['dstport']) && is_alias($natent['dstport'])):?>
-                      <span title="<?=htmlspecialchars(get_alias_description($natent['dstport']));?>" data-toggle="tooltip">
+                      <span title="<?=htmlspecialchars(get_alias_description($natent['dstport']));?>" data-toggle="tooltip"  data-html="true">
                         <?=htmlspecialchars(pprint_port($natent['dstport'])); ?>&nbsp;
                       </span>
-                      <a href="/firewall_aliases_edit.php?name=<?=htmlspecialchars($natent['dstport']);?>"
+                      <a href="/ui/firewall/alias/index/<?=htmlspecialchars($natent['dstport']);?>"
                           title="<?=gettext("edit alias");?>" data-toggle="tooltip">
                         <i class="fa fa-list"></i>
                       </a>
@@ -409,10 +462,10 @@ include("head.inc");
                       }
 ?>
 <?php                 if (isset($natent['target']) && is_alias($natent['target'])): ?>
-                        <span title="<?=htmlspecialchars(get_alias_description($natent['target']));?>" data-toggle="tooltip">
+                        <span title="<?=htmlspecialchars(get_alias_description($natent['target']));?>" data-toggle="tooltip" data-html="true">
                           <?=$nat_address;?>&nbsp;
                         </span>
-                        <a href="/firewall_aliases_edit.php?name=<?=htmlspecialchars($natent['target']);?>"
+                        <a href="/ui/firewall/alias/index/<?=htmlspecialchars($natent['target']);?>"
                             title="<?=gettext("edit alias");?>" data-toggle="tooltip">
                           <i class="fa fa-list"></i>
                         </a>
@@ -432,7 +485,7 @@ include("head.inc");
                       <?=htmlspecialchars($natent['descr']);?>&nbsp;
                     </td>
                     <td>
-                      <a type="submit" id="move_<?=$i;?>" name="move_<?=$i;?>_x" data-toggle="tooltip" title="<?= html_safe(gettext('move selected rules before this rule')) ?>" class="act_move btn btn-default btn-xs">
+                      <a type="submit" id="move_<?=$i;?>" name="move_<?=$i;?>_x" data-toggle="tooltip" title="<?= html_safe(gettext('Move selected rules before this rule')) ?>" class="act_move btn btn-default btn-xs">
                         <i class="fa fa-arrow-left fa-fw"></i>
                       </a>
                       <a href="firewall_nat_out_edit.php?id=<?=$i;?>" data-toggle="tooltip" title="<?= html_safe(gettext('Edit')) ?>" class="btn btn-default btn-xs">
@@ -455,12 +508,18 @@ include("head.inc");
                   <td colspan="6" class="hidden-xs hidden-sm"></td>
                   <td colspan="5"></td>
                   <td>
-                    <a type="submit" id="move_<?=$i;?>" name="move_<?=$i;?>_x" data-toggle="tooltip" title="<?=html_safe(gettext('move selected rules to end'))?>" class="act_move btn btn-default btn-xs">
+                    <button id="move_<?=$i;?>" name="move_<?=$i;?>_x" data-toggle="tooltip" title="<?=html_safe(gettext('Move selected rules to end'))?>" class="act_move btn btn-default btn-xs">
                       <i class="fa fa-arrow-left fa-fw"></i>
-                    </a>
-                    <a id="del_x" title="<?= html_safe(gettext('Delete selected')) ?>" data-toggle="tooltip" class="act_delete btn btn-default btn-xs">
+                    </button>
+                    <button id="del_x" title="<?= html_safe(gettext('Delete selected')) ?>" data-toggle="tooltip" class="act_delete btn btn-default btn-xs">
                       <i class="fa fa-trash fa-fw"></i>
-                    </a>
+                    </button>
+                    <button title="<?= html_safe(gettext('Enable selected')) ?>" data-toggle="tooltip" class="act_toggle_enable btn btn-default btn-xs">
+                        <i class="fa fa-check-square-o fa-fw"></i>
+                    </button>
+                    <button title="<?= html_safe(gettext('Disable selected')) ?>" data-toggle="tooltip" class="act_toggle_disable btn btn-default btn-xs">
+                        <i class="fa fa-square-o fa-fw"></i>
+                    </button>
 <?php endif ?>
                   </td>
                 </tr>

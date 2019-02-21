@@ -5,18 +5,18 @@
         <type>checkbox</type>
         <help>Enable intrusion detection system.</help>
     </field>
-    <!-- <field>
+    <field>
         <id>ids.general.ips</id>
         <label>IPS mode</label>
         <type>checkbox</type>
         <help><![CDATA[Enable protection mode (block traffic).<br />Before enabling, please disable all hardware offloading first <a href="/system_advanced_network.php">in advanced network</a>.]]></help>
-    </field> -->
-    <!-- <field>
+    </field>
+    <field>
         <id>ids.general.promisc</id>
         <label>Promiscuous mode</label>
         <type>checkbox</type>
         <help><![CDATA[Enable promiscuous mode, for certain setups (like IPS with vlans), this is required to actually capture data on the physical interface.]]></help>
-    </field> -->
+    </field>
     <field>
         <id>ids.general.syslog</id>
         <label>Enable syslog alerts</label>
@@ -70,39 +70,5 @@
         <type>checkbox</type>
         <help>Send package payload to the log for further analyses.</help>
         <advanced>true</advanced>
-    </field>
-    <field>
-        <label>Event Types</label>
-        <type>header</type>
-    </field>
-    <field>
-        <id>ids.general.eventTypes.dns</id>
-        <label>DNS Logging</label>
-        <type>dropdown</type>
-        <help>Enable logging DNS event types</help>
-    </field>
-    <field>
-        <id>ids.general.eventTypes.dnsVersion</id>
-        <label>DNS Logging Version</label>
-        <type>dropdown</type>
-        <help>Select which version of DNS logging you would like to use</help>
-    </field>
-    <field>
-        <id>ids.general.eventTypes.flow</id>
-        <label>Flow Logging</label>
-        <type>dropdown</type>
-        <help>Enable logging Flow event types</help>
-    </field>
-    <field>
-        <id>ids.general.eventTypes.http</id>
-        <label>HTTP Logging</label>
-        <type>dropdown</type>
-        <help>Enable logging HTTP event types</help>
-    </field>
-    <field>
-        <id>ids.general.eventTypes.tls</id>
-        <label>TLS Logging</label>
-        <type>dropdown</type>
-        <help>Enable logging TLS event types</help>
     </field>
 </form>

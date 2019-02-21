@@ -3,7 +3,7 @@
 /*
     Copyright (C) 2014 Deciso B.V.
     Copyright (C) 2004-2009 Scott Ullrich <sullrich@gmail.com>
-    Copyright (C) 2003-2004 Manuel Kasper <mk@neon1.net>.
+    Copyright (C) 2003-2004 Manuel Kasper <mk@neon1.net>
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -33,7 +33,7 @@ require_once("plugins.inc.d/ipsec.inc");
 require_once("services.inc");
 require_once("interfaces.inc");
 
-$service_hook = 'ipsec';
+$service_hook = 'strongswan';
 
 include("head.inc");
 
@@ -73,9 +73,9 @@ legacy_html_escape_form_data($spd);
                 <tr>
                   <td colspan="2"></td>
                   <td colspan="3">
-                    <span class="fa fa-arrow-right fa-fw" aria-hidden="true" alt="in"></span>
+                    <span class="fa fa-arrow-right fa-fw" aria-hidden="true"></span>
                     <?= gettext("incoming (as seen by firewall)"); ?> <br/>
-                    <span class="fa fa-arrow-left fa-fw" aria-hidden="true" alt="out"></span>
+                    <span class="fa fa-arrow-left fa-fw" aria-hidden="true"></span>
                     <?= gettext("outgoing (as seen by firewall)"); ?>
                   </td>
                 </tr>

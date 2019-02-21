@@ -10,4 +10,3 @@ done
 
 # make sure we can load our yaml file if we don't have rules installed yet
 touch /usr/local/etc/suricata/installed_rules.yaml
-

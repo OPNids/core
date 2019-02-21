@@ -80,9 +80,9 @@ function console_get_interface_from_ppp($realif)
 
 function prompt_for_enable_dhcp_server($version = 4)
 {
-    global $config, $fp, $interface;
-    if ($interface == "tap") {
-        if ($config['interfaces']['mgt']) {
+    global $config, $interface;
+    if ($interface == "wan") {
+        if ($config['interfaces']['lan']) {
             return false;
         }
     }
@@ -135,7 +135,7 @@ function get_interface_config_description($iface)
 $fp = fopen('php://stdin', 'r');
 
 /* build an interface collection */
-$ifdescrs = get_configured_interface_with_descr(false, true);
+$ifdescrs = legacy_config_get_interfaces(array('virtual' => false));
 $count = count($ifdescrs);
 
 /* grab interface that we will operate on, unless there is only one
@@ -143,9 +143,9 @@ $count = count($ifdescrs);
 if ($count > 1) {
     echo "Available interfaces:\n\n";
     $x=1;
-    foreach ($ifdescrs as $iface => $ifdescr) {
+    foreach ($ifdescrs as $iface => $ifcfg) {
         $config_descr = get_interface_config_description($iface);
-        echo "{$x} - {$ifdescr} ({$config_descr})\n";
+        echo "{$x} - {$ifcfg['descr']} ({$config_descr})\n";
         $x++;
     }
     echo "\nEnter the number of the interface to configure: ";
@@ -163,7 +163,7 @@ if ($intnum > $count) {
 }
 
 $index = 1;
-foreach ($ifdescrs as $ifname => $ifdesc) {
+foreach (array_keys($ifdescrs) as $ifname) {
     if ($intnum == $index) {
         $interface = $ifname;
         break;
@@ -206,11 +206,11 @@ function next_unused_gateway_name($interface)
 
 function add_gateway_to_config($interface, $gatewayip, $inet_type, $is_in_subnet)
 {
-    global $config, $fp;
+    global $fp;
 
     $label_IPvX = $inet_type == 'inet6' ? 'IPv6' : 'IPv4';
 
-    $a_gateways =  &config_read_array('gateways', 'gateway_item');
+    $a_gateways = &config_read_array('gateways', 'gateway_item');
     $is_default = true;
     $new_name = '';
 
@@ -228,7 +228,7 @@ function add_gateway_to_config($interface, $gatewayip, $inet_type, $is_in_subnet
     }
 
     if (!$is_default) {
-        if (console_prompt_for_yn(sprintf('Do you want to use it as the default %s gateway?', $label_IPvX), $interface == 'tap' ? 'y' : 'n')) {
+        if (console_prompt_for_yn(sprintf('Do you want to use it as the default %s gateway?', $label_IPvX), $interface == 'wan' ? 'y' : 'n')) {
             foreach ($a_gateways as &$item) {
                 if ($item['ipprotocol'] === $inet_type) {
                     if (isset($item['defaultgw'])) {
@@ -296,9 +296,9 @@ function console_configure_ip_address($version)
 
     $upperifname = strtoupper($interface);
 
-    if ($interface != 'tap' && $version === 6 && !empty($config['interfaces']['tap']['ipaddrv6']) &&
-        $config['interfaces']['tap']['ipaddrv6'] == 'dhcp6' && console_prompt_for_yn(sprintf(
-            'Configure %s address %s interface via TAP tracking?',
+    if ($interface != 'wan' && $version === 6 && !empty($config['interfaces']['wan']['ipaddrv6']) &&
+        $config['interfaces']['wan']['ipaddrv6'] == 'dhcp6' && console_prompt_for_yn(sprintf(
+            'Configure %s address %s interface via WAN tracking?',
             $label_IPvX,
             $upperifname
         ), 'y')) {
@@ -307,7 +307,7 @@ function console_configure_ip_address($version)
         $isintdhcp = true;
         $restart_dhcpd = true;
         echo "\n";
-    } elseif (console_prompt_for_yn(sprintf('Configure %s address %s interface via %s?', $label_IPvX, $upperifname, $label_DHCP), $interface == 'tap' ? 'y' : 'n')) {
+    } elseif (console_prompt_for_yn(sprintf('Configure %s address %s interface via %s?', $label_IPvX, $upperifname, $label_DHCP), $interface == 'wan' ? 'y' : 'n')) {
         $ifppp = console_get_interface_from_ppp(get_real_interface($interface));
         if (!empty($ifppp)) {
             $ifaceassigned = $ifppp;
@@ -362,11 +362,9 @@ function console_configure_ip_address($version)
                         if ($intip == gen_subnet($intip, $intbits)) {
                             echo 'You cannot set network address to an interface';
                             continue 2;
-                            $intbits_ok = false;
                         } elseif ($intip == gen_subnet_max($intip, $intbits)) {
                             echo 'You cannot set broadcast address to an interface';
                             continue 2;
-                            $intbits_ok = false;
                         }
                     }
                 } while (!$intbits_ok);
@@ -381,8 +379,8 @@ function console_configure_ip_address($version)
                 $is_in_subnet = true;
 
                 do {
-                    echo sprintf('For a TAP, enter the new %s %s upstream gateway address.', $upperifname, $label_IPvX) . "\n" .
-                                'For a MGT, press <ENTER> for none:' . "\n> ";
+                    echo sprintf('For a WAN, enter the new %s %s upstream gateway address.', $upperifname, $label_IPvX) . "\n" .
+                                'For a LAN, press <ENTER> for none:' . "\n> ";
                     $gwip = chop(fgets($fp));
                     $is_ipaddr = ($version === 6) ? is_ipaddrv6($gwip) : is_ipaddrv4($gwip);
                     $is_in_subnet = $is_ipaddr && ip_in_subnet($gwip, $subnet . "/" . $intbits);
@@ -426,7 +424,7 @@ $config['interfaces'][$interface]['gatewayv6'] = $gwname6;
 $config['interfaces'][$interface]['enable'] = true;
 
 if ($intip6 == 'track6') {
-    $config['interfaces'][$interface]['track6-interface'] = 'tap';
+    $config['interfaces'][$interface]['track6-interface'] = 'wan';
     $config['interfaces'][$interface]['track6-prefix-id'] = '0';
 } else {
     if (isset($config['interfaces'][$interface]['track6-interface'])) {
@@ -526,26 +524,26 @@ if (isset($config['system']['webgui']['noantilockout'])) {
     unset($config['system']['webgui']['noantilockout']);
 }
 
-if ($config['interfaces']['mgt']) {
+if ($config['interfaces']['lan']) {
     if ($config['dhcpd']) {
-        if ($config['dhcpd']['tap']) {
-            unset($config['dhcpd']['tap']);
+        if ($config['dhcpd']['wan']) {
+            unset($config['dhcpd']['wan']);
         }
     }
     if ($config['dhcpdv6']) {
-        if ($config['dhcpdv6']['tap']) {
-            unset($config['dhcpdv6']['tap']);
+        if ($config['dhcpdv6']['wan']) {
+            unset($config['dhcpdv6']['wan']);
         }
     }
 }
 
-if (!$config['interfaces']['mgt']) {
-    unset($config['interfaces']['mgt']);
-    if ($config['dhcpd']['mgt']) {
-        unset($config['dhcpd']['mgt']);
+if (!$config['interfaces']['lan']) {
+    unset($config['interfaces']['lan']);
+    if ($config['dhcpd']['lan']) {
+        unset($config['dhcpd']['lan']);
     }
-    if ($config['dhcpdv6']['mgt']) {
-        unset($config['dhcpdv6']['mgt']);
+    if ($config['dhcpdv6']['lan']) {
+        unset($config['dhcpdv6']['lan']);
     }
     unset($config['nat']);
     system("rm /var/dhcpd/var/db/* >/dev/null 2>/dev/null");
@@ -565,7 +563,7 @@ setup_gateways_monitor(true);
 filter_configure_sync(true);
 
 if ($restart_dhcpd) {
-    services_dhcpd_configure('all', array(), true);
+    services_dhcpd_configure(true);
 }
 
 if ($restart_webgui) {
@@ -575,7 +573,7 @@ if ($restart_webgui) {
 echo "\n";
 
 if ($intip != '' || $intip6 != '') {
-    if (count($ifdescrs) == '1' or $interface == 'mgt') {
+    if (count($ifdescrs) == '1' or $interface == 'lan') {
         $intip = get_interface_ip($interface);
         $intip6 = get_interface_ipv6($interface);
         echo "You can now access the web GUI by opening\nthe following URL in your web browser:\n\n";

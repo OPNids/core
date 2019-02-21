@@ -1,31 +1,31 @@
 <?php
 
 /*
-    Copyright (C) 2014-2015 Deciso B.V.
-    Copyright (C) 2014 Electric Sheep Fencing, LLC
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    1. Redistributions of source code must retain the above copyright notice,
-       this list of conditions and the following disclaimer.
-
-    2. Redistributions in binary form must reproduce the above copyright
-       notice, this list of conditions and the following disclaimer in the
-       documentation and/or other materials provided with the distribution.
-
-    THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
-    INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
-    AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
-    AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
-    OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-    POSSIBILITY OF SUCH DAMAGE.
-*/
+ * Copyright (C) 2014-2015 Deciso B.V.
+ * Copyright (C) 2014 Electric Sheep Fencing, LLC
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+ * AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
+ * OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
 
 require_once("guiconfig.inc");
 require_once("filter.inc");
@@ -46,7 +46,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     } else {
         $pconfig['passthrough_networks'] = array();
     }
-    foreach ($ipsec_loglevels as $lkey => $ldescr) {
+    foreach (array_keys(IPSEC_LOG_SUBSYSTEMS) as $lkey) {
         if (!empty($config['ipsec']["ipsec_{$lkey}"])) {
             $pconfig["ipsec_{$lkey}"] = $config['ipsec']["ipsec_{$lkey}"];
         } else {
@@ -80,7 +80,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             unset($config['ipsec']['preferoldsa']);
         }
         if (isset($config['ipsec']) && is_array($config['ipsec'])) {
-            foreach ($ipsec_loglevels as $lkey => $ldescr) {
+            foreach (array_keys(IPSEC_LOG_SUBSYSTEMS) as $lkey) {
                 if (empty($pconfig["ipsec_{$lkey}"])) {
                     if (isset($config['ipsec']["ipsec_{$lkey}"])) {
                         unset($config['ipsec']["ipsec_{$lkey}"]);
@@ -109,17 +109,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     }
 }
 
-$service_hook = 'ipsec';
+$service_hook = 'strongswan';
+
 legacy_html_escape_form_data($pconfig);
 
 include("head.inc");
 
 ?>
 
-<!-- JQuery Tokenize (http://zellerda.com/projects/tokenize) -->
-<script src="/ui/js/tokenize2.min.js"></script>
-<link rel="stylesheet" type="text/css" href="<?=get_themed_filename("/css/tokenize2.css");?>">
-<script src="/ui/js/opnsense_ui.js"></script>
+<!-- JQuery Tokenize2 (https://zellerda.github.io/Tokenize2/) -->
+<script src="<?= cache_safe('/ui/js/tokenize2.js') ?>"></script>
+<link rel="stylesheet" type="text/css" href="<?= cache_safe(get_themed_filename('/css/tokenize2.css')) ?>">
+
+<script src="<?= cache_safe('/ui/js/opnsense_ui.js') ?>"></script>
 
  <script>
     $( document ).ready(function() {
@@ -205,21 +207,16 @@ if (isset($input_errors) && count($input_errors) > 0) {
                         <div class="hidden" data-for="help_for_ipsec_debug">
                                       <strong><?=gettext("Start IPsec in debug mode based on sections selected"); ?></strong> <br/>
                         </div>
-<?php                   foreach ($ipsec_loglevels as $lkey => $ldescr) :
-?>
-                        <?=$ldescr?>
+<?php foreach (IPSEC_LOG_SUBSYSTEMS as $lkey => $ldescr): ?>
+                        <?= $ldescr ?>
                         <select name="ipsec_<?=$lkey?>" id="ipsec_<?=$lkey?>">
-<?php                   foreach (array("Silent", "Basic", "Audit", "Control", "Raw", "Highest") as $lidx => $lvalue) :
-                          $lidx -= 1;
-?>
-                          <option value="<?=$lidx?>" <?= (isset($pconfig["ipsec_{$lkey}"]) && $pconfig["ipsec_{$lkey}"] == $lidx) || (!isset($pconfig["ipsec_{$lkey}"]) && $lidx == "0")  ? "selected=\"selected\"" : "";?> ?>
+<?php foreach (IPSEC_LOG_LEVELS as $lidx => $lvalue): ?>
+                          <option value="<?=$lidx?>" <?= (isset($pconfig["ipsec_{$lkey}"]) && $pconfig["ipsec_{$lkey}"] == $lidx) || (!isset($pconfig["ipsec_{$lkey}"]) && $lidx == "0") ? 'selected="selected"' : '' ?>>
                                 <?=$lvalue?>
                           </option>
-<?php
-endforeach; ?>
+<?php endforeach ?>
                         </select>
-<?php
-endforeach; ?>
+<?php endforeach ?>
                         <div class="hidden" data-for="help_for_ipsec_debug">
                         <?=gettext("Launch IPsec in debug mode so that more verbose logs will be generated to aid in troubleshooting."); ?>
                         </div>

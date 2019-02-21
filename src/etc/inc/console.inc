@@ -57,7 +57,7 @@ function is_interface_mismatch()
             /* Do not mismatch if any lock was issued */
             $mismatch = false;
             break;
-        } elseif (preg_match("/^enc|^cua|^tun|^tap|^l2tp|^pptp|^ppp|^ovpn|^tinc|^gif|^gre|^lagg|^bridge|vlan|_wlan/i", $ifcfg['if'])) {
+        } elseif (preg_match('/^enc|^cua|^tun|^tap|^l2tp|^pptp|^ppp|^ovpn|^ocvpn|^tinc|^wg|^zt|^ue|^gif|^gre|^lagg|^bridge|vlan|_wlan|_stf/i', $ifcfg['if'])) {
             /* Do not check these interfaces */
             continue;
         } elseif (does_interface_exist($ifcfg['if']) == false) {
@@ -155,12 +155,12 @@ hitting 'a' to initiate auto detection.
 EOD;
 
     do {
-        echo "\nEnter the TAP interface name or 'a' for auto-detection: ";
+        echo "\nEnter the WAN interface name or 'a' for auto-detection: ";
 
         if ($interactive) {
             $wanif = chop(fgets($fp));
         } else {
-            /* more than one interface: put TAP as second one */
+            /* more than one interface: put WAN as second one */
             $wanif = count($ifnames) > 1 ? $ifnames[1] : '';
             echo $wanif . PHP_EOL;
         }
@@ -170,7 +170,7 @@ EOD;
         }
 
         if ($wanif == 'a') {
-            $wanif = autodetect_interface('TAP', $fp);
+            $wanif = autodetect_interface('WAN', $fp);
             if (!$wanif) {
                 continue;
             }
@@ -200,7 +200,7 @@ EOD;
         }
 
         if ($lanif == 'a') {
-            $lanif = autodetect_interface('MGT', $fp);
+            $lanif = autodetect_interface('LAN', $fp);
             if (!$lanif) {
                 continue;
             }
@@ -221,7 +221,7 @@ EOD;
         }
     } while (!$lanif);
 
-    $done = !$lanif;    /* only if lan was set */
+    $done = false;
     while (!$done) {
         /* optional interfaces */
         $optif = array();
@@ -237,7 +237,7 @@ EOD;
                 printf("\nOptional interface %s description found: %s", $io, $config['interfaces']['opt' . $io]['descr']);
             }
 
-            printf("\nEnter the Optional %s interface name or 'a' for auto-detection\n" .
+            printf("\nEnter the Optional interface %s name or 'a' for auto-detection\n" .
                 "(or nothing if finished): ", $io);
 
             if ($interactive) {
@@ -296,10 +296,10 @@ EOD;
         echo "\nThe interfaces will be assigned as follows:\n\n";
 
         if ($wanif != '') {
-            echo "TAP  -> " . $wanif . "\n";
+            echo "WAN  -> " . $wanif . "\n";
         }
         if ($lanif != '') {
-            echo "MGT  -> " . $lanif . "\n";
+            echo "LAN  -> " . $lanif . "\n";
         }
         for ($i = 0; $i < count($optif); $i++) {
             echo "OPT" . ($i+1) . " -> " . $optif[$i] . "\n";
@@ -331,50 +331,53 @@ EOD;
     if ($lanif) {
         $new = false;
 
-        if (!isset($config['interfaces']['mgt'])) {
+        if (!isset($config['interfaces']['lan'])) {
             $new = true;
         }
 
-        config_read_array('interfaces', 'mgt');
-        $config['interfaces']['mgt']['if'] = $lanif;
-        $config['interfaces']['mgt']['enable'] = true;
+        config_read_array('interfaces', 'lan');
+        $config['interfaces']['lan']['if'] = $lanif;
+        $config['interfaces']['lan']['enable'] = true;
 
         if ($new) {
-            $config['interfaces']['mgt']['ipaddr'] = '192.168.1.1';
-            $config['interfaces']['mgt']['subnet'] = '24';
+            $config['interfaces']['lan']['ipaddr'] = '192.168.1.1';
+            $config['interfaces']['lan']['subnet'] = '24';
             if ($wanif) {
-                $config['interfaces']['mgt']['track6-interface'] = 'tap';
-                $config['interfaces']['mgt']['track6-prefix-id'] = '0';
-                $config['interfaces']['mgt']['ipaddrv6'] = 'track6';
-                $config['interfaces']['mgt']['subnetv6'] = '64';
+                $config['interfaces']['lan']['track6-interface'] = 'wan';
+                $config['interfaces']['lan']['track6-prefix-id'] = '0';
+                $config['interfaces']['lan']['ipaddrv6'] = 'track6';
+                $config['interfaces']['lan']['subnetv6'] = '64';
             }
 
-            config_read_array('dhcpd', 'mgt', 'range');
-            $config['dhcpd']['mgt']['enable'] = true;
-            $config['dhcpd']['mgt']['range']['from'] = '192.168.1.100';
-            $config['dhcpd']['mgt']['range']['to'] = '192.168.1.199';
+            config_read_array('dhcpd', 'lan', 'range');
+            $config['dhcpd']['lan']['enable'] = true;
+            $config['dhcpd']['lan']['range']['from'] = '192.168.1.100';
+            $config['dhcpd']['lan']['range']['to'] = '192.168.1.199';
 
             config_read_array('nat', 'outbound');
             $config['nat']['outbound']['mode'] = 'automatic';
         }
 
         if (match_wireless_interface($lanif)) {
-            config_read_array('interfaces', 'mgt', 'wireless');
-        } elseif (isset($config['interfaces']['mgt']['wireless'])) {
-            unset($config['interfaces']['mgt']['wireless']);
+            config_read_array('interfaces', 'lan', 'wireless');
+        } elseif (isset($config['interfaces']['lan']['wireless'])) {
+            unset($config['interfaces']['lan']['wireless']);
         }
     } else {
-        if (isset($config['interfaces']['mgt']['if'])) {
-            mwexec("/sbin/ifconfig " . $config['interfaces']['mgt']['if'] . " delete");
+        if (isset($config['interfaces']['lan']['if'])) {
+            mwexec("/sbin/ifconfig " . $config['interfaces']['lan']['if'] . " delete");
         }
-        if (isset($config['interfaces']['mgt'])) {
-            unset($config['interfaces']['mgt']);
+        if (isset($config['interfaces']['lan'])) {
+            unset($config['interfaces']['lan']);
         }
-        if (isset($config['dhcpd']['mgt'])) {
-            unset($config['dhcpd']['mgt']);
+        if (isset($config['dhcpd']['lan'])) {
+            unset($config['dhcpd']['lan']);
         }
-        if (isset($config['interfaces']['tap']['blockpriv'])) {
-            unset($config['interfaces']['tap']['blockpriv']);
+        if (isset($config['dhcpdv6']['lan'])) {
+            unset($config['dhcpdv6']['lan']);
+        }
+        if (isset($config['interfaces']['wan']['blockpriv'])) {
+            unset($config['interfaces']['wan']['blockpriv']);
         }
         if (isset($config['nat'])) {
             unset($config['nat']);
@@ -382,24 +385,24 @@ EOD;
     }
 
     if ($wanif) {
-        config_read_array('interfaces', 'tap');
-        $config['interfaces']['tap']['if'] = $wanif;
-        $config['interfaces']['tap']['enable'] = true;
-        $config['interfaces']['tap']['ipaddr'] = 'dhcp';
-        $config['interfaces']['tap']['ipaddrv6'] = 'dhcp6';
-        $config['interfaces']['tap']['blockbogons'] = false;
+        config_read_array('interfaces', 'wan');
+        $config['interfaces']['wan']['if'] = $wanif;
+        $config['interfaces']['wan']['enable'] = true;
+        $config['interfaces']['wan']['ipaddr'] = 'dhcp';
+        $config['interfaces']['wan']['ipaddrv6'] = 'dhcp6';
+        $config['interfaces']['wan']['blockbogons'] = true;
         if ($lanif) {
-            $config['interfaces']['tap']['blockpriv'] = false;
+            $config['interfaces']['wan']['blockpriv'] = true;
         }
 
         if (match_wireless_interface($wanif)) {
-            config_read_array('interfaces', 'tap', 'wireless');
-        } elseif (isset($config['interfaces']['tap']['wireless'])) {
-            unset($config['interfaces']['tap']['wireless']);
+            config_read_array('interfaces', 'wan', 'wireless');
+        } elseif (isset($config['interfaces']['wan']['wireless'])) {
+            unset($config['interfaces']['wan']['wireless']);
         }
     } else {
-        if (isset($config['interfaces']['tap'])) {
-            unset($config['interfaces']['tap']);
+        if (isset($config['interfaces']['wan'])) {
+            unset($config['interfaces']['wan']);
         }
     }
 

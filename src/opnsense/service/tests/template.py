@@ -59,8 +59,8 @@ class TestConfigMethods(unittest.TestCase):
         :return:
         """
         self.assertIn('interfaces', self.conf.get(), 'interfaces section missing')
-        self.assertIn('mgt', self.conf.get()['interfaces'], 'mgt section missing')
-        self.assertIn('ipaddr', self.conf.get()['interfaces']['mgt'], 'mgt address missing')
+        self.assertIn('lan', self.conf.get()['interfaces'], 'lan section missing')
+        self.assertIn('ipaddr', self.conf.get()['interfaces']['lan'], 'lan address missing')
 
 
 class TestTemplateMethods(unittest.TestCase):
@@ -94,7 +94,7 @@ class TestTemplateMethods(unittest.TestCase):
         :return:
         """
         generated_filenames = self.tmpl.generate('OPNsense.Sample')
-        self.assertEquals(len(generated_filenames), 3, 'number of output files <> 3')
+        self.assertEquals(len(generated_filenames), 3, 'number of output files not 3')
 
     def test_all(self):
         """ Test if all expected templates are created, can only find test for static defined cases.

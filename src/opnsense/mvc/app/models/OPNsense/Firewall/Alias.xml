@@ -1,6 +1,6 @@
 <model>
-    <mount>//OPNSense/Firewall/Alias</mount>
-    <version>0.0.1</version>
+    <mount>//OPNsense/Firewall/Alias</mount>
+    <version>1.0.0</version>
     <description>
         Firewall aliases
     </description>
@@ -28,18 +28,25 @@
                         <network>Network(s)</network>
                         <port>Port(s)</port>
                         <url>URL (IPs)</url>
-                        <url_ports>URL (Ports)</url_ports>
                         <urltable>URL Table (IPs)</urltable>
-                        <urltable_ports>URL Table (Ports)</urltable_ports>
                         <geoip>GeoIP</geoip>
                         <external>External (advanced)</external>
                     </OptionValues>
                 </type>
-                <content type=".\AliasContentField">
-                </content>
+                <proto type="OptionField">
+                    <Multiple>Y</Multiple>
+                    <OptionValues>
+                        <IPv4>IPv4</IPv4>
+                        <IPv6>IPv6</IPv6>
+                    </OptionValues>
+                </proto>
+                <updatefreq type="NumericField">
+                    <ValidationMessage>Days and hours should be numeric values or left empty</ValidationMessage>
+                </updatefreq>
+                <content type=".\AliasContentField"/>
                 <description type="TextField">
-                    <Required>Y</Required>
-                    <mask>/^([\t\n\v\f\r 0-9a-zA-Z.\-,_\x{00A0}-\x{FFFF}]){1,255}$/u</mask>
+                    <Required>N</Required>
+                    <mask>/^(.){1,255}$/u</mask>
                     <ValidationMessage>Description should be a string between 1 and 255 characters</ValidationMessage>
                 </description>
             </alias>

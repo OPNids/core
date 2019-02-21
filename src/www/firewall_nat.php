@@ -1,33 +1,33 @@
 <?php
 
 /*
-    Copyright (C) 2014 Deciso B.V.
-    Copyright (C) 2009 Janne Enberg <janne.enberg@lietu.net>
-    Copyright (C) 2004 Scott Ullrich <sullrich@gmail.com>
-    Copyright (C) 2003-2004 Manuel Kasper <mk@neon1.net>
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    1. Redistributions of source code must retain the above copyright notice,
-       this list of conditions and the following disclaimer.
-
-    2. Redistributions in binary form must reproduce the above copyright
-       notice, this list of conditions and the following disclaimer in the
-       documentation and/or other materials provided with the distribution.
-
-    THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
-    INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
-    AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
-    AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
-    OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-    POSSIBILITY OF SUCH DAMAGE.
-*/
+ * Copyright (C) 2014 Deciso B.V.
+ * Copyright (C) 2009 Janne Enberg <janne.enberg@lietu.net>
+ * Copyright (C) 2004 Scott Ullrich <sullrich@gmail.com>
+ * Copyright (C) 2003-2004 Manuel Kasper <mk@neon1.net>
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+ * AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
+ * OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
 
 require_once("guiconfig.inc");
 require_once("interfaces.inc");
@@ -111,6 +111,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         mark_subsystem_dirty('natconf');
         header(url_safe('Location: /firewall_nat.php'));
         exit;
+    } elseif (isset($pconfig['act']) && in_array($pconfig['act'], array('toggle_enable', 'toggle_disable')) && isset($pconfig['rule']) && count($pconfig['rule']) > 0) {
+        foreach ($pconfig['rule'] as $rulei) {
+            $a_nat[$rulei]['disabled'] = $pconfig['act'] == 'toggle_disable';
+        }
+        write_config();
+        mark_subsystem_dirty('filter');
+        header(url_safe('Location: /firewall_nat.php'));
+        exit;
     } elseif ( isset($pconfig['act']) && $pconfig['act'] == 'move') {
         // move records
         if (isset($pconfig['rule']) && count($pconfig['rule']) > 0) {
@@ -142,6 +150,8 @@ include("head.inc");
 
 legacy_html_escape_form_data($a_nat);
 
+$lockout_spec = filter_core_get_antilockout();
+
 $main_buttons = array(
     array('label' => gettext('Add'), 'href' => 'firewall_nat_edit.php'),
 );
@@ -152,7 +162,8 @@ $main_buttons = array(
 <script>
 $( document ).ready(function() {
   // link delete buttons
-  $(".act_delete").click(function(){
+  $(".act_delete").click(function(event){
+    event.preventDefault();
     var id = $(this).attr("id").split('_').pop(-1);
     if (id != 'x') {
       // delete single
@@ -193,6 +204,48 @@ $( document ).ready(function() {
               }]
       });
     }
+  });
+
+  // enable/disable selected
+  $(".act_toggle_enable").click(function(event){
+    event.preventDefault();
+    BootstrapDialog.show({
+      type:BootstrapDialog.TYPE_DANGER,
+      title: "<?= gettext("Rules");?>",
+      message: "<?=gettext("Enable selected rules?");?>",
+      buttons: [{
+                label: "<?= gettext("No");?>",
+                action: function(dialogRef) {
+                    dialogRef.close();
+                }}, {
+                label: "<?= gettext("Yes");?>",
+                action: function(dialogRef) {
+                  $("#id").val("");
+                  $("#action").val("toggle_enable");
+                  $("#iform").submit()
+              }
+            }]
+    });
+  });
+  $(".act_toggle_disable").click(function(event){
+    event.preventDefault();
+    BootstrapDialog.show({
+      type:BootstrapDialog.TYPE_DANGER,
+      title: "<?= gettext("Rules");?>",
+      message: "<?=gettext("Disable selected rules?");?>",
+      buttons: [{
+                label: "<?= gettext("No");?>",
+                action: function(dialogRef) {
+                    dialogRef.close();
+                }}, {
+                label: "<?= gettext("Yes");?>",
+                action: function(dialogRef) {
+                  $("#id").val("");
+                  $("#action").val("toggle_disable");
+                  $("#iform").submit()
+              }
+            }]
+    });
   });
 
   // link move buttons
@@ -263,33 +316,25 @@ $( document ).ready(function() {
                   </tr>
                 </thead>
                 <tbody>
-<?php           if (isset($config['interfaces']['mgt'])) {
-                    $lockout_intf_name = empty($config['interfaces']['mgt']['descr']) ? "MGT" :$config['interfaces']['mgt']['descr'];
-                } elseif (count($config['interfaces']) == 1 && isset($config['interfaces']['tap'])) {
-                    $lockout_intf_name = empty($config['interfaces']['tap']['descr']) ? "TAP" :$config['interfaces']['tap']['descr'];
-                } else {
-                    $lockout_intf_name = null;
-                }
-
-                // show anti-lockout when enabled
-                if ($lockout_intf_name !== null && !isset($config['system']['webgui']['noantilockout'])):
-?>
-                    <tr>
-                      <td></td>
-                      <td><i class="fa fa-exclamation fa-fw text-success"></i></td>
-                      <td></td>
-                      <td><?=$lockout_intf_name?></td>
-                      <td>TCP</td>
-                      <td class="hidden-xs hidden-sm">*</td>
-                      <td class="hidden-xs hidden-sm">*</td>
-                      <td class="hidden-xs hidden-sm"><?=$lockout_intf_name?> <?=gettext("address");?></td>
-                      <td class="hidden-xs hidden-sm"><?=implode(', ', filter_core_antilockout_ports());?></td>
-                      <td>*</td>
-                      <td>*</td>
-                      <td><?=gettext("Anti-Lockout Rule");?></td>
-                      <td></td>
-                    </tr>
-<?php               endif; ?>
+<?php foreach ($lockout_spec as $lockout_intf => $lockout_prts): ?>
+                  <tr>
+                    <td></td>
+                    <td><i class="fa fa-exclamation fa-fw text-success"></i></td>
+                    <td></td>
+                    <td><?= html_safe(convert_friendly_interface_to_friendly_descr($lockout_intf)) ?></td>
+                    <td>TCP</td>
+                    <td class="hidden-xs hidden-sm">*</td>
+                    <td class="hidden-xs hidden-sm">*</td>
+                    <td class="hidden-xs hidden-sm"><?= html_safe(sprintf(gettext('%s address'), convert_friendly_interface_to_friendly_descr($lockout_intf))) ?></td>
+                    <td class="hidden-xs hidden-sm"><?= html_safe(implode(', ', $lockout_prts)) ?></td>
+                    <td>*</td>
+                    <td>*</td>
+                    <td><?= gettext('Anti-Lockout Rule') ?></td>
+                    <td>
+                      <a href="system_advanced_firewall.php" data-toggle="tooltip" title="<?= html_safe(gettext('Edit')) ?>" class="btn btn-default btn-xs"><i class="fa fa-pencil fa-fw"></i></a>
+                    </td>
+                  </tr>
+<?php endforeach ?>
 <?php               $nnats = 0;
                     foreach ($a_nat as $natent):
 ?>
@@ -318,7 +363,7 @@ $( document ).ready(function() {
                         </a>
                       </td>
                       <td>
-                        <?=htmlspecialchars(convert_friendly_interface_to_friendly_descr(isset($natent['interface']) ? $natent['interface'] : "tap"));?>
+                        <?=htmlspecialchars(convert_friendly_interface_to_friendly_descr(isset($natent['interface']) ? $natent['interface'] : "wan"));?>
                       </td>
                       <td>
                         <?=strtoupper($natent['protocol']);?>
@@ -326,10 +371,10 @@ $( document ).ready(function() {
 
                       <td class="hidden-xs hidden-sm">
 <?php                   if (isset($natent['source']['address']) && is_alias($natent['source']['address'])): ?>
-                          <span title="<?=htmlspecialchars(get_alias_description($natent['source']['address']));?>" data-toggle="tooltip">
+                          <span title="<?=htmlspecialchars(get_alias_description($natent['source']['address']));?>" data-toggle="tooltip" data-html="true">
                             <?=htmlspecialchars(pprint_address($natent['source'])); ?>
                           </span>
-                          <a href="/firewall_aliases_edit.php?name=<?=htmlspecialchars($natent['source']['address']);?>"
+                          <a href="/ui/firewall/alias/index/<?=htmlspecialchars($natent['source']['address']);?>"
                               title="<?=gettext("edit alias");?>" data-toggle="tooltip">
                             <i class="fa fa-list"></i>
                           </a>
@@ -340,10 +385,10 @@ $( document ).ready(function() {
 
                       <td class="hidden-xs hidden-sm">
 <?php                   if (isset($natent['source']['port']) && is_alias($natent['source']['port'])): ?>
-                          <span title="<?=htmlspecialchars(get_alias_description($natent['source']['port']));?>" data-toggle="tooltip">
+                          <span title="<?=htmlspecialchars(get_alias_description($natent['source']['port']));?>" data-toggle="tooltip" data-html="true">
                             <?=htmlspecialchars(pprint_port($natent['source']['port'])); ?>&nbsp;
                           </span>
-                          <a href="/firewall_aliases_edit.php?name=<?=htmlspecialchars($natent['source']['port']);?>"
+                          <a href="/ui/firewall/alias/index/<?=htmlspecialchars($natent['source']['port']);?>"
                               title="<?=gettext("edit alias");?>" data-toggle="tooltip">
                             <i class="fa fa-list"></i>
                           </a>
@@ -354,10 +399,10 @@ $( document ).ready(function() {
 
                       <td class="hidden-xs hidden-sm">
 <?php                   if (isset($natent['destination']['address']) && is_alias($natent['destination']['address'])): ?>
-                          <span title="<?=htmlspecialchars(get_alias_description($natent['destination']['address']));?>" data-toggle="tooltip">
+                          <span title="<?=htmlspecialchars(get_alias_description($natent['destination']['address']));?>" data-toggle="tooltip" data-html="true">
                             <?=htmlspecialchars(pprint_address($natent['destination'])); ?>
                           </span>
-                          <a href="/firewall_aliases_edit.php?name=<?=htmlspecialchars($natent['destination']['address']);?>"
+                          <a href="/ui/firewall/alias/index/<?=htmlspecialchars($natent['destination']['address']);?>"
                               title="<?=gettext("edit alias");?>" data-toggle="tooltip">
                             <i class="fa fa-list"></i>
                           </a>
@@ -368,10 +413,10 @@ $( document ).ready(function() {
 
                       <td class="hidden-xs hidden-sm">
 <?php                   if (isset($natent['destination']['port']) && is_alias($natent['destination']['port'])): ?>
-                          <span title="<?=htmlspecialchars(get_alias_description($natent['destination']['port']));?>" data-toggle="tooltip">
+                          <span title="<?=htmlspecialchars(get_alias_description($natent['destination']['port']));?>" data-toggle="tooltip" data-html="true">
                             <?=htmlspecialchars(pprint_port($natent['destination']['port'])); ?>&nbsp;
                           </span>
-                          <a href="/firewall_aliases_edit.php?name=<?=htmlspecialchars($natent['destination']['port']);?>"
+                          <a href="/ui/firewall/alias/index/<?=htmlspecialchars($natent['destination']['port']);?>"
                               title="<?=gettext("edit alias");?>" data-toggle="tooltip">
                             <i class="fa fa-list"></i>
                           </a>
@@ -381,12 +426,12 @@ $( document ).ready(function() {
                       </td>
 
                       <td>
-                        <span title="<?=htmlspecialchars(get_alias_description($natent['target']));?>" data-toggle="tooltip">
+                        <span title="<?=htmlspecialchars(get_alias_description($natent['target']));?>" data-toggle="tooltip" data-html="true">
                           <?=$natent['target'];?>
                         </span>
 
 <?php                   if (is_alias($natent['target'])): ?>
-                        &nbsp;<a href="/firewall_aliases_edit.php?name=<?=$natent['target'];?>"
+                        &nbsp;<a href="/ui/firewall/alias/index/<?=$natent['target'];?>"
                                  title="<?=gettext("edit alias");?>" data-toggle="tooltip"><i class="fa fa-list"></i> </a>
 <?php                   endif; ?>
                       </td>
@@ -401,10 +446,10 @@ $( document ).ready(function() {
                         }
 ?>
 <?php                   if (isset($natent['local-port']) && is_alias($natent['local-port'])): ?>
-                          <span title="<?=htmlspecialchars(get_alias_description($localport));?>" data-toggle="tooltip">
+                          <span title="<?=htmlspecialchars(get_alias_description($localport));?>" data-toggle="tooltip" data-html="true">
                             <?=htmlspecialchars(pprint_port($localport));?>&nbsp;
                           </span>
-                          <a href="/firewall_aliases_edit.php?name=<?=htmlspecialchars($localport);?>"
+                          <a href="/ui/firewall/alias/index/<?=htmlspecialchars($localport);?>"
                               title="<?=gettext("edit alias");?>" data-toggle="tooltip">
                             <i class="fa fa-list"></i>
                           </a>
@@ -438,34 +483,46 @@ $( document ).ready(function() {
                       <td colspan="8"></td>
                       <td class="hidden-xs hidden-sm" colspan="4"> </td>
                       <td>
-                        <a type="submit" id="move_<?=$nnats;?>" name="move_<?=$nnats;?>_x" data-toggle="tooltip" title="<?=html_safe(gettext("Move selected rules to end"))?>" class="act_move btn btn-default btn-xs">
+                        <button id="move_<?=$nnats;?>" name="move_<?=$nnats;?>_x" data-toggle="tooltip" title="<?=html_safe(gettext("Move selected rules to end"))?>" class="act_move btn btn-default btn-xs">
                           <i class="fa fa-arrow-left fa-fw"></i>
-                        </a>
-                        <a id="del_x" title="<?=html_safe(gettext("Delete selected"))?>" data-toggle="tooltip"  class="act_delete btn btn-default btn-xs">
+                        </button>
+                        <button id="del_x" title="<?=html_safe(gettext("Delete selected"))?>" data-toggle="tooltip"  class="act_delete btn btn-default btn-xs">
                           <i class="fa fa-trash fa-fw"></i>
-                        </a>
-                    </td>
-                  </tr>
+                        </button>
+                        <button title="<?= html_safe(gettext('Enable selected')) ?>" data-toggle="tooltip" class="act_toggle_enable btn btn-default btn-xs">
+                          <i class="fa fa-check-square-o fa-fw"></i>
+                        </button>
+                        <button title="<?= html_safe(gettext('Disable selected')) ?>" data-toggle="tooltip" class="act_toggle_disable btn btn-default btn-xs">
+                          <i class="fa fa-square-o fa-fw"></i>
+                        </button>
+                      </td>
+                    </tr>
 <?php endif ?>
-                </tbody>
+                  </tbody>
                   <tfoot>
-                    <tr>
-                      <td style="width:16px"><i class="fa fa-play fa-fw text-success"></i></td>
-                      <td colspan="12"><?=gettext("Enabled rule"); ?></td>
+                    <tr class="hidden-xs hidden-sm">
+                      <td colspan="13">
+                        <table style="width:100%; border:0;">
+                          <tr>
+                            <td><i class="fa fa-play fa-fw text-success"></i></td>
+                            <td><?=gettext("Enabled rule"); ?></td>
+                            <td><i class="fa fa-exclamation fa-fw text-success"></i></td>
+                            <td><?=gettext("No redirect"); ?></td>
+                            <td><i class="fa fa-arrows-h fa-fw text-success"></i></td>
+                            <td><?=gettext("Linked rule");?></td>
+                          </tr>
+                          <tr>
+                            <td><i class="fa fa-play fa-fw text-muted"></i></td>
+                            <td><?=gettext("Disabled rule"); ?></td>
+                            <td><i class="fa fa-exclamation fa-fw text-muted"></i></td>
+                            <td><?=gettext("Disabled no redirect"); ?></td>
+                            <td><i class="fa fa-arrows-h fa-fw text-muted"></i></td>
+                            <td><?=gettext("Disabled linked rule");?></td>
+                          </tr>
+                        </table>
+                      </td>
                     </tr>
-                    <tr>
-                      <td><i class="fa fa-play fa-fw text-muted"></i></td>
-                      <td colspan="12"><?=gettext("Disabled rule"); ?></td>
-                    </tr>
-                    <tr>
-                      <td><i class="fa fa-exclamation fa-fw text-success"></i></td>
-                      <td colspan="12"><?=gettext("No redirect"); ?></td>
-                    </tr>
-                    <tr>
-                      <td><i class="fa fa-arrows-h fa-fw text-success"></i></td>
-                      <td colspan="12"><?=gettext("Linked rule");?></td>
-                    </tr>
-                    <tr>
+                    <tr class="hidden-xs hidden-sm">
                       <td><i class="fa fa-list fa-fw text-primary"></i></td>
                       <td colspan="12"><?=gettext("Alias (click to view/edit)");?></td>
                     </tr>

@@ -2,7 +2,7 @@
 
 /*
     Copyright (C) 2014-2016 Deciso B.V.
-    Copyright (C) 2003-2004 Manuel Kasper <mk@neon1.net>.
+    Copyright (C) 2003-2004 Manuel Kasper <mk@neon1.net>
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -104,7 +104,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                     legacy_interface_destroy("{$a_vlans[$id]['if']}_vlan{$a_vlans[$id]['tag']}");
                     $confif = convert_real_interface_to_friendly_interface_name("{$a_vlans[$id]['if']}_vlan{$a_vlans[$id]['tag']}");
                 }
-                if ($confif <> "") {
+                if ($confif != '') {
                     $config['interfaces'][$confif]['if'] = "{$_POST['if']}_vlan{$_POST['tag']}";
                 }
                 $vlan['vlanif'] = interface_vlan_configure($vlan);
@@ -122,7 +122,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             }
             write_config();
 
-            if ($confif <> "") {
+            if ($confif != '') {
                 interface_configure(false, $confif);
             }
             header(url_safe('Location: /interfaces_vlan.php'));
@@ -132,6 +132,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 }
 
 include("head.inc");
+legacy_html_escape_form_data($pconfig);
 ?>
 
 <body>

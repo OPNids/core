@@ -1,41 +1,35 @@
 <?php
 
 /*
-    Copyright (C) 2014-2016 Deciso B.V.
-    Copyright (C) 2003-2004 Manuel Kasper <mk@neon1.net>.
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    1. Redistributions of source code must retain the above copyright notice,
-       this list of conditions and the following disclaimer.
-
-    2. Redistributions in binary form must reproduce the above copyright
-       notice, this list of conditions and the following disclaimer in the
-       documentation and/or other materials provided with the distribution.
-
-    THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
-    INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
-    AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
-    AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
-    OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-    POSSIBILITY OF SUCH DAMAGE.
-*/
+ * Copyright (C) 2014-2016 Deciso B.V.
+ * Copyright (C) 2003-2004 Manuel Kasper <mk@neon1.net>
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+ * AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
+ * OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
 
 require_once("guiconfig.inc");
 require_once("services.inc");
 require_once("interfaces.inc");
-
-function staticmapcmp($a, $b)
-{
-    return ipcmp($a['ipaddr'], $b['ipaddr']);
-}
-
 
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     // handle identifiers and action
@@ -53,7 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $pconfig = array();
     $config_copy_fieldnames = array('mac', 'cid', 'hostname', 'filename', 'rootpath', 'descr', 'arp_table_static_entry',
       'defaultleasetime', 'maxleasetime', 'gateway', 'domain', 'domainsearchlist', 'winsserver', 'dnsserver', 'ddnsdomain',
-      'ddnsdomainprimary', 'ddnsdomainkeyname', 'ddnsdomainkey', 'ddnsupdate', 'ntpserver', 'tftp', 'ipaddr',
+      'ddnsupdate', 'ntpserver', 'tftp', 'ipaddr',
       'winsserver', 'dnsserver');
     foreach ($config_copy_fieldnames as $fieldname) {
         if (isset($if) && isset($id) && isset($config['dhcpd'][$if]['staticmap'][$id][$fieldname])) {
@@ -146,6 +140,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         }
     }
 
+    $parent_net = find_interface_network(get_real_interface($if));
+
     /* make sure it's not within the dynamic subnet */
     if (!empty($pconfig['ipaddr'])) {
         $dynsubnet_start = ip2ulong($config['dhcpd'][$if]['range']['from']);
@@ -163,31 +159,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             }
         }
 
-        $ifcfgip = get_interface_ip($if);
-        $ifcfgsn = get_interface_subnet($if);
-        $ifcfgdescr = convert_friendly_interface_to_friendly_descr($if);
-        $lansubnet_start = ip2ulong(long2ip32(ip2long($ifcfgip) & gen_subnet_mask_long($ifcfgsn)));
-        $lansubnet_end = ip2ulong(long2ip32(ip2long($ifcfgip) | (~gen_subnet_mask_long($ifcfgsn))));
-        if (ip2ulong($pconfig['ipaddr']) < $lansubnet_start || ip2ulong($pconfig['ipaddr']) > $lansubnet_end) {
-            $input_errors[] = sprintf(gettext("The IP address must lie in the %s subnet."),$ifcfgdescr);
+        if (!ip_in_subnet($pconfig['ipaddr'], $parent_net)) {
+            $ifcfgdescr = convert_friendly_interface_to_friendly_descr($if);
+            $input_errors[] = sprintf(gettext('The IP address must lie in the %s subnet.'), $ifcfgdescr);
         }
     }
 
     if (!empty($pconfig['gateway']) && !is_ipaddrv4($pconfig['gateway'])) {
         $input_errors[] = gettext("A valid IP address must be specified for the gateway.");
     }
+
     if ((!empty($pconfig['wins1']) && !is_ipaddrv4($pconfig['wins1'])) ||
       (!empty($pconfig['wins2']) && !is_ipaddrv4($pconfig['wins2']))) {
         $input_errors[] = gettext("A valid IP address must be specified for the primary/secondary WINS servers.");
     }
 
-    $parent_ip = get_interface_ip($pconfig['if']);
-    if (is_ipaddrv4($parent_ip) && $pconfig['gateway']) {
-        $parent_sn = get_interface_subnet($pconfig['if']);
-        if (!ip_in_subnet($pconfig['gateway'], gen_subnet($parent_ip, $parent_sn) . "/" . $parent_sn) && !ip_in_interface_alias_subnet($pconfig['if'], $pconfig['gateway'])) {
+    if (is_subnetv4($parent_net) && !empty($pconfig['gateway'])) {
+        if (!ip_in_subnet($pconfig['gateway'], $parent_net) && !ip_in_interface_alias_subnet($if, $pconfig['gateway'])) {
             $input_errors[] = sprintf(gettext("The gateway address %s does not lie within the chosen interface's subnet."), $_POST['gateway']);
         }
     }
+
     if ((!empty($pconfig['dns1']) && !is_ipaddrv4($pconfig['dns1'])) || (!empty($pconfig['dns2']) && !is_ipaddrv4($pconfig['dns2']))) {
         $input_errors[] = gettext("A valid IP address must be specified for the primary/secondary DNS servers.");
     }
@@ -200,13 +192,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     }
     if (!empty($pconfig['ddnsdomain']) && !is_domain($pconfig['ddnsdomain'])) {
         $input_errors[] = gettext("A valid domain name must be specified for the dynamic DNS registration.");
-    }
-    if (!empty($pconfig['ddnsdomain']) && !is_ipaddrv4($pconfig['ddnsdomainprimary'])) {
-        $input_errors[] = gettext("A valid primary domain name server IP address must be specified for the dynamic domain name.");
-    }
-    if ((!empty($pconfig['ddnsdomainkey']) && empty($pconfig['ddnsdomainkeyname'])) ||
-      (!empty($pconfig['ddnsdomainkeyname']) && empty($pconfig['ddnsdomainkey']))) {
-        $input_errors[] = gettext("You must specify both a valid domain key and key name.");
     }
     if (!empty($pconfig['domainsearchlist'])) {
         $domain_array=preg_split("/[ ;]+/", $pconfig['domainsearchlist']);
@@ -232,7 +217,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         $mapent = array();
         $config_copy_fieldnames = array('mac', 'cid', 'ipaddr', 'hostname', 'descr', 'filename', 'rootpath',
           'arp_table_static_entry', 'defaultleasetime', 'maxleasetime', 'gateway', 'domain', 'domainsearchlist',
-          'ddnsdomain', 'ddnsdomainprimary', 'ddnsdomainkeyname', 'ddnsdomainkey', 'ddnsupdate', 'tftp',
+          'ddnsdomain', 'ddnsupdate', 'tftp',
           'ldap', 'winsserver', 'dnsserver');
 
         foreach ($config_copy_fieldnames as $fieldname) {
@@ -274,8 +259,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         } else {
             $a_maps[] = $mapent;
         }
-        // sort before save
-        usort($config['dhcpd'][$if]['staticmap'], "staticmapcmp");
+
+        usort($config['dhcpd'][$if]['staticmap'], function ($a, $b) {
+            return ipcmp($a['ipaddr'], $b['ipaddr']);
+        });
 
         write_config();
 
@@ -424,7 +411,7 @@ include("head.inc");
                     <input name="dns1" type="text" value="<?=$pconfig['dns1'];?>" /><br/>
                     <input name="dns2" type="text" value="<?=$pconfig['dns2'];?>" />
                     <div class="hidden" data-for="help_for_dns">
-                      <?=gettext("NOTE: leave blank to use the system default DNS servers - this interface's IP if DNS forwarder is enabled, otherwise the servers configured on the General page.");?>
+                      <?= gettext('Leave blank to use the system default DNS servers: This interface IP address if a DNS service is enabled or the configured global DNS servers.') ?>
                     </div>
                   </td>
                 </tr>
@@ -451,7 +438,7 @@ include("head.inc");
                   <td>
                     <input name="domainsearchlist" type="text" id="domainsearchlist" size="20" value="<?=$pconfig['domainsearchlist'];?>" />
                     <div class="hidden" data-for="help_for_domainsearchlist">
-                      <?=gettext("The DHCP server can optionally provide a domain search list. Use the semicolon character as separator ");?>
+                      <?=gettext("The DHCP server can optionally provide a domain search list. Use the semicolon character as separator.");?>
                     </div>
                   </td>
                 </tr>
@@ -487,12 +474,6 @@ include("head.inc");
                       <?=gettext("Note: Leave blank to disable dynamic DNS registration.");?><br />
                       <?=gettext("Enter the dynamic DNS domain which will be used to register client names in the DNS server.");?>
                       <input name="ddnsdomain" type="text" id="ddnsdomain" size="20" value="<?=$pconfig['ddnsdomain'];?>" />
-                      <?=gettext("Enter the primary domain name server IP address for the dynamic domain name.");?><br />
-                      <input name="ddnsdomainprimary" type="text" id="ddnsdomainprimary" size="20" value="<?=$pconfig['ddnsdomainprimary'];?>" />
-                      <?=gettext("Enter the dynamic DNS domain key name which will be used to register client names in the DNS server.");?>
-                      <input name="ddnsdomainkeyname" type="text" id="ddnsdomainkeyname" size="20" value="<?=$pconfig['ddnsdomainkeyname'];?>" />
-                      <?=gettext("Enter the dynamic DNS domain key secret which will be used to register client names in the DNS server.");?>
-                      <input name="ddnsdomainkey" type="text" id="ddnsdomainkey" size="20" value="<?=$pconfig['ddnsdomainkey'];?>" />
                     </div>
                   </td>
                 </tr>

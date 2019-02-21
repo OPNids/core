@@ -2,7 +2,7 @@
 
 /*
     Copyright (C) 2014 Deciso B.V.
-    Copyright (C) 2003-2004 Manuel Kasper <mk@neon1.net>.
+    Copyright (C) 2003-2004 Manuel Kasper <mk@neon1.net>
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -44,8 +44,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 
     $pconfig = array();
     // set defaults
-    $pconfig['interface'] = "tap";
-    $pconfig['src'] = 'mgt';
+    $pconfig['interface'] = "wan";
+    $pconfig['src'] = 'lan';
     $pconfig['dst'] = 'any';
     $pconfig['type'] = 'binat';
     if (isset($configId)) {
@@ -270,7 +270,7 @@ include("head.inc");
                       </div>
                       <div class="hidden" data-for="help_for_interface">
                         <?=gettext("Choose which interface this rule applies to"); ?>.<br />
-                        <?=gettext("Hint: in most cases, you'll want to use TAP here"); ?>
+                        <?=gettext("Hint: in most cases, you'll want to use WAN here"); ?>
                       </div>
                     </td>
                   </tr>
@@ -340,7 +340,7 @@ include("head.inc");
                             <div class="input-group">
                             <!-- updates to "other" option in src -->
                             <input type="text" for="src" value="<?=$pconfig['src'];?>" aria-label="<?=gettext("Source address");?>"/>
-                            <select name="srcmask" class="selectpicker" data-size="5" id="srcmask"  data-width="auto" for="src" >
+                            <select name="srcmask" class="selectpicker input-group-btn" data-size="5" id="srcmask"  data-width="auto" for="src" >
                             <?php for ($i = 32; $i > 0; $i--): ?>
                               <option value="<?=$i;?>" <?= $i == $pconfig['srcmask'] ? "selected=\"selected\"" : ""; ?>><?=$i;?></option>
                             <?php endfor; ?>
@@ -389,9 +389,9 @@ include("head.inc");
                         <tr>
                           <td>
                             <div class="input-group">
-                            <!-- updates to "other" option in src -->
+                            <!-- updates to "other" option in dst -->
                             <input type="text" for="dst" value="<?= !is_specialnet($pconfig['dst']) ? $pconfig['dst'] : "";?>" aria-label="<?=gettext("Destination address");?>"/>
-                            <select name="dstmask" class="selectpicker" data-size="5" id="dstmask"  data-width="auto" for="dst" >
+                            <select name="dstmask" class="selectpicker input-group-btn" data-size="5" id="dstmask"  data-width="auto" for="dst" >
                             <?php for ($i = 32; $i > 0; $i--): ?>
                               <option value="<?=$i;?>" <?= $i == $pconfig['dstmask'] ? "selected=\"selected\"" : ""; ?>><?=$i;?></option>
                             <?php endfor; ?>

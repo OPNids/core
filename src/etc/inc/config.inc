@@ -30,7 +30,7 @@
  */
 
 /* XXX make this a getter function for traceability */
-$g = json_decode(file_get_contents('/usr/local/opnsense/firmware-product'), true);
+$g = json_decode(file_get_contents('/usr/local/opnsense/version/core'), true);
 
 openlog($g['product_id'], LOG_ODELAY, LOG_USER);
 register_shutdown_function('closelog');
@@ -47,22 +47,6 @@ require_once("certs.inc");
  */
 require_once('plugins.inc');
 
-/* make a global alias table (for faster lookups) */
-function alias_make_table($config)
-{
-    global $aliastable;
-
-    $aliastable = array();
-
-    if (isset($config['aliases']['alias'])) {
-        foreach ($config['aliases']['alias'] as $alias) {
-            if ($alias['name']) {
-                $aliastable[$alias['name']] = isset($alias['address']) ? $alias['address'] : null;
-            }
-        }
-    }
-}
-
 /**
  * parse config into array and return
  */
@@ -71,7 +55,7 @@ function load_config_from_file($filename)
     return OPNsense\Core\Config::getInstance()->toArrayFromFile($filename, listtags());
 }
 
-/****** config/parse_config
+/****f* config/parse_config
  * NAME
  *   parse_config - Read in config.xml if needed and return $config array
  * RESULT
@@ -79,18 +63,27 @@ function load_config_from_file($filename)
  ******/
 function parse_config()
 {
+    global $aliastable;
+
     $cnf = OPNsense\Core\Config::getInstance();
 
     // return config data as array, use old "listags" construction to mark certain elements as array (even if they're not recurring)
-    $config=$cnf->toArray(listtags());
+    $config = $cnf->toArray(listtags());
 
-    /* make alias table (for faster lookups) */
-    alias_make_table($config);
+    $aliastable = array();
+
+    foreach ((new \OPNsense\Firewall\Alias())->aliasIterator() as $alias) {
+        if (strncmp($alias['type'], 'url', 3) !== 0) {
+            $aliastable[$alias['name']] = implode(" ", explode("\n", $alias['content']));
+        } else {
+            $aliastable[$alias['name']] = "";
+        }
+    }
 
     return $config;
 }
 
-/****** config/convert_config
+/****f* config/convert_config
  * NAME
  *   convert_config - Attempt to update config.xml.
  * DESCRIPTION
@@ -124,7 +117,7 @@ function convert_config($verbose = false)
     $config = parse_config();
 }
 
-/****** config/write_config
+/****f* config/write_config
  * NAME
  *   write_config - Backup and write the firewall configuration.
  * DESCRIPTION
@@ -167,15 +160,16 @@ function write_config($desc = '', $backup = true)
     }
 
     /* sync carp entries to other firewalls */
-    if ( isset($config['hasync']['synchronizetoip']) && trim($config['hasync']['synchronizetoip']) != "") {
+    if (isset($config['hasync']['synchronizetoip']) && trim($config['hasync']['synchronizetoip']) != "") {
         configd_run('filter sync load');
     }
 
     /* cleanup backups */
     cleanup_backups();
 
-    // on succesfull save, serialize config back to global.
+    /* on succesfull save, serialize config back to global */
     $config = $cnf->toArray(listtags());
+
     return $config;
 }
 
@@ -296,37 +290,41 @@ function make_config_revision_entry($desc = '')
  */
 function legacy_config_get_interfaces($filters = array())
 {
-    global $config;
     $interfaces = array();
-    if (isset($config['interfaces'])) {
-        foreach ($config['interfaces'] as $ifname => $iface) {
-            // undo stupid listags() turning our item into a new array, preventing certain names to be used as interface.
-            // see src/etc/inc/xmlparse.inc
-            if (isset($iface[0])) {
-                $iface = $iface[0];
+
+    foreach (config_read_array('interfaces') as $ifname => $iface) {
+        // undo stupid listags() turning our item into a new array, preventing certain names to be used as interface.
+        // see src/etc/inc/xmlparse.inc
+        if (isset($iface[0])) {
+            $iface = $iface[0];
+        }
+
+        // apply filters
+        $iface_match = true;
+        foreach ($filters as $filter_key => $filter_value) {
+            if ($filter_key == 'enable' && isset($iface[$filter_key])) {
+                $field_value = true;
+            } else {
+                $field_value = isset($iface[$filter_key]) ? $iface[$filter_key] : false;
             }
-            // apply filters
-            $iface_match = true;
-            foreach ($filters as $filter_key => $filter_value) {
-                if ($filter_key == 'enable' && isset($iface[$filter_key])) {
-                    $field_value = true;
-                } else {
-                    $field_value = isset($iface[$filter_key]) ? $iface[$filter_key] : false;
-                }
-                if ($field_value != $filter_value) {
-                    $iface_match = false;
-                    break;
-                }
-            }
-            if ($iface_match) {
-                $iface['descr'] = !empty($iface['descr']) ? $iface['descr'] : strtoupper($ifname);
-                $interfaces[$ifname] = $iface;
+            if ($field_value != $filter_value) {
+                $iface_match = false;
+                break;
             }
         }
+
+        if ($iface_match) {
+            $iface['descr'] = !empty($iface['descr']) ? $iface['descr'] : strtoupper($ifname);
+            $iface['ipaddrv6'] = !empty($iface['ipaddrv6']) ? $iface['ipaddrv6'] : null;
+            $iface['ipaddr'] = !empty($iface['ipaddr']) ? $iface['ipaddr'] : null;
+            $interfaces[$ifname] = $iface;
+        }
     }
-    uasort($interfaces, function($a, $b) {
+
+    uasort($interfaces, function ($a, $b) {
         return strnatcmp($a['descr'], $b['descr']);
     });
+
     return $interfaces;
 }
 

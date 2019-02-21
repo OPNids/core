@@ -31,27 +31,6 @@ EOF
 cat /etc/rc.shutdown.bak >> /etc/rc.shutdown
 rm -f /etc/rc.shutdown.bak
 
-echo "Writing package metadata"
-mkdir -p /usr/local/opnsense/version
-if [ -f /usr/local/opnsense/version/opnsense ]; then
-	mv /usr/local/opnsense/version/opnsense /usr/local/opnsense/version/opnsense.last
-fi
-echo "%%CORE_COMMIT%%" > /usr/local/opnsense/version/opnsense
-echo "%%CORE_NAME%%" > /usr/local/opnsense/version/opnsense.name
-echo "%%CORE_ABI%%" > /usr/local/opnsense/version/opnsense.abi
-
-# filebeats	
-sed -i -r 's/filebeat_enable:="NO"/filebeat_enable:="YES"/' /usr/local/etc/rc.d/filebeat	
-rm -rf /usr/local/etc/rc.d/filebeat-r
-
-# reconfigure redis daemon file	
-sed -i -r 's/redis_enable="NO"/redis_enable="YES"/' /usr/local/etc/rc.d/redis
-rm -f /usr/local/etc/rc.d/redis-r
-
-# start redis with redis-ml
-sed -i -r 's/# loadmodule \/path\/to\/other_module.so/loadmodule \/usr\/local\/lib\/redis-ml.so/' /usr/local/etc/redis.conf
-rm -rf /usr/local/etc/redis.conf-r
-
 /usr/local/etc/rc.d/configd start
 
 /usr/local/etc/rc.configure_firmware

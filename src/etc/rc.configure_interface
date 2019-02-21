@@ -35,6 +35,6 @@ require_once("system.inc");
 require_once("interfaces.inc");
 require_once("services.inc");
 
-$argument = isset($argv[1]) ? trim($argv[1]) : 'tap';
+$argument = isset($argv[1]) ? trim($argv[1]) : 'wan';
 
 interface_configure(true, $argument, true);

@@ -34,7 +34,7 @@ require_once("services.inc");
 require_once("rrd.inc");
 
 $a_gateway_groups = &config_read_array('gateways', 'gateway_group');
-$gateways_status = return_gateways_status(true);
+$gateways_status = return_gateways_status();
 $a_gateways = return_gateways_array();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -76,7 +76,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 legacy_html_escape_form_data($a_gateway_groups);
 legacy_html_escape_form_data($a_gateways);
 
-$service_hook = 'apinger';
+$service_hook = 'dpinger';
 
 include("head.inc");
 

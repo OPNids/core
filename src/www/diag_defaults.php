@@ -31,6 +31,17 @@
 require_once("guiconfig.inc");
 require_once("system.inc");
 
+$input_errors = array();
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!empty($_POST['Submit'])) {
+        $user = getUserEntry($_SESSION['Username']);
+        if (userHasPrivilege($user, 'user-config-readonly')) {
+            $input_errors[] = gettext('You do not have the permission to perform this action.');
+        }
+    }
+}
+
 include("head.inc");
 
 ?>
@@ -39,7 +50,7 @@ include("head.inc");
 
 include("fbegin.inc");
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['Submit'])): ?>
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['Submit']) && !count($input_errors)): ?>
 
 <script>
 $(document).ready(function() {
@@ -55,12 +66,12 @@ $(document).ready(function() {
 });
 </script>
 
-<?php
-      endif; ?>
+<?php endif ?>
 
 <section class="page-content-main">
   <div class="container-fluid">
     <div class="row">
+      <?php if (count($input_errors)) print_input_errors($input_errors); ?>
       <section class="col-xs-12">
         <form method="post">
           <p><strong> <?=gettext('If you click "Yes", the system will:')?></strong></p>
@@ -68,7 +79,7 @@ $(document).ready(function() {
             <li><?= gettext('Reset to factory defaults') ?></li>
             <li><?= gettext('LAN IP address will be reset to 192.168.1.1') ?></li>
             <li><?= gettext('System will be configured as a DHCP server on the default LAN interface') ?></li>
-            <li><?= gettext('TAP interface will be set to obtain an address automatically from a DHCP server') ?></li>
+            <li><?= gettext('WAN interface will be set to obtain an address automatically from a DHCP server') ?></li>
             <li><?= gettext('Admin user name and password will be reset') ?></li>
             <li><?= gettext('Shut down after changes are complete') ?></li>
           </ul>
@@ -88,6 +99,8 @@ include("foot.inc");
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!empty($_POST['Submit'])) {
-        reset_factory_defaults(false);
+        if (!count($input_errors)) {
+            reset_factory_defaults(false);
+        }
     }
 }

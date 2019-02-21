@@ -37,6 +37,7 @@ abstract class Rule
 {
     protected $rule = array();
     protected $interfaceMapping = array();
+    protected $ruleDebugInfo = array();
 
     /**
      * init Rule
@@ -47,6 +48,15 @@ abstract class Rule
     {
         $this->interfaceMapping = $interfaceMapping;
         $this->rule = $conf;
+    }
+
+    /**
+     * send text to debug log
+     * @param string debug log info
+     */
+    protected function log($line)
+    {
+        $this->ruleDebugInfo[] = $line;
     }
 
     /**
@@ -71,8 +81,8 @@ abstract class Rule
 
     /**
      * parse static text
-     * @param string $value field value, ignored
      * @param string $value static text
+     * @param string $text
      * @return string
      */
     protected function parseStaticText($value, $text)
@@ -83,6 +93,8 @@ abstract class Rule
     /**
      * parse boolean, return text from $valueTrue / $valueFalse
      * @param string $value field value
+     * @param $valueTrue
+     * @param string $valueFalse
      * @return string
      */
     protected function parseBool($value, $valueTrue, $valueFalse = "")
@@ -152,9 +164,10 @@ abstract class Rule
 
     /**
      * rule reader, applies standard rule patterns
+     * @param string type of rule to be read
      * @return iterator rules to generate
      */
-    protected function reader()
+    protected function reader($type = null)
     {
         $interfaces = empty($this->rule['interface']) ? array(null) : explode(',', $this->rule['interface']);
         foreach ($interfaces as $interface) {
@@ -162,17 +175,24 @@ abstract class Rule
                 $ipprotos = array('inet', 'inet6');
             } elseif (isset($this->rule['ipprotocol'])) {
                 $ipprotos = array($this->rule['ipprotocol']);
+            } elseif (!empty($type) && $type = 'npt') {
+                $ipprotos = array('inet6');
             } else {
                 $ipprotos = array(null);
             }
 
             foreach ($ipprotos as $ipproto) {
                 $rule = $this->rule;
-                $rule['interface'] = $interface;
+                if ($ipproto == 'inet6' && !empty($this->interfaceMapping[$interface]['IPv6_override'])) {
+                    $rule['interface'] = $this->interfaceMapping[$interface]['IPv6_override'];
+                } else {
+                    $rule['interface'] = $interface;
+                }
                 $rule['ipprotocol'] = $ipproto;
                 $this->convertAddress($rule);
                 // disable rule when interface not found
                 if (!empty($interface) && empty($this->interfaceMapping[$interface]['if'])) {
+                    $this->log("Interface {$interface} not found");
                     $rule['disabled'] = true;
                 }
                 yield $rule;
@@ -203,7 +223,12 @@ abstract class Rule
             $ruleTxt .= !empty($cmdout) && !empty($ruleTxt) ? " "  : "";
             $ruleTxt .= $cmdout;
         }
-        return $ruleTxt;
+        if (!empty($this->ruleDebugInfo)) {
+            $debugTxt = "#debug:". implode("|", $this->ruleDebugInfo) . "\n";
+        } else {
+            $debugTxt = "";
+        }
+        return $debugTxt . $ruleTxt;
     }
 
     /**
@@ -227,7 +252,7 @@ abstract class Rule
                         $rule[$target] = "(self)";
                     } elseif (preg_match("/^(wan|lan|opt[0-9]+)ip$/", $network_name, $matches)) {
                         if (!empty($interfaces[$matches[1]]['if'])) {
-                            $rule[$target] = "({$interfaces["{$matches[1]}"]['if']}:0)";
+                            $rule[$target] = "({$interfaces["{$matches[1]}"]['if']})";
                         }
                     } elseif (!empty($interfaces[$network_name]['if'])) {
                         $rule[$target] = "({$interfaces[$network_name]['if']}:network)";
@@ -256,12 +281,18 @@ abstract class Rule
                         $rule[$target."_port"] = $port;
                     } elseif (Util::isAlias($port)) {
                         $rule[$target."_port"] = '$'.$port;
+                        if (!Util::isAlias($port, true)) {
+                            // unable to map port
+                            $rule['disabled'] = true;
+                            $this->log("Unable to map port {$port}, empty?");
+                        }
                     }
                 }
                 if (!isset($rule[$target])) {
                     // couldn't convert address, disable rule
                     // dump all tag contents in target (from/to) for reference
                     $rule['disabled'] = true;
+                    $this->log("Unable to convert address, see {$target} for details");
                     $rule[$target] = json_encode($rule[$tag]);
                 }
             }

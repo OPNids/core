@@ -49,7 +49,7 @@ if (file_exists('/var/run/booting')) {
 log_error("IP renewal is starting on '{$argument}'");
 
 if (empty($argument)) {
-    $interface = 'tap';
+    $interface = 'wan';
     $interface_real = get_real_interface($interface);
     $ip = get_interface_ip($interface);
 } else {
@@ -124,10 +124,17 @@ if (isset($config['interfaces'][$interface]['ipaddrv6'])) {
             break;
         case 'dhcp6':
         case 'slaac':
-            if (isset($config['interfaces'][$interface]['dhcp6usev4iface'])) {
-                interface_dhcpv6_prepare($interface, $config['interfaces'][$interface]);
-                interface_dhcpv6_configure($interface, $config['interfaces'][$interface]);
+            if (!isset($config['interfaces'][$interface]['dhcp6usev4iface'])) {
+                break;
             }
+            interface_dhcpv6_prepare($interface, $config['interfaces'][$interface]);
+            interface_dhcpv6_configure($interface, $config['interfaces'][$interface]);
+            break;
+       default:
+            if (!isset($config['interfaces'][$interface]['dhcp6usev4iface'])) {
+                break;
+            }
+            interface_static6_configure($interface, $config['interfaces'][$interface]);
             break;
     }
 }

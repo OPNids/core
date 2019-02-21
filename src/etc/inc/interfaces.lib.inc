@@ -182,12 +182,12 @@ function legacy_interface_stats($ifs = null)
         return $stats;
     }
 
-    $current_interface = "";
+    $current_interface = '';
     foreach ($out as $line) {
         if (strpos($line, 'Interface') === 0) {
             $current_interface = explode('(', explode(' ', $line)[1])[0];
             $stats[$current_interface] = array();
-        } elseif ($current_interface != "") {
+        } elseif ($current_interface != '') {
             $stat = explode(':', $line);
             $stats[$current_interface][trim($stat[0])] = trim($stat[1]);
         }
@@ -201,6 +201,7 @@ function legacy_interface_stats($ifs = null)
 
 /**
  * detect interface capabilities using ifconfig -m
+ * @param string|null $intf
  * @return array list of interface specifics indexed by physical interface name
  */
 function legacy_interfaces_details($intf = null)
@@ -216,7 +217,10 @@ function legacy_interfaces_details($intf = null)
     $cmd = '/sbin/ifconfig -m ' . $tmp_intf;
     exec($cmd . ' 2>&1', $ifconfig_data, $ret);
     if ($ret) {
-        log_error('The command `' . $cmd . '\' failed to execute ' . implode(' ', $ifconfig_data));
+        /* only error if no explicit interface was choosen */
+        if (empty($intf)) {
+            log_error('The command `' . $cmd . '\' failed to execute ' . implode(' ', $ifconfig_data));
+        }
         return $result;
     }
 
@@ -266,16 +270,20 @@ function legacy_interfaces_details($intf = null)
         } elseif (strpos($line, "\tinet6 ") !== false) {
             // IPv6 information
             $addr = strtok($line_parts[1], '%');
+            $is_tunnel = false;
             unset($mask);
             for ($i = 0; $i < count($line_parts) - 1; ++$i) {
-              if ($line_parts[$i] == 'prefixlen') {
-                  $mask = intval($line_parts[$i + 1]);
-              }
+                if ($line_parts[$i] == 'prefixlen') {
+                    $mask = intval($line_parts[$i + 1]);
+                }
+                if ($line_parts[$i] == '-->') {
+                    $is_tunnel = true;
+                }
             }
             if (isset($mask)) {
                 $is_link_local = strpos($addr, 'fe80:') === 0;
                 $result[$current_interface]["ipv6"][] = array('ipaddr' => $addr, 'subnetbits' => $mask,
-                                                              'link-local' => $is_link_local);
+                                                              'link-local' => $is_link_local, 'tunnel' => $is_tunnel);
                 // sort link local to bottom, leave rest of sorting as-is (primary address on top)
                 usort($result[$current_interface]["ipv6"], function($a, $b) {
                     return $a['link-local'] - $b['link-local'];
@@ -306,6 +314,15 @@ function legacy_interfaces_details($intf = null)
                 $result[$current_interface]['laggport'] = array();
             }
             $result[$current_interface]['laggport'][] = explode(' ', trim($matches[1]))[0];
+        } elseif (strpos($line, "\tgroups: ") !== false) {
+            array_shift($line_parts);
+            $result[$current_interface]['groups'] = $line_parts;
+        } elseif (strpos($line, "\tcarp: ") !== false) {
+            $result[$current_interface]["carp"] = array();
+            $result[$current_interface]["carp"]['status'] = $line_parts[1];
+            $result[$current_interface]["carp"]['vhid'] = $line_parts[3];
+            $result[$current_interface]["carp"]['advbase'] = $line_parts[5];
+            $result[$current_interface]["carp"]['advskew'] = $line_parts[7];
         }
     }
 
@@ -319,7 +336,14 @@ function legacy_interfaces_details($intf = null)
  */
 function legacy_interface_details($intf)
 {
-    return legacy_interfaces_details($intf)[$intf];
+    $result = array();
+
+    $details = legacy_interfaces_details($intf);
+    if (isset($details[$intf])) {
+        $result = $details[$intf];
+    }
+
+    return $result;
 }
 
 /**
@@ -331,10 +355,10 @@ function configure_interface_hardware($ifs)
     global $config;
     $intf_details = legacy_interface_details($ifs);
     /* skip vlans for checksumming  */
-    if (!stristr($ifs, "_vlan") && is_array($intf_details)) {
+    if (!stristr($ifs, "_vlan") && !empty($intf_details)) {
         // get current settings
         $csum_set = in_array('rxcsum', $intf_details['options']) || in_array('txcsum', $intf_details['options']);
-        $csumv6_set = in_array('rxcsum6', $intf_details['options']) || in_array('txcsum6', $intf_details['options']);
+        $csumv6_set = in_array('rxcsum_ipv6', $intf_details['options']) || in_array('txcsum_ipv6', $intf_details['options']);
         $tso_set = in_array('tso4', $intf_details['options']) || in_array('tso6', $intf_details['options']);
         $lro_set = in_array('lro', $intf_details['options']);
 
@@ -375,6 +399,9 @@ function legacy_getall_interface_addresses($ifs)
             continue;
         }
         foreach ($intf_details[$proto] as $address) {
+            if (!empty($address['tunnel'])) {
+                continue;
+            }
             if (!empty($address['ipaddr']) && !empty($address['subnetbits'])) {
                 $result[] = $address['ipaddr'] . '/' . $address['subnetbits'];
             }
@@ -396,7 +423,7 @@ function legacy_get_interface_addresses($ifs)
             if (empty($addrs['ipaddr6']) && empty($ipv6['link-local'])) {
                 $addrs['ipaddr6'] = $ipv6['ipaddr'];
                 $addrs['subnetbits6'] = $ipv6['subnetbits'];
-            } elseif (empty($addrs['lladdr6']) && !empty($ipv6['link-local'])) {
+            } elseif (empty($addrs['ipaddr6_ll']) && !empty($ipv6['link-local'])) {
                 $addrs['ipaddr6_ll'] = $ipv6['ipaddr'];
                 $addrs['subnetbits6_ll'] = $ipv6['subnetbits'];
             }
@@ -433,7 +460,7 @@ function legacy_serial_devices()
     }
     $serialports = array();
     foreach (glob("/dev/cua?[0-9]{,.[0-9]}", GLOB_BRACE) as $device) {
-        $serialports[$device] = array('descr' => "");
+        $serialports[$device] = array('descr' => '');
         $tty = explode('.', explode('cua', $device)[1])[0];
         foreach ($modems as $modem) {
             if (isset($modem['ttyname']) && $modem['ttyname'] == $tty) {

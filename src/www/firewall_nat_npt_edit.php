@@ -2,7 +2,7 @@
 
 /*
     Copyright (C) 2014 Deciso B.V.
-    Copyright (C) 2011 Seth Mos <seth.mos@dds.nl>.
+    Copyright (C) 2011 Seth Mos <seth.mos@dds.nl>
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -43,7 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 
     $pconfig = array();
     // set defaults
-    $pconfig['interface'] = "tap";
+    $pconfig['interface'] = "wan";
     if (isset($configId)) {
       // copy 1-to-1 attributes
       foreach (array('disabled','interface','descr') as $fieldname) {
@@ -194,7 +194,7 @@ include("head.inc");
                   <tr>
                     <td><a id="help_for_src" href="#" class="showhelp"><i class="fa fa-info-circle"></i></a> <?=gettext("Source") . " / ". gettext("Address:"); ?></td>
                     <td>
-                      <table style="border:0; cellspacing:0; cellpadding:0">
+                      <table style="border:0;">
                         <tr>
                           <td style="width:348px">
                             <input name="src" type="text" value="<?=$pconfig['src'];?>" aria-label="<?=gettext("Source address");?>"/>
@@ -232,7 +232,7 @@ include("head.inc");
                   <tr>
                     <td><a id="help_for_dst" href="#" class="showhelp"><i class="fa fa-info-circle"></i></a> <?=gettext("Destination") . " / ". gettext("Address:"); ?></td>
                     <td>
-                      <table style="border:0; cellspacing:0; cellpadding:0">
+                      <table style="border:0;">
                         <tr>
                           <td style="width:348px">
                             <input name="dst" type="text" value="<?=$pconfig['dst'];?>" aria-label="<?=gettext("Source address");?>"/>

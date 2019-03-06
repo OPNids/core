@@ -40,7 +40,7 @@ CORE_PKGVERSION=	${CORE_VERSION}_${CORE_REVISION}
 CORE_PKGVERSION=	${CORE_VERSION}
 .endif
 
-CORE_ABI?=	19.1
+CORE_ABI?=	19.3
 CORE_ARCH?=	${ARCH}
 CORE_FLAVOUR=	${FLAVOUR}
 CORE_OPENVPN?=	# empty
@@ -48,7 +48,7 @@ CORE_PHP?=	71
 CORE_PYTHON2?=	27
 CORE_PYTHON3?=	36
 CORE_RADVD?=	1
-CORE_SQUID?=	3
+CORE_SQUID?=	
 CORE_SURICATA?=	# empty
 
 _FLAVOUR!=	if [ -f ${OPENSSL} ]; then ${OPENSSL} version; fi
@@ -63,15 +63,15 @@ CORE_REPOSITORY?=	${FLAVOUR}
 .endif
 
 CORE_MESSAGE?=         Here be dragons
-CORE_NAME?=            opnsense
-CORE_TYPE?=            release
+CORE_NAME?=            opnids-devel
+CORE_TYPE?=            development
 
 CORE_COMMENT?=		${CORE_PRODUCT} ${CORE_TYPE} package
-CORE_MAINTAINER?=	project@opnsense.org
+CORE_MAINTAINER?=	project@opnids.io
 CORE_ORIGIN?=		opnsense/${CORE_NAME}
-CORE_PACKAGESITE?=	https://pkg.opnsense.org
-CORE_PRODUCT?=		OPNsense
-CORE_WWW?=		https://opnsense.org/
+CORE_PACKAGESITE?=	https://pkg.us.opnids.org
+CORE_PRODUCT?=		OPNids
+CORE_WWW?=		https://opnids.io/
 
 CORE_COPYRIGHT_HOLDER?=	Deciso B.V.
 CORE_COPYRIGHT_WWW?=	https://www.deciso.com/
@@ -81,6 +81,7 @@ CORE_DEPENDS_amd64?=	beep bsdinstaller
 CORE_DEPENDS_i386?=	${CORE_DEPENDS_amd64}
 
 CORE_DEPENDS?=		${CORE_DEPENDS_${CORE_ARCH}} \
+			beats \
 			ca_root_nss \
 			choparp \
 			cpustats \
@@ -88,17 +89,24 @@ CORE_DEPENDS?=		${CORE_DEPENDS_${CORE_ARCH}} \
 			dhcpleases \
 			dnsmasq \
 			dpinger \
+			dragonfly-mle \
 			expiretable \
 			filterlog \
 			ifinfo \
 			flock \
 			flowd \
+			hiredis \
 			hostapd \
 			isc-dhcp44-relay \
 			isc-dhcp44-server \
+			libmicrohttpd \
 			lighttpd \
+			lua51 \
+			luajit \
 			monit \
 			mpd5 \
+			node \
+			npm \
 			ntp \
 			openssh-portable \
 			openvpn${CORE_OPENVPN} \
@@ -134,7 +142,10 @@ CORE_DEPENDS?=		${CORE_DEPENDS_${CORE_ARCH}} \
 			py${CORE_PYTHON2}-ujson \
 			radvd${CORE_RADVD} \
 			rate \
+			redis \
+			redis-ml \
 			rrdtool \
+			rust \
 			samplicator \
 			squid${CORE_SQUID} \
 			sshlockout_pf \
@@ -144,6 +155,7 @@ CORE_DEPENDS?=		${CORE_DEPENDS_${CORE_ARCH}} \
 			syslogd \
 			unbound \
 			wpa_supplicant \
+			yarn \
 			zip
 
 WRKDIR?=${.CURDIR}/work

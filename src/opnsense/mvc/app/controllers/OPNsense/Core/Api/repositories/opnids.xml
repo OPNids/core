@@ -1,0 +1,36 @@
+<firmware>
+    <mirrors allow_custom="true">
+        <mirror>
+            <url/>
+            <description>(default)</description>
+        </mirror>
+        <mirror>
+            <url>http://pkg.nl.opnids.org</url>
+            <description>OPNids (Amsterdam, NL)</description>
+        </mirror>
+	<mirror>
+	    <url>http://pkg.us.opnids.org</url>
+	    <description>OPNids (USA)</description>
+	</mirror>
+    </mirrors>
+    <flavours>
+        <flavour>
+            <name/>
+            <description>(default)</description>
+        </flavour>
+        <flavour>
+            <name>latest</name>
+            <description>OpenSSL</description>
+        </flavour>
+    </flavours>
+    <families>
+        <family>
+            <name/>
+            <description>Production</description>
+        </family>
+        <family>
+            <name>devel</name>
+            <description>Development</description>
+        </family>
+    </families>
+</firmware>

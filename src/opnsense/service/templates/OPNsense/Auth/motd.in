@@ -1,9 +1,9 @@
 ----------------------------------------------
-|      Hello, this is OPNsense %%CORE_ABI%%          |         @@@@@@@@@@@@@@@
+      Hello, this is OPNids %%CORE_ABI%%               
+|                                            |         @@@@@@@@@@@@@@@
 |                                            |        @@@@         @@@@
-| Website:	https://opnsense.org/        |         @@@\\\   ///@@@
-| Handbook:	https://docs.opnsense.org/   |       ))))))))   ((((((((
-| Forums:	https://forum.opnsense.org/  |         @@@///   \\\@@@
-| Lists:	https://lists.opnsense.org/  |        @@@@         @@@@
-| Code:		https://github.com/opnsense  |         @@@@@@@@@@@@@@@
-----------------------------------------------
+| Website:	https://opnids.io/           |         @@@\\\   ///@@@
+| Handbook:	https://docs.opnids.io/      |       ))))))))   ((((((((
+| Forums:	https://discourse.opnids.io/ |         @@@///   \\\@@@
+| Code:         https://github.com/opnids    |        @@@@         @@@@
+----------------------------------------------         @@@@@@@@@@@@@@@

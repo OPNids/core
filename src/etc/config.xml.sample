@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <opnsense>
   <trigger_initial_wizard/>
-  <theme>opnsense</theme>
+  <theme>opnids</theme>
   <sysctl>
     <item>
       <descr><![CDATA[Disable the pf ftp proxy handler.]]></descr>
@@ -222,7 +222,7 @@
       <descr><![CDATA[System Administrator]]></descr>
       <scope>system</scope>
       <groupname>admins</groupname>
-      <password>$2y$10$YRVoF4SgskIsrXOvOQjGieB9XqHPRra9R7d80B3BZdbY/j21TwBfS</password>
+      <password>$6$WJLVE/GJLqXt.6Oa$h1BkjUQpG.laX/i.bvLKPPUJ6BUm.O8gnYC.WSwk0vFjcJ0cc7yuBHuNKT7vPOQK9OMpEPg4dbW6rrZb2pRNQ/</password>
       <uid>0</uid>
     </user>
     <nextuid>2000</nextuid>

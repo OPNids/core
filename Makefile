@@ -73,8 +73,8 @@ CORE_PACKAGESITE?=	https://pkg.us.opnids.org
 CORE_PRODUCT?=		OPNids
 CORE_WWW?=		https://opnids.io/
 
-CORE_COPYRIGHT_HOLDER?=	Deciso B.V.
-CORE_COPYRIGHT_WWW?=	https://www.deciso.com/
+CORE_COPYRIGHT_HOLDER?=	CounterFlow AI and Deciso B.V.
+CORE_COPYRIGHT_WWW?=	https://www.counterflow.ai/
 CORE_COPYRIGHT_YEARS?=	2014-2019
 
 CORE_DEPENDS_amd64?=	beep bsdinstaller

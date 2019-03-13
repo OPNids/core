@@ -196,7 +196,7 @@ $(document).ready(function() {
                     <td>
                       <button name="Submit" type="submit" class="btn btn-primary" value="yes"><?= gettext('Save') ?></button>
                       <input type="button" name="ResetRRD" id="ResetRRD" class="btn btn-default" value="<?= html_safe(gettext("Reset RRD Data")) ?>" />
-                      <input type="button" id="flush_netflow" class="btn btn-default" value="<?= html_safe(gettext("Reset Netflow Data")) ?>" />
+                      <input type="button" id="flush_netflow" class="btn btn-default removed" value="<?= html_safe(gettext("Reset Netflow Data")) ?>" />
                       <input type="button" id="repair_netflow" class="btn btn-default" value="<?= html_safe(gettext("Repair Netflow Data")) ?>" />
                     </td>
                   </tr>
@@ -210,7 +210,7 @@ $(document).ready(function() {
               </div>
             </div>
           </section>
-          <section class="col-xs-12">
+          <section class="col-xs-12 removed">
             <div class="tab-content content-box col-xs-12">
               <div class="table-responsive">
                 <table class="table table-striped opnsense_standard_table_form">

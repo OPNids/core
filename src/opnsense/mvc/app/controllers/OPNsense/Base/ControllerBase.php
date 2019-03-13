@@ -222,8 +222,9 @@ class ControllerBase extends ControllerRoot
         // set security policies
         $policies = array(
             "default-src" => "'self'",
-            "img-src" => "'self'",
-            "script-src" => "'self' 'unsafe-inline' 'unsafe-eval'",
+            "font-src" => "'self' data:",
+            "img-src" => "'self' data: https:",
+            "script-src" => "'self' blob: https 'unsafe-inline'",
             "style-src" => "'self' 'unsafe-inline' 'unsafe-eval'");
         foreach ($this->content_security_policy as $policy_name => $policy_content) {
             if (empty($policies[$policy_name])) {

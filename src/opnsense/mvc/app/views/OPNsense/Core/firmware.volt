@@ -217,7 +217,7 @@
     function action_may_reboot(pkg_act, pkg_name)
     {
         if (pkg_act == 'reinstall' && (pkg_name == 'kernel' || pkg_name == 'base')) {
-            const reboot_msg = "{{ lang._('The firewall will reboot directly after this set reinstall.') }}";
+            const reboot_msg = "{{ lang._('The sensor will reboot directly after this set reinstall.') }}";
 
             // reboot required, inform the user.
             BootstrapDialog.show({
@@ -268,9 +268,9 @@
     {
         let reboot_msg = "";
         if ( $.upgrade_needs_reboot == "1" ) {
-            reboot_msg = "{{ lang._('The firewall will reboot directly after this firmware update.') }}";
+            reboot_msg = "{{ lang._('The sensor will reboot directly after this firmware update.') }}";
             if ($.upgrade_action == 'maj') {
-                reboot_msg = "{{ lang._('The firewall will download all firmware sets and reboot multiple times for this upgrade. All operating system files and packages will be reinstalled as a consequence. This may take several minutes to complete.') }}";
+                reboot_msg = "{{ lang._('The sensor will download all firmware sets and reboot multiple times for this upgrade. All operating system files and packages will be reinstalled as a consequence. This may take several minutes to complete.') }}";
             }
             // reboot required, inform the user.
             BootstrapDialog.show({

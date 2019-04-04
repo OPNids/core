@@ -96,7 +96,7 @@
     <item>
       <descr><![CDATA[Generate SYN cookies for outbound SYN-ACK packets]]></descr>
       <tunable>net.inet.tcp.syncookies</tunable>
-      <value>default</value>
+      <value>0</value>
     </item>
     <item>
       <descr><![CDATA[Maximum incoming/outgoing TCP datagram size (receive)]]></descr>
@@ -171,12 +171,12 @@
     <item>
       <descr><![CDATA[TCP Offload Engine]]></descr>
       <tunable>net.inet.tcp.tso</tunable>
-      <value>default</value>
+      <value>0</value>
     </item>
     <item>
       <descr><![CDATA[UDP Checksums]]></descr>
       <tunable>net.inet.udp.checksum</tunable>
-      <value>default</value>
+      <value>0</value>
     </item>
     <item>
       <descr><![CDATA[Maximum socket buffer size]]></descr>

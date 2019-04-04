@@ -73,12 +73,19 @@
     <General order="1" cssClass="fa fa-cog fa-fw" url="/system_general.php">
       <Edit url="/system_general.php*" visibility="hidden"/>
     </General>
-    <Logging order="2" cssClass="fa fa-cog fa-fw" url="/diag_logs_settings.php"/>
-    <Miscellaneous order="3" cssClass="fa fa-cog fa-fw" url="/system_advanced_misc.php"/>
-    <Password order="4" cssClass="fa fa-key fa-fw" url="/system_usermanager_passwordmg.php">
+    <NTP order="2" VisibleName="Network Time" cssClass="fa fa-clock-o fa-fw">
+      <General order="10" url="/services_ntpd.php"/>
+      <GPS order="20" url="/services_ntpd_gps.php"/>
+      <PPS order="30" url="/services_ntpd_pps.php"/>
+      <Status order="40" url="/status_ntpd.php"/>
+      <Log order="50" VisibleName="Log File" url="/diag_logs_ntpd.php"/>
+    </NTP>
+    <Logging order="3" cssClass="fa fa-cog fa-fw" url="/diag_logs_settings.php"/>
+    <Miscellaneous order="4" cssClass="fa fa-cog fa-fw" url="/system_advanced_misc.php"/>
+    <Password order="5" cssClass="fa fa-key fa-fw" url="/system_usermanager_passwordmg.php">
       <Edit url="/system_usermanager_passwordmg.php*" visibility="hidden"/>
     </Password>
-    <Tunables order="5" cssClass="fa fa-cog fa-fw" url="/system_advanced_sysctl.php">
+    <Tunables order="6" cssClass="fa fa-cog fa-fw" url="/system_advanced_sysctl.php">
       <Edit url="/system_advanced_sysctl.php*" visibility="hidden"/>
     </Tunables>
   </Settings>

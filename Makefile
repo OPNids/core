@@ -95,6 +95,7 @@ CORE_DEPENDS?=		${CORE_DEPENDS_${CORE_ARCH}} \
 			ifinfo \
 			flock \
 			flowd \
+			git \
 			hiredis \
 			hostapd \
 			isc-dhcp44-relay \

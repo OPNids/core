@@ -1,3 +1,9 @@
+OPNids Note:
+============
+
+The OPNids project is based off OPNsense at its core. All the below
+is therefore largely relevant and being left here in that spirit. 
+
 OPNsense GUI and system management
 ==================================
 
